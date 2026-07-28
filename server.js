@@ -6,8 +6,13 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-// CORS ን ማንቃት
-app.use(cors());
+// CORS ን ማንቃት - ለሁሉም ኦሪጂኖች እንዲሰራ
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 app.use(express.json());
 
 // የpublic አቃፊ መኖሩን ማረጋገጥ
@@ -36,9 +41,7 @@ let users = [
 
 let reports = [];
 
-// ============================================================
 // Middleware: Token ማረጋገጫ
-// ============================================================
 function authenticateToken(req, res, next) {
   const authHeader = req.headers['authorization'];
   const token = authHeader && authHeader.split(' ')[1];
@@ -58,14 +61,18 @@ app.post('/api/login', async (req, res) => {
   try {
     const { username, password, role } = req.body;
 
+    console.log('🔑 Login attempt:', { username, role });
+
     const user = users.find(u => u.username === username && u.role === role);
     
     if (!user) {
+      console.log('❌ User not found:', { username, role });
       return res.status(401).json({ error: 'የተጠቃሚ ስም ወይም ሚና አልተገኘም!' });
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
+      console.log('❌ Invalid password for:', username);
       return res.status(401).json({ error: 'የተሳሳተ የይለፍ ቃል!' });
     }
 
@@ -74,8 +81,11 @@ app.post('/api/login', async (req, res) => {
       JWT_SECRET, 
       { expiresIn: '8h' }
     );
+    
+    console.log('✅ Login successful:', username);
     res.json({ token, role: user.role, username: user.username });
   } catch (error) {
+    console.error('❌ Login error:', error);
     res.status(500).json({ error: 'ስህተት ተከሰተ!' });
   }
 });
@@ -92,30 +102,37 @@ app.post('/api/init-superadmin', async (req, res) => {
         passwordHash: await bcrypt.hash('admin123', 10),
         role: 'superadmin'
       });
+      console.log('✅ Superadmin created');
       res.json({ message: 'ሱፐር አድሚን ተፈጥሯል!' });
     } else {
+      console.log('ℹ️ Superadmin already exists');
       res.json({ message: 'ሱፐር አድሚን አስቀድሞ አለ!' });
     }
   } catch (error) {
+    console.error('❌ Error creating superadmin:', error);
     res.status(500).json({ error: 'ሱፐር አድሚን መፍጠር አልተቻለም!' });
   }
 });
 
 // ============================================================
-// 3. ተጠቃሚዎችን ማውጣት
+// 3. ተጠቃሚዎችን ማውጣት (ለሁሉም ክፍት)
 // ============================================================
 app.get('/api/users', (req, res) => {
   try {
     const { role } = req.query;
     let filtered = users;
     
+    console.log('📋 Users requested, role filter:', role || 'all');
+    
     if (role) {
       filtered = users.filter(u => u.role === role);
     }
     
     const safeUsers = filtered.map(u => ({ username: u.username, role: u.role }));
+    console.log('✅ Returning users:', safeUsers.length);
     res.json(safeUsers);
   } catch (error) {
+    console.error('❌ Error fetching users:', error);
     res.status(500).json({ error: 'ተጠቃሚዎችን ማውጣት አልተቻለም!' });
   }
 });
@@ -125,6 +142,8 @@ app.get('/api/users', (req, res) => {
 // ============================================================
 app.post('/api/users', authenticateToken, async (req, res) => {
   try {
+    console.log('📝 Creating user request:', req.body);
+    
     if (req.user.role !== 'superadmin') {
       return res.status(403).json({ error: 'Super Admin ብቻ አዲስ አካውንት መፍጠር ይችላል!' });
     }
@@ -150,11 +169,14 @@ app.post('/api/users', authenticateToken, async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
     users.push({ username, passwordHash: hashedPassword, role });
+    
+    console.log('✅ User created:', { username, role });
 
     res.json({ 
       message: `አዲስ ${role === 'admin' ? 'አድሚን' : 'ተጠቃሚ'} '${username}' ተፈጥሯል!` 
     });
   } catch (error) {
+    console.error('❌ Error creating user:', error);
     res.status(500).json({ error: 'ተጠቃሚ መፍጠር አልተቻለም!' });
   }
 });
@@ -179,8 +201,10 @@ app.delete('/api/users/:username', authenticateToken, (req, res) => {
     }
 
     users = users.filter(u => u.username !== username);
+    console.log('✅ User deleted:', username);
     res.json({ message: `ተጠቃሚ '${username}' ተሰርዟል!` });
   } catch (error) {
+    console.error('❌ Error deleting user:', error);
     res.status(500).json({ error: 'ተጠቃሚ መሰረዝ አልተቻለም!' });
   }
 });
@@ -215,8 +239,10 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
     }
 
     superUser.passwordHash = await bcrypt.hash(newPassword, 10);
+    console.log('✅ Superadmin password changed');
     res.json({ message: 'የይለፍ ቃል ተቀይሯል!' });
   } catch (error) {
+    console.error('❌ Error changing password:', error);
     res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
   }
 });
@@ -244,8 +270,10 @@ app.post('/api/report', authenticateToken, (req, res) => {
       enteredBy: req.user.username 
     };
     reports.push(newReport);
+    console.log('✅ Report created by:', req.user.username);
     res.json({ message: 'መረጃው ተመዝግቧል!' });
   } catch (error) {
+    console.error('❌ Error creating report:', error);
     res.status(500).json({ error: 'ሪፖርት መዝገብ አልተቻለም!' });
   }
 });
@@ -264,8 +292,10 @@ app.delete('/api/report/:id', authenticateToken, (req, res) => {
     }
 
     reports = reports.filter(r => r.id !== reportId);
+    console.log('✅ Report deleted:', reportId);
     res.json({ message: 'ሪፖርቱ ተሰርዟል!' });
   } catch (error) {
+    console.error('❌ Error deleting report:', error);
     res.status(500).json({ error: 'ሪፖርት መሰረዝ አልተቻለም!' });
   }
 });
@@ -273,25 +303,30 @@ app.delete('/api/report/:id', authenticateToken, (req, res) => {
 // ============================================================
 // 8. የፊትኤንድ ፋይሎችን ማገልገል
 // ============================================================
-// መጀመሪያ API routes ን ማስተናገድ
-// ከዚያ ሌሎች መንገዶችን ወደ index.html መላክ
-
-// የindex.html ፋይል መኖሩን ማረጋገጥ
 const indexPath = path.join(publicPath, 'index.html');
 console.log('📄 Index path:', indexPath);
+console.log('📄 Index exists:', fs.existsSync(indexPath));
 
 // ማንኛውንም ያልተወሰነ መንገድ ወደ index.html መላክ
 app.get('*', (req, res) => {
-  // የAPI መንገዶች ካልሆኑ በስተቀር
   if (req.path.startsWith('/api/')) {
     return res.status(404).json({ error: 'API አልተገኘም' });
   }
   
-  // ፋይሉ መኖሩን ማረጋገጥ
   if (fs.existsSync(indexPath)) {
     res.sendFile(indexPath);
   } else {
-    res.status(404).send('index.html አልተገኘም! እባክዎ ፋይሉን ያስተካክሉ።');
+    res.status(404).send(`
+      <h1>index.html አልተገኘም!</h1>
+      <p>እባክዎ የሚከተሉትን ያረጋግጡ:</p>
+      <ul>
+        <li>public/index.html ፋይል መኖሩን</li>
+        <li>ፋይሉን ወደ GitHub መግፋትዎን</li>
+        <li>Render ላይ እንደገና ማሰማራትዎን</li>
+      </ul>
+      <p><strong>Username:</strong> superadmin</p>
+      <p><strong>Password:</strong> admin123</p>
+    `);
   }
 });
 
@@ -308,5 +343,6 @@ app.listen(PORT, () => {
   console.log('='.repeat(50));
   console.log(`📁 Public path: ${publicPath}`);
   console.log(`📄 Index exists: ${fs.existsSync(indexPath)}`);
+  console.log(`👥 Total users: ${users.length}`);
   console.log('='.repeat(50));
 });
