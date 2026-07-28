@@ -6,7 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const app = express();
 
-// CORS ን ማንቃት - ለሁሉም ኦሪጂኖች እንዲሰራ
+// CORS ን ማንቃት - ለሁሉም ኦሪጂኖች
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -15,20 +15,11 @@ app.use(cors({
 
 app.use(express.json());
 
-// የpublic አቃፊ መኖሩን ማረጋገጥ
-const publicPath = path.join(__dirname, 'public');
-console.log('📁 Public path:', publicPath);
-
-// public አቃፊ ከሌለ መፍጠር
-if (!fs.existsSync(publicPath)) {
-    fs.mkdirSync(publicPath, { recursive: true });
-    console.log('✅ Public directory created');
-}
-
 // Static files ን ማገልገል
+const publicPath = path.join(__dirname, 'public');
 app.use(express.static(publicPath));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your_strong_jwt_secret_key_change_this_in_production';
+const JWT_SECRET = process.env.JWT_SECRET || 'your_strong_jwt_secret_key_change_this';
 
 // በቋሚነት የተዘጋጀ Super Admin
 let users = [
@@ -60,19 +51,18 @@ function authenticateToken(req, res, next) {
 app.post('/api/login', async (req, res) => {
   try {
     const { username, password, role } = req.body;
-
     console.log('🔑 Login attempt:', { username, role });
 
     const user = users.find(u => u.username === username && u.role === role);
     
     if (!user) {
-      console.log('❌ User not found:', { username, role });
+      console.log('❌ User not found');
       return res.status(401).json({ error: 'የተጠቃሚ ስም ወይም ሚና አልተገኘም!' });
     }
 
     const isValid = await bcrypt.compare(password, user.passwordHash);
     if (!isValid) {
-      console.log('❌ Invalid password for:', username);
+      console.log('❌ Invalid password');
       return res.status(401).json({ error: 'የተሳሳተ የይለፍ ቃል!' });
     }
 
@@ -81,7 +71,6 @@ app.post('/api/login', async (req, res) => {
       JWT_SECRET, 
       { expiresIn: '8h' }
     );
-    
     console.log('✅ Login successful:', username);
     res.json({ token, role: user.role, username: user.username });
   } catch (error) {
@@ -109,41 +98,37 @@ app.post('/api/init-superadmin', async (req, res) => {
       res.json({ message: 'ሱፐር አድሚን አስቀድሞ አለ!' });
     }
   } catch (error) {
-    console.error('❌ Error creating superadmin:', error);
+    console.error('❌ Error:', error);
     res.status(500).json({ error: 'ሱፐር አድሚን መፍጠር አልተቻለም!' });
   }
 });
 
 // ============================================================
-// 3. ተጠቃሚዎችን ማውጣት (ለሁሉም ክፍት)
+// 3. ተጠቃሚዎችን ማውጣት
 // ============================================================
 app.get('/api/users', (req, res) => {
   try {
     const { role } = req.query;
     let filtered = users;
     
-    console.log('📋 Users requested, role filter:', role || 'all');
-    
     if (role) {
       filtered = users.filter(u => u.role === role);
     }
     
     const safeUsers = filtered.map(u => ({ username: u.username, role: u.role }));
-    console.log('✅ Returning users:', safeUsers.length);
+    console.log('📋 Users returned:', safeUsers.length);
     res.json(safeUsers);
   } catch (error) {
-    console.error('❌ Error fetching users:', error);
+    console.error('❌ Error:', error);
     res.status(500).json({ error: 'ተጠቃሚዎችን ማውጣት አልተቻለም!' });
   }
 });
 
 // ============================================================
-// 4. አዲስ አካውንት መፍጠር (Super Admin ብቻ)
+// 4. አዲስ አካውንት መፍጠር
 // ============================================================
 app.post('/api/users', authenticateToken, async (req, res) => {
   try {
-    console.log('📝 Creating user request:', req.body);
-    
     if (req.user.role !== 'superadmin') {
       return res.status(403).json({ error: 'Super Admin ብቻ አዲስ አካውንት መፍጠር ይችላል!' });
     }
@@ -171,18 +156,17 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     users.push({ username, passwordHash: hashedPassword, role });
     
     console.log('✅ User created:', { username, role });
-
     res.json({ 
       message: `አዲስ ${role === 'admin' ? 'አድሚን' : 'ተጠቃሚ'} '${username}' ተፈጥሯል!` 
     });
   } catch (error) {
-    console.error('❌ Error creating user:', error);
+    console.error('❌ Error:', error);
     res.status(500).json({ error: 'ተጠቃሚ መፍጠር አልተቻለም!' });
   }
 });
 
 // ============================================================
-// 5. ተጠቃሚ መሰረዝ (Super Admin ብቻ)
+// 5. ተጠቃሚ መሰረዝ
 // ============================================================
 app.delete('/api/users/:username', authenticateToken, (req, res) => {
   try {
@@ -195,16 +179,11 @@ app.delete('/api/users/:username', authenticateToken, (req, res) => {
       return res.status(400).json({ error: 'Super Admin አካውንትን ማጥፋት አይቻልም!' });
     }
 
-    const userExists = users.find(u => u.username === username);
-    if (!userExists) {
-      return res.status(404).json({ error: 'ተጠቃሚው አልተገኘም!' });
-    }
-
     users = users.filter(u => u.username !== username);
     console.log('✅ User deleted:', username);
     res.json({ message: `ተጠቃሚ '${username}' ተሰርዟል!` });
   } catch (error) {
-    console.error('❌ Error deleting user:', error);
+    console.error('❌ Error:', error);
     res.status(500).json({ error: 'ተጠቃሚ መሰረዝ አልተቻለም!' });
   }
 });
@@ -239,10 +218,10 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
     }
 
     superUser.passwordHash = await bcrypt.hash(newPassword, 10);
-    console.log('✅ Superadmin password changed');
+    console.log('✅ Password changed');
     res.json({ message: 'የይለፍ ቃል ተቀይሯል!' });
   } catch (error) {
-    console.error('❌ Error changing password:', error);
+    console.error('❌ Error:', error);
     res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
   }
 });
@@ -251,87 +230,34 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
 // 7. Report APIs
 // ============================================================
 app.get('/api/report', authenticateToken, (req, res) => {
-  try {
-    res.json(reports);
-  } catch (error) {
-    res.status(500).json({ error: 'ሪፖርቶችን ማውጣት አልተቻለም!' });
-  }
+  res.json(reports);
 });
 
 app.post('/api/report', authenticateToken, (req, res) => {
-  try {
-    if (req.user.role === 'superadmin' || req.user.role === 'admin') {
-      return res.status(403).json({ error: 'ሪፖርት መሙላት የሚችለው ተጠቃሚ ብቻ ነው!' });
-    }
-
-    const newReport = { 
-      id: Date.now(), 
-      ...req.body, 
-      enteredBy: req.user.username 
-    };
-    reports.push(newReport);
-    console.log('✅ Report created by:', req.user.username);
-    res.json({ message: 'መረጃው ተመዝግቧል!' });
-  } catch (error) {
-    console.error('❌ Error creating report:', error);
-    res.status(500).json({ error: 'ሪፖርት መዝገብ አልተቻለም!' });
+  if (req.user.role === 'superadmin' || req.user.role === 'admin') {
+    return res.status(403).json({ error: 'ሪፖርት መሙላት የሚችለው ተጠቃሚ ብቻ ነው!' });
   }
+
+  const newReport = { 
+    id: Date.now(), 
+    ...req.body, 
+    enteredBy: req.user.username 
+  };
+  reports.push(newReport);
+  res.json({ message: 'መረጃው ተመዝግቧል!' });
 });
 
 app.delete('/api/report/:id', authenticateToken, (req, res) => {
-  try {
-    if (req.user.role !== 'superadmin') {
-      return res.status(403).json({ error: 'Super Admin ብቻ ሪፖርት መሰረዝ ይችላል!' });
-    }
-
-    const reportId = parseInt(req.params.id);
-    const reportExists = reports.find(r => r.id === reportId);
-    
-    if (!reportExists) {
-      return res.status(404).json({ error: 'ሪፖርቱ አልተገኘም!' });
-    }
-
-    reports = reports.filter(r => r.id !== reportId);
-    console.log('✅ Report deleted:', reportId);
-    res.json({ message: 'ሪፖርቱ ተሰርዟል!' });
-  } catch (error) {
-    console.error('❌ Error deleting report:', error);
-    res.status(500).json({ error: 'ሪፖርት መሰረዝ አልተቻለም!' });
+  if (req.user.role !== 'superadmin') {
+    return res.status(403).json({ error: 'Super Admin ብቻ ሪፖርት መሰረዝ ይችላል!' });
   }
+
+  reports = reports.filter(r => r.id !== parseInt(req.params.id));
+  res.json({ message: 'ሪፖርቱ ተሰርዟል!' });
 });
 
 // ============================================================
-// 8. የፊትኤንድ ፋይሎችን ማገልገል
-// ============================================================
-const indexPath = path.join(publicPath, 'index.html');
-console.log('📄 Index path:', indexPath);
-console.log('📄 Index exists:', fs.existsSync(indexPath));
-
-// ማንኛውንም ያልተወሰነ መንገድ ወደ index.html መላክ
-app.get('*', (req, res) => {
-  if (req.path.startsWith('/api/')) {
-    return res.status(404).json({ error: 'API አልተገኘም' });
-  }
-  
-  if (fs.existsSync(indexPath)) {
-    res.sendFile(indexPath);
-  } else {
-    res.status(404).send(`
-      <h1>index.html አልተገኘም!</h1>
-      <p>እባክዎ የሚከተሉትን ያረጋግጡ:</p>
-      <ul>
-        <li>public/index.html ፋይል መኖሩን</li>
-        <li>ፋይሉን ወደ GitHub መግፋትዎን</li>
-        <li>Render ላይ እንደገና ማሰማራትዎን</li>
-      </ul>
-      <p><strong>Username:</strong> superadmin</p>
-      <p><strong>Password:</strong> admin123</p>
-    `);
-  }
-});
-
-// ============================================================
-// 9. ሰርቨሩን ማስጀመር
+// 8. ሰርቨሩን ማስጀመር
 // ============================================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
@@ -340,9 +266,5 @@ app.listen(PORT, () => {
   console.log(`✅ Default Super Admin:`);
   console.log(`   Username: superadmin`);
   console.log(`   Password: admin123`);
-  console.log('='.repeat(50));
-  console.log(`📁 Public path: ${publicPath}`);
-  console.log(`📄 Index exists: ${fs.existsSync(indexPath)}`);
-  console.log(`👥 Total users: ${users.length}`);
   console.log('='.repeat(50));
 });
