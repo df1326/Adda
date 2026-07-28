@@ -8,7 +8,10 @@ const app = express();
 // CORS ን ማንቃት
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+
+// Static files ን ማገልገል - ትክክለኛውን መንገድ መጠቀም
+const publicPath = path.join(__dirname, 'public');
+app.use(express.static(publicPath));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_strong_jwt_secret_key_change_this_in_production';
 
@@ -258,10 +261,11 @@ app.delete('/api/report/:id', authenticateToken, (req, res) => {
 });
 
 // ============================================================
-// 8. የፊትኤንድ ፋይሎችን ማገልገል
+// 8. የፊትኤንድ ፋይሎችን ማገልገል - ማንኛውንም መንገድ ወደ index.html መላክ
 // ============================================================
-app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+// ሁሉንም ያልተወሰኑ መንገዶች ወደ index.html መላክ (SPA ለመስራት)
+app.get('*', (req, res) => {
+  res.sendFile(path.join(publicPath, 'index.html'));
 });
 
 // ============================================================
@@ -274,5 +278,7 @@ app.listen(PORT, () => {
   console.log(`✅ Default Super Admin:`);
   console.log(`   Username: superadmin`);
   console.log(`   Password: admin123`);
+  console.log('='.repeat(50));
+  console.log(`📁 Public path: ${publicPath}`);
   console.log('='.repeat(50));
 });
