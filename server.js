@@ -11,7 +11,6 @@ const JWT_SECRET = 'your_strong_jwt_secret_key_change_this';
 let users = [
   {
     username: 'superadmin',
-    // 'admin123' የሚለው የይለፍ ቃል Hash የተደረገበት
     passwordHash: bcrypt.hashSync('admin123', 10),
     role: 'superadmin'
   }
@@ -96,15 +95,21 @@ app.get('/api/users', (req, res) => {
 // 4. አዲስ አካውንት መፍጠሪያ (🔒 Super Admin ብቻ)
 // ============================================================
 app.post('/api/users', authenticateToken, async (req, res) => {
+  console.log('📝 Creating user request received');
+  console.log('👤 Current user:', req.user);
+  console.log('📦 Request body:', req.body);
+
   // ሱፐር አድሚን ብቻ አዲስ አካውንት መፍጠር ይችላል
   if (req.user.role !== 'superadmin') {
+    console.log('❌ User is not superadmin:', req.user.role);
     return res.status(403).json({ error: 'አዲስ አካውንት መፍጠር የሚችለው Super Admin ብቻ ነው!' });
   }
 
   const { username, password, role } = req.body;
 
   if (!username || !password || !role) {
-    return res.status(400).json({ error: 'እባክዎ ሙሉ መረጃ ያስገቡ!' });
+    console.log('❌ Missing required fields');
+    return res.status(400).json({ error: 'እባክዎ ሙሉ መረጃ ያስገቡ! (ስም, የይለፍ ቃል, ሚና)' });
   }
 
   // ሱፐር አድሚን ሌላ ሱፐር አድሚን መፍጠር አይችልም
@@ -115,7 +120,7 @@ app.post('/api/users', authenticateToken, async (req, res) => {
   // ስሙ አስቀድሞ መያዙን ማረጋገጥ
   const existingUser = users.find(u => u.username === username);
   if (existingUser) {
-    return res.status(400).json({ error: 'ይህ የተጠቃሚ ስም አስቀድሞ ተይዟል!' });
+    return res.status(400).json({ error: `ይህ የተጠቃሚ ስም '${username}' አስቀድሞ ተይዟል!` });
   }
 
   // ፓስዎርድ ቢያንስ 6 ቁምፊ መሆኑን ማረጋገጥ
@@ -123,16 +128,26 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     return res.status(400).json({ error: 'የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!' });
   }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  users.push({
-    username,
-    passwordHash: hashedPassword,
-    role
-  });
-
-  res.json({ 
-    message: `አዲስ ${role === 'admin' ? 'አድሚን' : 'ተጠቃሚ'} '${username}' በተሳካ ሁኔታ ተፈጥሯል!` 
-  });
+  try {
+    const hashedPassword = await bcrypt.hash(password, 10);
+    const newUser = {
+      username,
+      passwordHash: hashedPassword,
+      role
+    };
+    users.push(newUser);
+    
+    console.log('✅ User created successfully:', { username, role });
+    console.log('📊 Total users:', users.length);
+    
+    res.json({ 
+      message: `አዲስ ${role === 'admin' ? 'አድሚን' : 'ተጠቃሚ'} '${username}' በተሳካ ሁኔታ ተፈጥሯል!`,
+      user: { username, role }
+    });
+  } catch (error) {
+    console.error('❌ Error creating user:', error);
+    res.status(500).json({ error: 'ተጠቃሚ መፍጠር አልተቻለም! እባክዎ በኋላ ይሞክሩ.' });
+  }
 });
 
 // ============================================================
@@ -165,7 +180,6 @@ app.delete('/api/users/:username', authenticateToken, (req, res) => {
 // 6. የሱፐር አድሚን ይለፍ ቃል መቀየሪያ API
 // ============================================================
 app.post('/api/superadmin/change-password', authenticateToken, async (req, res) => {
-  // ሱፐር አድሚን ብቻ የራሱን ፓስዎርድ መቀየር ይችላል
   if (req.user.role !== 'superadmin') {
     return res.status(403).json({ error: 'ይህንን ድርጊት መፈጸም የሚችለው Super Admin ብቻ ነው!' });
   }
@@ -185,13 +199,11 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
     return res.status(404).json({ error: 'ሱፐር አድሚን አልተገኘም!' });
   }
 
-  // የነበረውን ፓስዎርድ ማረጋገጥ
   const isValid = await bcrypt.compare(currentPassword, superUser.passwordHash);
   if (!isValid) {
     return res.status(400).json({ error: 'የነበረው የይለፍ ቃል የተሳሳተ ነው!' });
   }
 
-  // አዲሱን ፓስዎርድ ማስቀመጥ
   superUser.passwordHash = await bcrypt.hash(newPassword, 10);
   res.json({ message: 'የሱፐር አድሚን የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!' });
 });
@@ -207,7 +219,6 @@ app.get('/api/report', authenticateToken, (req, res) => {
 
 // አዲስ ሪፖርት መፍጠር (ተጠቃሚ ብቻ)
 app.post('/api/report', authenticateToken, (req, res) => {
-  // ሱፐር አድሚን እና አድሚን ሪፖርት መሙላት አይችሉም
   if (req.user.role === 'superadmin' || req.user.role === 'admin') {
     return res.status(403).json({ error: 'ሪፖርት መሙላት የሚችለው ተጠቃሚ (User) ብቻ ነው!' });
   }
@@ -223,7 +234,6 @@ app.post('/api/report', authenticateToken, (req, res) => {
 
 // ሪፖርት መሰረዝ (ሱፐር አድሚን ብቻ)
 app.delete('/api/report/:id', authenticateToken, (req, res) => {
-  // ሱፐር አድሚን ብቻ ሪፖርት መሰረዝ ይችላል
   if (req.user.role !== 'superadmin') {
     return res.status(403).json({ error: 'ሪፖርት ማጥፋት የሚችለው Super Admin ብቻ ነው!' });
   }
@@ -240,15 +250,20 @@ app.delete('/api/report/:id', authenticateToken, (req, res) => {
 });
 
 // ============================================================
-// 8. ለማጣራት የሚረዳ ሪፖርቶችን ሙሉ ዝርዝር ማውጣት (የሱፐር አድሚን ብቻ)
+// 8. ለማጣራት - ሁሉንም ተጠቃሚዎች ማየት (Debug)
 // ============================================================
-app.get('/api/reports/all', authenticateToken, (req, res) => {
+app.get('/api/debug/users', authenticateToken, (req, res) => {
   if (req.user.role !== 'superadmin') {
     return res.status(403).json({ error: 'ይህንን መረጃ ማየት የሚችለው Super Admin ብቻ ነው!' });
   }
+  const safeUsers = users.map(u => ({ 
+    username: u.username, 
+    role: u.role,
+    hasPassword: !!u.passwordHash
+  }));
   res.json({ 
-    totalReports: reports.length,
-    reports: reports 
+    totalUsers: users.length,
+    users: safeUsers 
   });
 });
 
@@ -257,7 +272,12 @@ app.get('/api/reports/all', authenticateToken, (req, res) => {
 // ============================================================
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
+  console.log('='.repeat(50));
   console.log(`✅ Server running on port ${PORT}`);
-  console.log(`✅ Default Super Admin: username='superadmin', password='admin123'`);
-  console.log(`✅ Use this to login and create other accounts`);
+  console.log(`✅ Default Super Admin:`);
+  console.log(`   Username: superadmin`);
+  console.log(`   Password: admin123`);
+  console.log('='.repeat(50));
+  console.log('📝 Use this to login and create other accounts');
+  console.log('='.repeat(50));
 });
