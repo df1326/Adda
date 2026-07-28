@@ -77,7 +77,7 @@
             </select>
         </div>
         
-        <!-- ለሪፖርት ፀሀፊ እና ለመደበኛ አድሚን የጋራ መምረጫ ሳጥን -->
+        <!-- ለሪፖርት ፀሀፊ እና ለመደበኛ አድሚን መምረጫ ሳጥን -->
         <div class="form-group" id="usernameGroup">
             <label id="usernameLabel">የሰራተኛ ስም</label>
             <select id="loginUsername"><option value="">በመጀመሪያ ስም ይጫናል...</option></select>
@@ -148,7 +148,7 @@
                 <h3 id="sidebarTitle">አካውንቶች ማስተዳደሪያ</h3>
                 <ul class="user-list" id="userListUI"></ul>
                 
-                <!-- አካውንት መፍጠሪያ (ለሱፐር አድሚን ብቻ) -->
+                <!-- አካውንት መፍጠሪያ (🔒 ለሱፐር አድሚን ብቻ) -->
                 <div id="adminActionFields">
                     <div style="margin-bottom: 8px;">
                         <select id="newUserRole" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px;">
@@ -205,7 +205,6 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Render ላይ ሰርቨሩና HTML ፋይሉ በአንድ ላይ ስለሚጫኑ Dynamic Relative Path ተደርጓል
         const API = '/api';
         let token = localStorage.getItem('token') || '';
         let userRole = localStorage.getItem('userRole') || 'user';
@@ -233,36 +232,6 @@
             }
         }
 
-        async function submitChangePassword() {
-            const currentPassword = document.getElementById('oldSuperPwd').value.trim();
-            const newPassword = document.getElementById('newSuperPwd').value.trim();
-
-            if(!currentPassword || !newPassword) return showToast('እባክዎ ሁለቱንም የይለፍ ቃላት ያስገቡ!');
-            if(newPassword.length < 6) return showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
-
-            try {
-                const res = await fetch(`${API}/superadmin/change-password`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ currentPassword, newPassword })
-                });
-
-                const data = await res.json();
-                if(res.ok) {
-                    showToast('የሱፐር አድሚን ይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!');
-                    document.getElementById('oldSuperPwd').value = '';
-                    document.getElementById('newSuperPwd').value = '';
-                } else {
-                    showToast(data.error || 'ስህተት ተከሰቷል!');
-                }
-            } catch(e) {
-                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-            }
-        }
-
         async function loadUsersDropdown() {
             const role = document.getElementById('loginRole').value;
             if (role === 'superadmin') return;
@@ -278,14 +247,6 @@
                 users.forEach(u => {
                     select.innerHTML += `<option value="${u.username}">${u.username}</option>`;
                 });
-
-                if(token && (userRole === 'superadmin' || userRole === 'admin')) {
-                    const allRes = await fetch(`${API}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
-                    if(allRes.ok) {
-                        const allUsers = await allRes.json();
-                        loadAdminUsersList(allUsers);
-                    }
-                }
             } catch(e) {
                 console.error("Users load error:", e);
             }
@@ -334,18 +295,123 @@
                 document.getElementById('adminActionFields').style.display = 'block';
                 document.getElementById('superPasswordSection').style.display = 'block';
                 document.getElementById('formContainer').style.display = 'none';
+                fetchAdminUsersList();
             } else if (userRole === 'admin') {
                 document.getElementById('adminSidebar').style.display = 'block';
                 document.getElementById('sidebarTitle').innerText = "የአካውንቶች ዝርዝር (Admin View)";
                 document.getElementById('adminActionFields').style.display = 'none';
                 document.getElementById('superPasswordSection').style.display = 'none';
                 document.getElementById('formContainer').style.display = 'none';
+                fetchAdminUsersList();
             } else {
                 document.getElementById('adminSidebar').style.display = 'none';
                 document.getElementById('formContainer').style.display = 'block';
             }
-            loadUsersDropdown();
             loadReports();
+        }
+
+        async function fetchAdminUsersList() {
+            try {
+                const res = await fetch(`${API}/users`, { headers: { 'Authorization': `Bearer ${token}` } });
+                if(res.ok) {
+                    const allUsers = await res.json();
+                    loadAdminUsersList(allUsers);
+                }
+            } catch(e) {
+                console.error("User list fetch error:", e);
+            }
+        }
+
+        async function createUser() {
+            const role = document.getElementById('newUserRole').value;
+            const username = document.getElementById('newUserName').value.trim();
+            const password = document.getElementById('newUserPassword').value.trim();
+            if(!username || !password) return showToast('እባክዎ ስምና ፓስዎርድ ያስገቡ!');
+
+            try {
+                const res = await fetch(`${API}/users`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                const data = await res.json();
+                if(res.ok) {
+                    const roleText = role === 'admin' ? 'አድሚን' : 'ሰራተኛ';
+                    showToast(`አዲስ ${roleText} '${username}' በተሳካ ሁኔታ ተፈጥሯል!`);
+                    document.getElementById('newUserName').value = '';
+                    document.getElementById('newUserPassword').value = '';
+                    fetchAdminUsersList();
+                } else {
+                    showToast(data.error || 'ተጠቃሚ መፍጠር አልተቻለም');
+                }
+            } catch(e) {
+                showToast('ተጠቃሚ መፍጠር አልተቻለም!');
+            }
+        }
+
+        function loadAdminUsersList(users) {
+            const ul = document.getElementById('userListUI');
+            ul.innerHTML = '';
+            if(!Array.isArray(users)) return;
+
+            users.forEach(u => {
+                const delUserBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ? `<button onclick="deleteUser('${u.username}')"><i class="fas fa-user-minus"></i></button>` : '';
+                ul.innerHTML += `<li><span>${u.username}</span> <span class="role-tag">${u.role}</span> ${delUserBtn}</li>`;
+            });
+        }
+
+        async function deleteUser(name) {
+            if(!confirm(`ተጠቃሚ '${name}' እንዲጠፋ ትፈልጋለህ?`)) return;
+            try {
+                const res = await fetch(`${API}/users/${name}`, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                
+                if(res.ok) { 
+                    showToast('ተጠቃሚው ተሰርዟል!'); 
+                    fetchAdminUsersList(); 
+                } else { 
+                    const err = await res.json(); 
+                    showToast(err.error || 'ማጥፋት አልተቻለም'); 
+                }
+            } catch(e) {
+                showToast('ተጠቃሚውን ማጥፋት አልተቻለም!');
+            }
+        }
+
+        async function submitChangePassword() {
+            const currentPassword = document.getElementById('oldSuperPwd').value.trim();
+            const newPassword = document.getElementById('newSuperPwd').value.trim();
+
+            if(!currentPassword || !newPassword) return showToast('እባክዎ ሁለቱንም የይለፍ ቃላት ያስገቡ!');
+            if(newPassword.length < 6) return showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
+
+            try {
+                const res = await fetch(`${API}/superadmin/change-password`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+                if(res.ok) {
+                    showToast('የሱፐር አድሚን ይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!');
+                    document.getElementById('oldSuperPwd').value = '';
+                    document.getElementById('newSuperPwd').value = '';
+                } else {
+                    showToast(data.error || 'ስህተት ተከሰቷል!');
+                }
+            } catch(e) {
+                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+            }
         }
 
         async function saveReport(event) {
@@ -449,68 +515,6 @@
                 }
             } catch(e) {
                 showToast('መረጃውን ማጥፋት አልተቻለም!');
-            }
-        }
-
-        async function createUser() {
-            const role = document.getElementById('newUserRole').value;
-            const username = document.getElementById('newUserName').value.trim();
-            const password = document.getElementById('newUserPassword').value.trim();
-            if(!username || !password) return showToast('እባክዎ ስምና ፓስዎርድ ያስገቡ!');
-
-            try {
-                const res = await fetch(`${API}/users`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${token}` 
-                    },
-                    body: JSON.stringify({ username, password, role })
-                });
-
-                const data = await res.json();
-                if(res.ok) {
-                    const roleText = role === 'admin' ? 'አድሚን' : 'ሰራተኛ';
-                    showToast(`አዲስ ${roleText} '${username}' በተሳካ ሁኔታ ተፈጥሯል!`);
-                    document.getElementById('newUserName').value = '';
-                    document.getElementById('newUserPassword').value = '';
-                    loadUsersDropdown();
-                } else {
-                    showToast(data.error || 'ተጠቃሚ መፍጠር አልተቻለም');
-                }
-            } catch(e) {
-                showToast('ተጠቃሚ መፍጠር አልተቻለም!');
-            }
-        }
-
-        function loadAdminUsersList(users) {
-            const ul = document.getElementById('userListUI');
-            ul.innerHTML = '';
-            if(!Array.isArray(users)) return;
-
-            users.forEach(u => {
-                const delUserBtn = (userRole === 'superadmin') ? `<button onclick="deleteUser('${u.username}')"><i class="fas fa-user-minus"></i></button>` : '';
-                ul.innerHTML += `<li><span>${u.username}</span> <span class="role-tag">${u.role}</span> ${delUserBtn}</li>`;
-            });
-        }
-
-        async function deleteUser(name) {
-            if(!confirm(`ተጠቃሚ '${name}' እንዲጠፋ ትፈልጋለህ?`)) return;
-            try {
-                const res = await fetch(`${API}/users/${name}`, { 
-                    method: 'DELETE', 
-                    headers: { 'Authorization': `Bearer ${token}` } 
-                });
-                
-                if(res.ok) { 
-                    showToast('ተጠቃሚው ተሰርዟል!'); 
-                    loadUsersDropdown(); 
-                } else { 
-                    const err = await res.json(); 
-                    showToast(err.error || 'ማጥፋት አልተቻለም'); 
-                }
-            } catch(e) {
-                showToast('ተጠቃሚውን ማጥፋት አልተቻለም!');
             }
         }
 
