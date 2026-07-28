@@ -3,14 +3,24 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 const app = express();
 
 // CORS ን ማንቃት
 app.use(cors());
 app.use(express.json());
 
-// Static files ን ማገልገል - ትክክለኛውን መንገድ መጠቀም
+// የpublic አቃፊ መኖሩን ማረጋገጥ
 const publicPath = path.join(__dirname, 'public');
+console.log('📁 Public path:', publicPath);
+
+// public አቃፊ ከሌለ መፍጠር
+if (!fs.existsSync(publicPath)) {
+    fs.mkdirSync(publicPath, { recursive: true });
+    console.log('✅ Public directory created');
+}
+
+// Static files ን ማገልገል
 app.use(express.static(publicPath));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_strong_jwt_secret_key_change_this_in_production';
@@ -261,11 +271,28 @@ app.delete('/api/report/:id', authenticateToken, (req, res) => {
 });
 
 // ============================================================
-// 8. የፊትኤንድ ፋይሎችን ማገልገል - ማንኛውንም መንገድ ወደ index.html መላክ
+// 8. የፊትኤንድ ፋይሎችን ማገልገል
 // ============================================================
-// ሁሉንም ያልተወሰኑ መንገዶች ወደ index.html መላክ (SPA ለመስራት)
+// መጀመሪያ API routes ን ማስተናገድ
+// ከዚያ ሌሎች መንገዶችን ወደ index.html መላክ
+
+// የindex.html ፋይል መኖሩን ማረጋገጥ
+const indexPath = path.join(publicPath, 'index.html');
+console.log('📄 Index path:', indexPath);
+
+// ማንኛውንም ያልተወሰነ መንገድ ወደ index.html መላክ
 app.get('*', (req, res) => {
-  res.sendFile(path.join(publicPath, 'index.html'));
+  // የAPI መንገዶች ካልሆኑ በስተቀር
+  if (req.path.startsWith('/api/')) {
+    return res.status(404).json({ error: 'API አልተገኘም' });
+  }
+  
+  // ፋይሉ መኖሩን ማረጋገጥ
+  if (fs.existsSync(indexPath)) {
+    res.sendFile(indexPath);
+  } else {
+    res.status(404).send('index.html አልተገኘም! እባክዎ ፋይሉን ያስተካክሉ።');
+  }
 });
 
 // ============================================================
@@ -280,5 +307,6 @@ app.listen(PORT, () => {
   console.log(`   Password: admin123`);
   console.log('='.repeat(50));
   console.log(`📁 Public path: ${publicPath}`);
+  console.log(`📄 Index exists: ${fs.existsSync(indexPath)}`);
   console.log('='.repeat(50));
 });
