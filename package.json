@@ -1,7 +1,7 @@
 {
   "name": "adda-system",
   "version": "1.0.0",
-  "description": "Technology Transfer and Reporting System with Secure Authentication",
+  "description": "Technology Transfer and Reporting System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
