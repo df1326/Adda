@@ -1,13 +1,18 @@
 {
-  "name": "your-app-name",
+  "name": "adda-system",
   "version": "1.0.0",
+  "description": "Technology Transfer and Reporting System with Secure Authentication",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
+    "cors": "^2.8.5",
     "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.2"
+    "jsonwebtoken": "^9.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0"
   }
 }
