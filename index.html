@@ -9,7 +9,6 @@
         * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
         body { background-color: #1e293b; color: #333; padding: 20px; display: flex; justify-content: center; align-items: center; min-height: 100vh; position: relative; }
         
-        /* Login UI */
         .login-card { background: #ffffff; padding: 35px; border-radius: 16px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); width: 100%; max-width: 420px; }
         .login-card h2 { text-align: center; margin-bottom: 25px; color: #0f172a; font-size: 22px; font-weight: 700; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
         .form-group { margin-bottom: 18px; }
@@ -19,16 +18,14 @@
         .login-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 8px; font-size: 16px; cursor: pointer; font-weight: bold; transition: background 0.2s; }
         .login-btn:hover { background: #1d4ed8; }
 
-        /* Main Dashboard UI */
         .dashboard { display: none; width: 100%; max-width: 1500px; background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); }
-        .app-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; }
+        .app-bar { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 25px; flex-wrap: wrap; gap: 10px; }
         .app-bar-left { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
         .app-bar-title { font-size: 20px; font-weight: bold; color: #0f172a; }
         .user-badge { background: #f0fdf4; color: #166534; padding: 6px 14px; border-radius: 20px; font-size: 14px; font-weight: 600; border: 1px solid #bbf7d0; }
         .app-bar-actions button { padding: 8px 16px; margin-left: 5px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; background: #ef4444; color: white; transition: background 0.2s; }
         .app-bar-actions button:hover { background: #dc2626; }
         
-        /* Layout Grid */
         .main-content { display: flex; gap: 20px; flex-wrap: wrap; }
         .form-container { flex: 1; min-width: 320px; background: #f8fafc; padding: 25px; border-radius: 12px; border: 1px solid #e2e8f0; }
         .form-container h3 { margin-bottom: 15px; color: #1e293b; font-size: 16px; font-weight: 700; }
@@ -45,11 +42,9 @@
         .user-list li span.role-tag { font-size: 11px; background: #e2e8f0; padding: 2px 6px; border-radius: 4px; color: #475569; }
         .user-list li button { background: none; border: none; color: #ef4444; cursor: pointer; font-size: 14px; }
 
-        /* የይለፍ ቃል መቀየሪያ ሳጥን ዲዛይን */
         .super-password-box { background: #fff; padding: 15px; border-radius: 8px; border: 1px dashed #10b981; margin-top: 20px; }
         .super-password-box h4 { font-size: 14px; color: #047857; margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
 
-        /* Table UI */
         .table-container { width: 100%; overflow-x: auto; margin-top: 25px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-radius: 12px; border: 1px solid #e2e8f0; }
         table { width: 100%; border-collapse: collapse; text-align: left; font-size: 13px; }
         th, td { padding: 12px; border: 1px solid #e2e8f0; text-align: center; white-space: nowrap; }
@@ -59,10 +54,8 @@
         .action-del { color: #ef4444; cursor: pointer; border: none; background: none; font-size: 15px; }
         .action-del:hover { color: #dc2626; }
         
-        /* Toast Notification */
         .toast { position: fixed; bottom: 20px; right: 20px; background: #0f172a; color: white; padding: 14px 28px; border-radius: 8px; display: none; z-index: 1000; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.3); font-weight: 500; }
         
-        /* Responsive */
         @media (max-width: 768px) {
             .app-bar-left { flex-direction: column; align-items: flex-start; }
             .admin-sidebar { width: 100%; }
@@ -72,7 +65,6 @@
 </head>
 <body>
 
-    <!-- 1. መግቢያ ካርድ (Login Card) -->
     <div class="login-card" id="loginCard">
         <h2>ሪፖርት ሲስተም መግቢያ</h2>
         <div class="form-group">
@@ -84,10 +76,9 @@
             </select>
         </div>
         
-        <!-- ለሪፖርት ፀሀፊ እና ለመደበኛ አድሚን የጋራ መምረጫ ሳጥን -->
         <div class="form-group" id="usernameGroup">
             <label id="usernameLabel">የሰራተኛ ስም</label>
-            <select id="loginUsername"><option value="">በመጀመሪያ ስም ይጫናል...</option></select>
+            <select id="loginUsername"><option value="">በመጀመሪያ ስም ይጫናሉ...</option></select>
         </div>
 
         <div class="form-group" id="superAdminUsernameGroup" style="display:none;">
@@ -101,13 +92,9 @@
         <button class="login-btn" onclick="handleLogin()"><i class="fas fa-sign-in-alt"></i> ግባ</button>
     </div>
 
-    <!-- 2. ዋናው ዳሽቦርድ (Dashboard) -->
     <div class="dashboard" id="dashboard">
         <div class="app-bar">
             <div class="app-bar-left">
-                <a href="#" target="_blank">
-                    <img src="https://i.postimg.cc/t4JFhf80/Gemini-Generated-Image-7cfm8e7cfm8e7cfm.png" alt="የአብክመ ሎጎ" style="height:45px; width:45px; border-radius:8px; object-fit: cover; border: 1px solid #cbd5e1;" />
-                </a>
                 <div class="app-bar-title">የቴክኖሎጂ ሽግግር ፕሮፋይል መረጃ ቋት</div>
                 <span class="user-badge"><i class="fas fa-user-circle"></i> &nbsp;<span id="displayUser">-</span></span>
             </div>
@@ -117,7 +104,6 @@
         </div>
 
         <div class="main-content">
-            <!-- የመረጃ መሙያ ፎርም (ለተጠቃሚ ብቻ) -->
             <div class="form-container" id="formContainer">
                 <h3>አዲስ የሪፖርት መረጃ መሙያ ሳጥን</h3>
                 <form id="reportForm" onsubmit="saveReport(event)">
@@ -134,7 +120,7 @@
                             <option value="የለውም">የለውም</option>
                         </select>
                         <input type="text" id="techType" placeholder="ቴክኖሎጂው የሚፈታው ችግር ባጭሩ" required />
-                        <input type="text" id="year" placeholder="የተሸጋገረበት ዓ/ም (ምሳሌ፡ 2016)" required />
+                        <input type="text" id="year" placeholder="የተሸጋገረበት ዓ/ም" required />
                         <input type="number" min="0" id="transferQty" placeholder="ሽግግር በብዛት" required />
                         <input type="text" id="transferSector" placeholder="የተሸጋገረበት ዘርፍ" required />
                         <input type="number" min="0" id="resource" placeholder="የተፈራ ሃብት (በብር)" required />
@@ -150,12 +136,10 @@
                 </form>
             </div>
 
-            <!-- አድሚን/ሱፐር አድሚን ማስተዳደሪያ ሳይድባር -->
             <div class="admin-sidebar" id="adminSidebar">
                 <h3 id="sidebarTitle">አካውንቶች ማስተዳደሪያ</h3>
                 <ul class="user-list" id="userListUI"></ul>
                 
-                <!-- አካውንት መፍጠሪያ (ለሱፐር አድሚን ብቻ) -->
                 <div id="adminActionFields">
                     <div style="margin-bottom: 8px;">
                         <select id="newUserRole" style="width:100%; padding:9px; border:1px solid #cbd5e1; border-radius:6px; font-size:14px;">
@@ -168,7 +152,6 @@
                     <button onclick="createUser()" style="width:100%; padding:10px; background:#10b981; color:white; border:none; border-radius:6px; font-weight:bold; cursor:pointer; margin-bottom:15px;"><i class="fas fa-user-plus"></i> አካውንት ፍጠር</button>
                 </div>
 
-                <!-- 🔒 የሱፐር አድሚን ፓስዎርድ መቀየሪያ -->
                 <div class="super-password-box" id="superPasswordSection" style="display:none;">
                     <h4><i class="fas fa-key"></i> የሱፐር አድሚን ይለፍ ቃል ቀይር</h4>
                     <input type="password" id="oldSuperPwd" placeholder="የድሮው የይለፍ ቃል" style="width:100%; padding:8px; margin-bottom:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;" />
@@ -178,30 +161,16 @@
             </div>
         </div>
 
-        <!-- የተመዘገቡ መረጃዎች ሰንጠረዥ -->
         <div class="table-container">
             <table id="reportTable">
                 <thead>
                     <tr>
-                        <th>ዞን/ከተማ መምሪያ</th>
-                        <th>ፖሊ/ኮሌጅ</th>
-                        <th>የቴክኖሎጂው ስም</th>
-                        <th>የቴክኖሎጂ ዘርፍ አስተባባሪ</th>
-                        <th>ስልክ</th>
-                        <th>የቴክኖሎጂው ዘርፍ</th>
-                        <th>እሴት ሰንሰለት</th>
-                        <th>ችግር ፈቺነቱ</th>
-                        <th>ዓ/ም</th>
-                        <th>በብዛት</th>
-                        <th>የተሸጋገረበት ዘርፍ</th>
-                        <th>ሃብት (ብር)</th>
-                        <th>ተጠቃሚ (ኢ/ዝ)</th>
-                        <th>ተጠቃሚ (አንቀ)</th>
-                        <th>ተጠቃሚ (ወ)</th>
-                        <th>ተጠቃሚ (ሴ)</th>
-                        <th>ተጠቃሚ (ድ)</th>
-                        <th>መዝጋቢ</th>
-                        <th>ድርጊት</th>
+                        <th>ዞን/ከተማ</th><th>ፖሊ/ኮሌጅ</th><th>የቴክኖሎጂው ስም</th>
+                        <th>አስተባባሪ</th><th>ስልክ</th><th>ዘርፍ</th>
+                        <th>እሴት ሰንሰለት</th><th>ችግር ፈቺነቱ</th><th>ዓ/ም</th>
+                        <th>በብዛት</th><th>የተሸጋገረበት ዘርፍ</th><th>ሃብት (ብር)</th>
+                        <th>ተጠቃሚ (ኢ/ዝ)</th><th>ተጠቃሚ (አንቀ)</th><th>ተጠቃሚ (ወ)</th>
+                        <th>ተጠቃሚ (ሴ)</th><th>ተጠቃሚ (ድ)</th><th>መዝጋቢ</th><th>ድርጊት</th>
                     </tr>
                 </thead>
                 <tbody id="reportTableBody"></tbody>
@@ -212,7 +181,6 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        // Render ላይ ሰርቨሩና HTML ፋይሉ በአንድ ላይ ስለሚጫኑ Dynamic Relative Path ተደርጓል
         const API = '/api';
         let token = localStorage.getItem('token') || '';
         let userRole = localStorage.getItem('userRole') || 'user';
@@ -221,18 +189,15 @@
         window.onload = function() {
             toggleLoginFields();
             if (token) { showDashboard(); }
-            // Initialize default superadmin if no users exist
             initializeSuperAdmin();
         };
 
-        // Initialize default superadmin account
         async function initializeSuperAdmin() {
             try {
-                const res = await fetch(`${API}/init-superadmin`, {
+                await fetch(`${API}/init-superadmin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
-                // Silent initialization - don't show toast for this
             } catch(e) {
                 console.log('Superadmin initialization check failed');
             }
@@ -255,36 +220,6 @@
             }
         }
 
-        async function submitChangePassword() {
-            const currentPassword = document.getElementById('oldSuperPwd').value.trim();
-            const newPassword = document.getElementById('newSuperPwd').value.trim();
-
-            if(!currentPassword || !newPassword) return showToast('እባክዎ ሁለቱንም የይለፍ ቃላት ያስገቡ!');
-            if(newPassword.length < 6) return showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
-
-            try {
-                const res = await fetch(`${API}/superadmin/change-password`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({ currentPassword, newPassword })
-                });
-
-                const data = await res.json();
-                if(res.ok) {
-                    showToast('የሱፐር አድሚን ይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!');
-                    document.getElementById('oldSuperPwd').value = '';
-                    document.getElementById('newSuperPwd').value = '';
-                } else {
-                    showToast(data.error || 'ስህተት ተከሰቷል!');
-                }
-            } catch(e) {
-                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-            }
-        }
-
         async function loadUsersDropdown(role) {
             if (role === 'superadmin') return;
 
@@ -300,7 +235,6 @@
                     select.innerHTML += `<option value="${u.username}">${u.username}</option>`;
                 });
 
-                // Load users list for admin sidebar
                 if(token && (userRole === 'superadmin' || userRole === 'admin')) {
                     const allRes = await fetch(`${API}/users`, { 
                         headers: { 'Authorization': `Bearer ${token}` } 
@@ -439,19 +373,19 @@
                 }
                 
                 data.forEach(row => {
-                    // Only superadmin can delete reports
                     const deleteBtn = (userRole === 'superadmin') ? 
                         `<button class="action-del" onclick="deleteReport(${row.id})"><i class="fas fa-trash"></i></button>` : 
-                        (userRole === 'admin' ? '<span style="color:#94a3b8;">-</span>' : '<span style="color:#94a3b8;">-</span>');
+                        '<span style="color:#94a3b8;">-</span>';
                     
                     tbody.innerHTML += `
                         <tr>
-                            <td>${row.zone || ''}</td><td>${row.poly || ''}</td><td>${row.techName || ''}</td><td>${row.coordinator || ''}</td>
-                            <td>${row.phone || ''}</td><td>${row.sector || ''}</td><td>${row.valueChain || ''}</td><td>${row.techType || ''}</td>
-                            <td>${row.year || ''}</td><td>${row.transferQty || 0}</td><td>${row.transferSector || ''}</td>
-                            <td>${row.resource || 0}</td><td>${row.b_ent || 0}</td><td>${row.b_mobile || 0}</td><td>${row.b_male || 0}</td>
-                            <td>${row.b_female || 0}</td><td>${row.diagnosis || 0}</td><td><b>${row.enteredBy || '-'}</b></td>
-                            <td>${deleteBtn}</td>
+                            <td>${row.zone || ''}</td><td>${row.poly || ''}</td><td>${row.techName || ''}</td>
+                            <td>${row.coordinator || ''}</td><td>${row.phone || ''}</td><td>${row.sector || ''}</td>
+                            <td>${row.valueChain || ''}</td><td>${row.techType || ''}</td><td>${row.year || ''}</td>
+                            <td>${row.transferQty || 0}</td><td>${row.transferSector || ''}</td><td>${row.resource || 0}</td>
+                            <td>${row.b_ent || 0}</td><td>${row.b_mobile || 0}</td><td>${row.b_male || 0}</td>
+                            <td>${row.b_female || 0}</td><td>${row.diagnosis || 0}</td>
+                            <td><b>${row.enteredBy || '-'}</b></td><td>${deleteBtn}</td>
                         </tr>`;
                 });
             } catch(e) {
@@ -482,7 +416,6 @@
         }
 
         async function createUser() {
-            // Only superadmin can create users
             if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ አካውንት መፍጠር ይችላል!');
             
             const role = document.getElementById('newUserRole').value;
@@ -505,7 +438,7 @@
                 const data = await res.json();
                 if(res.ok) {
                     const roleText = role === 'admin' ? 'አድሚን' : 'ሰራተኛ';
-                    showToast(`አዲስ ${roleText} '${username}' በተሳካ ሁኔታ ተፈጥሯል!`);
+                    showToast(`አዲስ ${roleText} '${username}' ተፈጥሯል!`);
                     document.getElementById('newUserName').value = '';
                     document.getElementById('newUserPassword').value = '';
                     loadUsersDropdown(userRole);
@@ -513,58 +446,4 @@
                     showToast(data.error || 'ተጠቃሚ መፍጠር አልተቻለም');
                 }
             } catch(e) {
-                showToast('ተጠቃሚ መፍጠር አልተቻለም!');
-            }
-        }
-
-        function loadAdminUsersList(users) {
-            const ul = document.getElementById('userListUI');
-            ul.innerHTML = '';
-            if(!Array.isArray(users)) return;
-
-            users.forEach(u => {
-                // Only superadmin can delete users
-                const delUserBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ? 
-                    `<button onclick="deleteUser('${u.username}')"><i class="fas fa-user-minus"></i></button>` : 
-                    (u.username === 'superadmin' ? '' : '');
-                ul.innerHTML += `<li><span>${u.username}</span> <span class="role-tag">${u.role}</span> ${delUserBtn}</li>`;
-            });
-        }
-
-        async function deleteUser(name) {
-            if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ ተጠቃሚ መሰረዝ ይችላል!');
-            if(name === 'superadmin') return showToast('የሱፐር አድሚን አካውንት መሰረዝ አይቻልም!');
-            if(!confirm(`ተጠቃሚ '${name}' እንዲጠፋ ትፈልጋለህ?`)) return;
-            
-            try {
-                const res = await fetch(`${API}/users/${name}`, { 
-                    method: 'DELETE', 
-                    headers: { 'Authorization': `Bearer ${token}` } 
-                });
-                
-                if(res.ok) { 
-                    showToast('ተጠቃሚው ተሰርዟል!'); 
-                    loadUsersDropdown(userRole);
-                } else { 
-                    const err = await res.json(); 
-                    showToast(err.error || 'ማጥፋት አልተቻለም'); 
-                }
-            } catch(e) {
-                showToast('ተጠቃሚውን ማጥፋት አልተቻለም!');
-            }
-        }
-
-        function handleLogout() {
-            localStorage.clear();
-            location.reload();
-        }
-
-        function showToast(msg) {
-            const t = document.getElementById('toast');
-            t.innerText = msg;
-            t.style.display = 'block';
-            setTimeout(() => t.style.display = 'none', 3500);
-        }
-    </script>
-</body>
-</html>
+                showToast('ተጠቃሚ መፍጠር አልተ
