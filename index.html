@@ -467,4 +467,178 @@
                     tbody.innerHTML += `
                         <tr>
                             <td>${row.zone || ''}</td><td>${row.poly || ''}</td><td>${row.techName || ''}</td>
-                            <td>${row.coordinator || ''}</td><td>${row.phone || ''}</td><
+                            <td>${row.coordinator || ''}</td><td>${row.phone || ''}</td><td>${row.sector || ''}</td>
+                            <td>${row.valueChain || ''}</td><td>${row.techType || ''}</td><td>${row.year || ''}</td>
+                            <td>${row.transferQty || 0}</td><td>${row.transferSector || ''}</td><td>${row.resource || 0}</td>
+                            <td>${row.b_ent || 0}</td><td>${row.b_mobile || 0}</td><td>${row.b_male || 0}</td>
+                            <td>${row.b_female || 0}</td><td>${row.diagnosis || 0}</td>
+                            <td><b>${row.enteredBy || '-'}</b></td><td>${deleteBtn}</td>
+                        </tr>`;
+                });
+            } catch(e) {
+                console.error("Load reports error:", e);
+            }
+        }
+
+        // ============================================================
+        // ሪፖርት መሰረዝ
+        // ============================================================
+        async function deleteReport(id) {
+            if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ መረጃ መሰረዝ ይችላል!');
+            if(!confirm('እርግጠኛ ነህ ይህንን መረጃ ማጥፋት ትፈልጋለህ?')) return;
+            
+            try {
+                const res = await fetch(`${API}/report/${id}`, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                
+                if(res.ok) { 
+                    showToast('መረጃው ተሰርዟል!'); 
+                    loadReports(); 
+                } else { 
+                    const err = await res.json(); 
+                    showToast(err.error || 'ማጥፋት አልተቻለም'); 
+                }
+            } catch(e) {
+                showToast('መረጃውን ማጥፋት አልተቻለም!');
+            }
+        }
+
+        // ============================================================
+        // አዲስ ተጠቃሚ መፍጠር
+        // ============================================================
+        async function createUser() {
+            if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ አካውንት መፍጠር ይችላል!');
+            
+            const role = document.getElementById('newUserRole').value;
+            const username = document.getElementById('newUserName').value.trim();
+            const password = document.getElementById('newUserPassword').value.trim();
+            
+            if(!username || !password) return showToast('እባክዎ ስምና ፓስዎርድ ያስገቡ!');
+            if(password.length < 6) return showToast('የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
+
+            try {
+                const res = await fetch(`${API}/users`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'Authorization': `Bearer ${token}` 
+                    },
+                    body: JSON.stringify({ username, password, role })
+                });
+
+                const data = await res.json();
+                if(res.ok) {
+                    const roleText = role === 'admin' ? 'አድሚን' : 'ሰራተኛ';
+                    showToast(`አዲስ ${roleText} '${username}' ተፈጥሯል!`);
+                    document.getElementById('newUserName').value = '';
+                    document.getElementById('newUserPassword').value = '';
+                    loadUsersDropdown(userRole);
+                } else {
+                    showToast(data.error || 'ተጠቃሚ መፍጠር አልተቻለም');
+                }
+            } catch(e) {
+                showToast('ተጠቃሚ መፍጠር አልተቻለም!');
+            }
+        }
+
+        // ============================================================
+        // የአድሚን ተጠቃሚዎች ዝርዝር መጫን
+        // ============================================================
+        function loadAdminUsersList(users) {
+            const ul = document.getElementById('userListUI');
+            ul.innerHTML = '';
+            if(!Array.isArray(users)) return;
+
+            users.forEach(u => {
+                const delUserBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ? 
+                    `<button onclick="deleteUser('${u.username}')"><i class="fas fa-user-minus"></i></button>` : 
+                    '';
+                ul.innerHTML += `<li><span>${u.username}</span> <span class="role-tag">${u.role}</span> ${delUserBtn}</li>`;
+            });
+        }
+
+        // ============================================================
+        // ተጠቃሚ መሰረዝ
+        // ============================================================
+        async function deleteUser(name) {
+            if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ ተጠቃሚ መሰረዝ ይችላል!');
+            if(name === 'superadmin') return showToast('የሱፐር አድሚን አካውንት መሰረዝ አይቻልም!');
+            if(!confirm(`ተጠቃሚ '${name}' እንዲጠፋ ትፈልጋለህ?`)) return;
+            
+            try {
+                const res = await fetch(`${API}/users/${name}`, { 
+                    method: 'DELETE', 
+                    headers: { 'Authorization': `Bearer ${token}` } 
+                });
+                
+                if(res.ok) { 
+                    showToast('ተጠቃሚው ተሰርዟል!'); 
+                    loadUsersDropdown(userRole);
+                } else { 
+                    const err = await res.json(); 
+                    showToast(err.error || 'ማጥፋት አልተቻለም'); 
+                }
+            } catch(e) {
+                showToast('ተጠቃሚውን ማጥፋት አልተቻለም!');
+            }
+        }
+
+        // ============================================================
+        // ሱፐር አድሚን ይለፍ ቃል መቀየር
+        // ============================================================
+        async function submitChangePassword() {
+            const currentPassword = document.getElementById('oldSuperPwd').value.trim();
+            const newPassword = document.getElementById('newSuperPwd').value.trim();
+
+            if(!currentPassword || !newPassword) return showToast('እባክዎ ሁለቱንም የይለፍ ቃላት ያስገቡ!');
+            if(newPassword.length < 6) return showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
+
+            try {
+                const res = await fetch(`${API}/superadmin/change-password`, {
+                    method: 'POST',
+                    headers: { 
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ currentPassword, newPassword })
+                });
+
+                const data = await res.json();
+                if(res.ok) {
+                    showToast('የሱፐር አድሚን ይለፍ ቃል ተቀይሯል!');
+                    document.getElementById('oldSuperPwd').value = '';
+                    document.getElementById('newSuperPwd').value = '';
+                } else {
+                    showToast(data.error || 'ስህተት ተከሰቷል!');
+                }
+            } catch(e) {
+                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+            }
+        }
+
+        // ============================================================
+        // መውጣት
+        // ============================================================
+        function handleLogout() {
+            localStorage.clear();
+            location.reload();
+        }
+
+        // ============================================================
+        // መልእክት ማሳየት
+        // ============================================================
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.innerText = msg;
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3500);
+        }
+
+        // ገጹ ሲጫን ተጨማሪ ማረጋገጫ
+        console.log('✅ Application loaded successfully');
+        console.log('📝 To login, use: superadmin / admin123');
+    </script>
+</body>
+</html>
