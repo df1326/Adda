@@ -70,18 +70,20 @@
         <div class="form-group">
             <label>ማንነት (Role)</label>
             <select id="loginRole" onchange="toggleLoginFields()">
-                <option value="user">ሪፖርት የሚሞላ ባለሙያ (User)</option>
-                <option value="admin">አስተዳዳሪ (Admin)</option>
                 <option value="superadmin">ዋና አስተዳዳሪ (Super Admin)</option>
+                <option value="admin">አስተዳዳሪ (Admin)</option>
+                <option value="user">ሪፖርት የሚሞላ ባለሙያ (User)</option>
             </select>
         </div>
         
-        <div class="form-group" id="usernameGroup">
+        <div class="form-group" id="usernameGroup" style="display:none;">
             <label id="usernameLabel">የሰራተኛ ስም</label>
-            <select id="loginUsername"><option value="">በመጀመሪያ ስም ይጫናሉ...</option></select>
+            <select id="loginUsername">
+                <option value="">በመጀመሪያ ስም ይጫናሉ...</option>
+            </select>
         </div>
 
-        <div class="form-group" id="superAdminUsernameGroup" style="display:none;">
+        <div class="form-group" id="superAdminUsernameGroup">
             <label>የዋና አድሚን ስም</label>
             <input type="text" id="loginSuperAdminName" value="superadmin" readonly>
         </div>
@@ -181,37 +183,71 @@
     <div class="toast" id="toast"></div>
 
     <script>
-        const API = '/api';
+        // ============================================================
+        // API URL - በአካባቢው መሰረት የሚለወጥ
+        // ============================================================
+        // ለNetlify (Render ሰርቨር ይጠቀማል)
+        const API = 'https://adda-1.onrender.com/api';
+        
+        // ለአካባቢዊ (Local) ሙከራ - አስተያየት ያስወግዱ
+        // const API = 'http://localhost:3000/api';
+
         let token = localStorage.getItem('token') || '';
-        let userRole = localStorage.getItem('userRole') || 'user';
+        let userRole = localStorage.getItem('userRole') || 'superadmin';
         let loggedInUsername = localStorage.getItem('username') || '';
 
+        console.log('🌐 API URL:', API);
+        console.log('🔑 Token exists:', !!token);
+        console.log('👤 User role:', userRole);
+
+        // ============================================================
+        // ገጹ ሲጫን የሚሰራ
+        // ============================================================
         window.onload = function() {
+            console.log('📱 Page loaded');
             toggleLoginFields();
-            if (token) { showDashboard(); }
+            if (token) { 
+                console.log('🔑 Token found, showing dashboard');
+                showDashboard(); 
+            }
             initializeSuperAdmin();
         };
 
+        // ============================================================
+        // ሱፐር አድሚን ማስጀመሪያ
+        // ============================================================
         async function initializeSuperAdmin() {
             try {
-                await fetch(`${API}/init-superadmin`, {
+                console.log('🔄 Initializing superadmin...');
+                const res = await fetch(`${API}/init-superadmin`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
+                const data = await res.json();
+                console.log('✅ Superadmin init:', data.message);
             } catch(e) {
-                console.log('Superadmin initialization check failed');
+                console.log('⚠️ Superadmin initialization check failed:', e);
             }
         }
 
+        // ============================================================
+        // የመግቢያ መስኮችን መቀየር
+        // ============================================================
         function toggleLoginFields() {
             const role = document.getElementById('loginRole').value;
             const usernameGroup = document.getElementById('usernameGroup');
             const superAdminGroup = document.getElementById('superAdminUsernameGroup');
             const usernameLabel = document.getElementById('usernameLabel');
 
+            console.log('🔄 Role changed to:', role);
+
             if (role === 'superadmin') {
                 usernameGroup.style.display = 'none';
                 superAdminGroup.style.display = 'block';
+                // ለሱፐር አድሚን ነባሪ ስም ያስቀምጡ
+                document.getElementById('loginUsername').value = 'superadmin';
+                // የይለፍ ቃል መስክ ላይ አትኩሮት
+                document.getElementById('loginPassword').focus();
             } else {
                 usernameGroup.style.display = 'block';
                 superAdminGroup.style.display = 'none';
@@ -220,21 +256,48 @@
             }
         }
 
+        // ============================================================
+        // ተጠቃሚዎችን መጫን
+        // ============================================================
         async function loadUsersDropdown(role) {
             if (role === 'superadmin') return;
 
             try {
+                console.log('📋 Loading users for role:', role);
+                console.log('🌐 Fetching from:', `${API}/users?role=${role}`);
+                
                 const res = await fetch(`${API}/users?role=${role}`);
-                if (!res.ok) throw new Error('ለተጠቃሚዎች ጥሪ አልተሳካም');
+                console.log('📊 Response status:', res.status);
+                
+                if (!res.ok) {
+                    const errorText = await res.text();
+                    console.error('❌ Error response:', errorText);
+                    throw new Error('ለተጠቃሚዎች ጥሪ አልተሳካም');
+                }
+                
                 const users = await res.json();
+                console.log('✅ Users loaded:', users);
+                
                 const select = document.getElementById('loginUsername');
                 
-                select.innerHTML = role === 'admin' ? '<option value="">አድሚን ይምረጡ...</option>' : '<option value="">ሰራተኛ ይምረጡ...</option>';
+                if (role === 'admin') {
+                    select.innerHTML = '<option value="">አድሚን ይምረጡ...</option>';
+                } else {
+                    select.innerHTML = '<option value="">ሰራተኛ ይምረጡ...</option>';
+                }
                 
-                users.forEach(u => {
-                    select.innerHTML += `<option value="${u.username}">${u.username}</option>`;
-                });
+                if (users && users.length > 0) {
+                    users.forEach(u => {
+                        select.innerHTML += `<option value="${u.username}">${u.username}</option>`;
+                    });
+                    console.log('✅ Added users to dropdown:', users.length);
+                } else {
+                    console.warn('⚠️ No users found for role:', role);
+                    // ተጠቃሚዎች ከሌሉ ነባሪ አማራጭ ያክሉ
+                    select.innerHTML += `<option value="superadmin">superadmin</option>`;
+                }
 
+                // ለአድሚን ሳይድባር ተጠቃሚዎችን መጫን
                 if(token && (userRole === 'superadmin' || userRole === 'admin')) {
                     const allRes = await fetch(`${API}/users`, { 
                         headers: { 'Authorization': `Bearer ${token}` } 
@@ -245,25 +308,39 @@
                     }
                 }
             } catch(e) {
-                console.error("Users load error:", e);
+                console.error("❌ Users load error:", e);
+                // ስህተት ካለ ነባሪ አማራጭ ያክሉ
+                const select = document.getElementById('loginUsername');
+                select.innerHTML = '<option value="superadmin">superadmin</option>';
+                showToast('ተጠቃሚዎችን መጫን አልተቻለም! ነባሪ አካውንት ይጠቀሙ');
             }
         }
 
+        // ============================================================
+        // መግቢያን ማስተናገድ
+        // ============================================================
         async function handleLogin() {
             const role = document.getElementById('loginRole').value;
             let username = (role === 'superadmin') ? 'superadmin' : document.getElementById('loginUsername').value;
             const password = document.getElementById('loginPassword').value.trim();
 
+            console.log('🔑 Login attempt:', { username, role });
+
             if(!username || !password) return showToast('እባክዎ መረጃዎችን በትክክል ያስገቡ!');
 
             try {
+                console.log('🌐 Sending login to:', `${API}/login`);
+                
                 const res = await fetch(`${API}/login`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password, role })
                 });
 
+                console.log('📊 Login response status:', res.status);
                 const data = await res.json();
+                console.log('📊 Login response:', data);
+
                 if(res.ok) {
                     token = data.token;
                     userRole = data.role;
@@ -277,10 +354,14 @@
                     showToast(data.error || 'የመግቢያ መረጃው የተሳሳተ ነው!');
                 }
             } catch(e) {
+                console.error('❌ Login error:', e);
                 showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
             }
         }
 
+        // ============================================================
+        // ዳሽቦርድ ማሳየት
+        // ============================================================
         function showDashboard() {
             document.getElementById('loginCard').style.display = 'none';
             document.getElementById('dashboard').style.display = 'block';
@@ -306,6 +387,9 @@
             loadReports();
         }
 
+        // ============================================================
+        // ሪፖርት ማስቀመጥ
+        // ============================================================
         async function saveReport(event) {
             event.preventDefault();
             const btn = document.getElementById('saveBtn');
@@ -358,6 +442,9 @@
             }
         }
 
+        // ============================================================
+        // ሪፖርቶችን መጫን
+        // ============================================================
         async function loadReports() {
             try {
                 const res = await fetch(`${API}/report`, { 
@@ -380,70 +467,4 @@
                     tbody.innerHTML += `
                         <tr>
                             <td>${row.zone || ''}</td><td>${row.poly || ''}</td><td>${row.techName || ''}</td>
-                            <td>${row.coordinator || ''}</td><td>${row.phone || ''}</td><td>${row.sector || ''}</td>
-                            <td>${row.valueChain || ''}</td><td>${row.techType || ''}</td><td>${row.year || ''}</td>
-                            <td>${row.transferQty || 0}</td><td>${row.transferSector || ''}</td><td>${row.resource || 0}</td>
-                            <td>${row.b_ent || 0}</td><td>${row.b_mobile || 0}</td><td>${row.b_male || 0}</td>
-                            <td>${row.b_female || 0}</td><td>${row.diagnosis || 0}</td>
-                            <td><b>${row.enteredBy || '-'}</b></td><td>${deleteBtn}</td>
-                        </tr>`;
-                });
-            } catch(e) {
-                console.error("Load reports error:", e);
-            }
-        }
-
-        async function deleteReport(id) {
-            if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ መረጃ መሰረዝ ይችላል!');
-            if(!confirm('እርግጠኛ ነህ ይህንን መረጃ ማጥፋት ትፈልጋለህ?')) return;
-            
-            try {
-                const res = await fetch(`${API}/report/${id}`, { 
-                    method: 'DELETE', 
-                    headers: { 'Authorization': `Bearer ${token}` } 
-                });
-                
-                if(res.ok) { 
-                    showToast('መረጃው ተሰርዟል!'); 
-                    loadReports(); 
-                } else { 
-                    const err = await res.json(); 
-                    showToast(err.error || 'ማጥፋት አልተቻለም'); 
-                }
-            } catch(e) {
-                showToast('መረጃውን ማጥፋት አልተቻለም!');
-            }
-        }
-
-        async function createUser() {
-            if(userRole !== 'superadmin') return showToast('ሱፐር አድሚን ብቻ አካውንት መፍጠር ይችላል!');
-            
-            const role = document.getElementById('newUserRole').value;
-            const username = document.getElementById('newUserName').value.trim();
-            const password = document.getElementById('newUserPassword').value.trim();
-            
-            if(!username || !password) return showToast('እባክዎ ስምና ፓስዎርድ ያስገቡ!');
-            if(password.length < 6) return showToast('የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
-
-            try {
-                const res = await fetch(`${API}/users`, {
-                    method: 'POST',
-                    headers: { 
-                        'Content-Type': 'application/json', 
-                        'Authorization': `Bearer ${token}` 
-                    },
-                    body: JSON.stringify({ username, password, role })
-                });
-
-                const data = await res.json();
-                if(res.ok) {
-                    const roleText = role === 'admin' ? 'አድሚን' : 'ሰራተኛ';
-                    showToast(`አዲስ ${roleText} '${username}' ተፈጥሯል!`);
-                    document.getElementById('newUserName').value = '';
-                    document.getElementById('newUserPassword').value = '';
-                    loadUsersDropdown(userRole);
-                } else {
-                    showToast(data.error || 'ተጠቃሚ መፍጠር አልተቻለም');
-                }
-            } catch(e) {
-                showToast('ተጠቃሚ መፍጠር አልተ
+                            <td>${row.coordinator || ''}</td><td>${row.phone || ''}</td><
