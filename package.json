@@ -1,25 +1,14 @@
 {
-  "name": "adda-system",
+  "name": "tech-transfer-system",
   "version": "1.0.0",
-  "description": "Technology Transfer and Reporting System",
+  "description": "Technology Transfer Data Collection System",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2",
     "cors": "^2.8.5",
-    "bcryptjs": "^2.4.3",
-    "jsonwebtoken": "^9.0.0",
-    "mongoose": "^8.0.0"
-  },
-  "engines": {
-    "node": ">=16.0.0"
-  },
-  "browserslist": [
-    "> 0.5%",
-    "last 2 versions",
-    "Firefox ESR",
-    "not dead"
-  ]
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2"
+  }
 }
