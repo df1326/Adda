@@ -237,18 +237,12 @@
         (function() {
             'use strict';
 
-            // ============================================
-            // API URL - በአካባቢው መሰረት የሚለወጥ
-            // ============================================
             var API = 'https://adda-1.onrender.com/api';
             
             var token = localStorage.getItem('token') || '';
             var userRole = localStorage.getItem('userRole') || 'superadmin';
             var loggedInUsername = localStorage.getItem('username') || '';
 
-            // ============================================
-            // የአሳሽ ተኳሃኝነት ማረጋገጫ
-            // ============================================
             function isBrowserSupported() {
                 return typeof Promise !== 'undefined' && 
                        typeof fetch !== 'undefined' && 
@@ -262,9 +256,6 @@
                 throw new Error('Browser not supported');
             }
 
-            // ============================================
-            // ገጹ ሲጫን የሚሰራ
-            // ============================================
             window.addEventListener('DOMContentLoaded', function() {
                 console.log('📱 Page loaded');
                 toggleLoginFields();
@@ -274,9 +265,6 @@
                 initializeSuperAdmin();
             });
 
-            // ============================================
-            // ሱፐር አድሚን ማስጀመሪያ
-            // ============================================
             function initializeSuperAdmin() {
                 fetch(API + '/init-superadmin', {
                     method: 'POST',
@@ -286,9 +274,6 @@
                 });
             }
 
-            // ============================================
-            // የመግቢያ መስኮችን መቀየር
-            // ============================================
             window.toggleLoginFields = function() {
                 var role = document.getElementById('loginRole').value;
                 var usernameGroup = document.getElementById('usernameGroup');
@@ -307,9 +292,6 @@
                 }
             };
 
-            // ============================================
-            // ተጠቃሚዎችን መጫን
-            // ============================================
             function loadUsersDropdown(role) {
                 if (role === 'superadmin') return;
 
@@ -356,9 +338,6 @@
                     });
             }
 
-            // ============================================
-            // መግቢያን ማስተናገድ
-            // ============================================
             window.handleLogin = function() {
                 var role = document.getElementById('loginRole').value;
                 var username = (role === 'superadmin') ? 'superadmin' : document.getElementById('loginUsername').value;
@@ -404,9 +383,6 @@
                 });
             };
 
-            // ============================================
-            // ዳሽቦርድ ማሳየት
-            // ============================================
             function showDashboard() {
                 document.getElementById('loginCard').style.display = 'none';
                 document.getElementById('dashboard').style.display = 'block';
@@ -432,9 +408,6 @@
                 loadReports();
             }
 
-            // ============================================
-            // ሪፖርት ማስቀመጥ
-            // ============================================
             window.saveReport = function(event) {
                 event.preventDefault();
                 var btn = document.getElementById('saveBtn');
@@ -488,9 +461,6 @@
                 });
             };
 
-            // ============================================
-            // ሪፖርቶችን መጫን
-            // ============================================
             function loadReports() {
                 fetch(API + '/report', {
                     headers: { 'Authorization': 'Bearer ' + token }
@@ -528,62 +498,60 @@
                             '<td>' + (row.b_male || 0) + '</td>' +
                             '<td>' + (row.b_female || 0) + '</td>' +
                             '<td>' + (row.diagnosis || 0) + '</td>' +
-                            '<td><b>' + (row.enteredBy || '-') + '</b></td>' +
+                            '<td>' + (row.createdBy || row.username || '-') + '</td>' +
                             '<td>' + deleteBtn + '</td>' +
                         '</tr>';
                     });
                 })
-                .catch(function(e) {
-                    console.error('Load reports error:', e);
+                .catch(function(err) {
+                    console.error('❌ Failed to load reports:', err);
                 });
             }
 
-            // ============================================
-            // ሪፖርት መሰረዝ
-            // ============================================
-            window.deleteReport = function(id) {
-                if (userRole !== 'superadmin') {
-                    showToast('ሱፐር አድሚን ብቻ መረጃ መሰረዝ ይችላል!');
+            function loadAdminUsersList(users) {
+                var ul = document.getElementById('userListUI');
+                ul.innerHTML = '';
+                
+                if (!users || users.length === 0) {
+                    ul.innerHTML = '<li>ምንም ተጠቃሚ የለም</li>';
                     return;
                 }
-                if (!confirm('እርግጠኛ ነህ ይህንን መረጃ ማጥፋት ትፈልጋለህ?')) return;
-                
+
+                users.forEach(function(u) {
+                    var deleteUserBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ?
+                        '<button onclick="deleteUser(\'' + u.username + '\')"><i class="fas fa-trash"></i></button>' : '';
+                    
+                    ul.innerHTML += '<li>' +
+                        '<span>' + u.username + ' <span class="role-tag">' + u.role + '</span></span>' +
+                        deleteUserBtn +
+                    '</li>';
+                });
+            }
+
+            window.deleteReport = function(id) {
+                if (!confirm('ይህንን ሪፖርት በእርግጠኝነት ማጥፋት ይፈልጋሉ?')) return;
+
                 fetch(API + '/report/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) {
-                    if (res.ok) {
-                        showToast('መረጃው ተሰርዟል!');
-                        loadReports();
-                    } else {
-                        return res.json().then(function(d) { throw new Error(d.error || 'ማጥፋት አልተቻለም'); });
-                    }
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    showToast(data.message || 'ሪፖርቱ ተሰርዟል');
+                    loadReports();
                 })
-                .catch(function(e) {
-                    showToast(e.message || 'መረጃውን ማጥፋት አልተቻለም!');
+                .catch(function() {
+                    showToast('ሪፖርቱን ማጥፋት አልተቻለም');
                 });
             };
 
-            // ============================================
-            // አዲስ ተጠቃሚ መፍጠር
-            // ============================================
             window.createUser = function() {
-                if (userRole !== 'superadmin') {
-                    showToast('ሱፐር አድሚን ብቻ አካውንት መፍጠር ይችላል!');
-                    return;
-                }
-                
                 var role = document.getElementById('newUserRole').value;
                 var username = document.getElementById('newUserName').value.trim();
                 var password = document.getElementById('newUserPassword').value.trim();
-                
+
                 if (!username || !password) {
-                    showToast('እባክዎ ስምና ፓስዎርድ ያስገቡ!');
-                    return;
-                }
-                if (password.length < 6) {
-                    showToast('የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
+                    showToast('እባክዎ የተጠቃሚ ስምና የይለፍ ቃል ያስገቡ!');
                     return;
                 }
 
@@ -596,131 +564,90 @@
                     body: JSON.stringify({ username: username, password: password, role: role })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        var roleText = role === 'admin' ? 'አድሚን' : 'ሰራተኛ';
-                        showToast('አዲስ ' + roleText + ' "' + username + '" ተፈጥሯል!');
+                .then(function(res) {
+                    if (res.ok) {
+                        showToast('አካውንቱ በተሳካ ሁኔታ ተፈጥሯል!');
                         document.getElementById('newUserName').value = '';
                         document.getElementById('newUserPassword').value = '';
                         loadUsersDropdown(userRole);
                     } else {
-                        showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም');
+                        showToast(res.data.error || 'አካውንት መፍጠር አልተቻለም');
                     }
                 })
                 .catch(function() {
-                    showToast('ተጠቃሚ መፍጠር አልተቻለም!');
+                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም');
                 });
             };
 
-            // ============================================
-            // የአድሚን ተጠቃሚዎች ዝርዝር መጫን
-            // ============================================
-            function loadAdminUsersList(users) {
-                var ul = document.getElementById('userListUI');
-                ul.innerHTML = '';
-                if (!users) return;
+            window.deleteUser = function(username) {
+                if (!confirm(username + ' የሚለውን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
 
-                users.forEach(function(u) {
-                    var delUserBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ? 
-                        '<button onclick="deleteUser(\'' + u.username + '\')"><i class="fas fa-user-minus" aria-hidden="true"></i></button>' : 
-                        '';
-                    ul.innerHTML += '<li><span>' + u.username + '</span> <span class="role-tag">' + u.role + '</span> ' + delUserBtn + '</li>';
-                });
-            }
-
-            // ============================================
-            // ተጠቃሚ መሰረዝ
-            // ============================================
-            window.deleteUser = function(name) {
-                if (userRole !== 'superadmin') {
-                    showToast('ሱፐር አድሚን ብቻ ተጠቃሚ መሰረዝ ይችላል!');
-                    return;
-                }
-                if (name === 'superadmin') {
-                    showToast('የሱፐር አድሚን አካውንት መሰረዝ አይቻልም!');
-                    return;
-                }
-                if (!confirm('ተጠቃሚ "' + name + '" እንዲጠፋ ትፈልጋለህ?')) return;
-                
-                fetch(API + '/users/' + name, {
+                fetch(API + '/users/' + username, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) {
-                    if (res.ok) {
-                        showToast('ተጠቃሚው ተሰርዟል!');
-                        loadUsersDropdown(userRole);
-                    } else {
-                        return res.json().then(function(d) { throw new Error(d.error || 'ማጥፋት አልተቻለም'); });
-                    }
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    showToast(data.message || 'ተጠቃሚው ተሰርዟል');
+                    loadUsersDropdown(userRole);
                 })
-                .catch(function(e) {
-                    showToast(e.message || 'ተጠቃሚውን ማጥፋት አልተቻለም!');
+                .catch(function() {
+                    showToast('ተጠቃሚውን ማጥፋት አልተቻለም');
                 });
             };
 
-            // ============================================
-            // ሱፐር አድሚን ይለፍ ቃል መቀየር
-            // ============================================
             window.submitChangePassword = function() {
-                var currentPassword = document.getElementById('oldSuperPwd').value.trim();
+                var oldPassword = document.getElementById('oldSuperPwd').value.trim();
                 var newPassword = document.getElementById('newSuperPwd').value.trim();
 
-                if (!currentPassword || !newPassword) {
+                if (!oldPassword || !newPassword) {
                     showToast('እባክዎ ሁለቱንም የይለፍ ቃላት ያስገቡ!');
                     return;
                 }
-                if (newPassword.length < 6) {
-                    showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊዎች መሆን አለበት!');
-                    return;
-                }
 
-                fetch(API + '/superadmin/change-password', {
+                fetch(API + '/change-superadmin-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    body: JSON.stringify({ currentPassword: currentPassword, newPassword: newPassword })
+                    body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('የሱፐር አድሚን ይለፍ ቃል ተቀይሯል!');
+                .then(function(res) {
+                    if (res.ok) {
+                        showToast('የይለፍ ቃሉ በተሳካ ሁኔታ ተቀይሯል!');
                         document.getElementById('oldSuperPwd').value = '';
                         document.getElementById('newSuperPwd').value = '';
                     } else {
-                        showToast(result.data.error || 'ስህተት ተከሰቷል!');
+                        showToast(res.data.error || 'የይለፍ ቃል መቀየር አልተቻለም');
                     }
                 })
                 .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም');
                 });
             };
 
-            // ============================================
-            // መውጣት
-            // ============================================
             window.handleLogout = function() {
-                localStorage.clear();
-                location.reload();
+                localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('username');
+                token = '';
+                userRole = 'superadmin';
+                loggedInUsername = '';
+                document.getElementById('dashboard').style.display = 'none';
+                document.getElementById('loginCard').style.display = 'block';
+                showToast('ወጥተዋል!');
             };
 
-            // ============================================
-            // መልእክት ማሳየት
-            // ============================================
             function showToast(msg) {
-                var t = document.getElementById('toast');
-                t.textContent = msg;
-                t.style.display = 'block';
+                var toast = document.getElementById('toast');
+                toast.textContent = msg;
+                toast.style.display = 'block';
                 setTimeout(function() {
-                    t.style.display = 'none';
-                }, 3500);
+                    toast.style.display = 'none';
+                }, 3000);
             }
-
-            console.log('✅ Application loaded successfully');
-            console.log('📝 To login, use: superadmin / admin123');
-
         })();
     </script>
 </body>
