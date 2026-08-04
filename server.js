@@ -1,12 +1,10 @@
 const express = require('express');
-const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken');
 const cors = require('cors');
-const path = require('path');
-const mongoose = require('mongoose');
 
 const app = express();
+const PORT = process.env.PORT || 10000;
 
+// CORS ፈቃድ ለሁሉም Origins እና Headers መስጠት
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -15,265 +13,104 @@ app.use(cors({
 
 app.use(express.json());
 
-const publicPath = path.join(__dirname, 'public');
-app.use(express.static(publicPath));
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your_strong_jwt_secret_key_change_this';
-
-// ============================================================
-// MongoDB Connection
-// ============================================================
-const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://addisutsigie16_db_user:0q7UA21Lq8s0bdXZ@cluster0.dzl7lt9.mongodb.net/adda-system?retryWrites=true&w=majority&appName=Cluster0";
-
-mongoose.connect(MONGO_URI)
-  .then(() => {
-    console.log("✅ MongoDB connected successfully!");
-    initDefaultUsers(); // በምስሉ ላይ ያሉትን ተጠቃሚዎች በራስ-ሰር መፍጠር
-  })
-  .catch(err => console.error("❌ MongoDB connection error:", err));
-
-// ============================================================
-// Database Schemas
-// ============================================================
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  passwordHash: { type: String, required: true },
-  role: { type: String, required: true, enum: ['superadmin', 'admin', 'user'] }
-}, { timestamps: true });
-
-const reportSchema = new mongoose.Schema({
-  enteredBy: { type: String, required: true }, // የመዘገበው ተጠቃሚ username
-  data: { type: mongoose.Schema.Types.Mixed }
-}, { timestamps: true, strict: false });
-
-const User = mongoose.model('User', userSchema);
-const Report = mongoose.model('Report', reportSchema);
-
-// ============================================================
-// በምስሉ ላይ ያሉትን ተጠቃሚዎች በራስ-ሰር (Auto Seed) ማድረግ
-// ============================================================
-const defaultLocations = [
-  "ባህር ዳር ከተማ", "ጎንደር ከተማ", "ደብረ ታቦር ከተማ", "ወልድያ ከተማ", "ደሴ ከተማ",
-  "ኮምቦልቻ ከተማ", "ደብረ ብርሃን ከተማ", "ደብረ ማርቆስ ከተማ", "ማዕከላዊ ጎንደር ዞን",
-  "ምዕራብ ጎንደር ዞን", "ሰሜን ጎንደር ዞን", "ወልቃይት ጠገዴ ሰቲት ሁመራ ዞን",
-  "ደቡብ ጎንደር ዞን", "ሰሜን ወሎ ዞን", "ደቡብ ወሎ ዞን", "ሰሜን ሸዋ ዞን",
-  "ምስራቅ ጎጃም ዞን", "ምዕራብ ጎጃም ዞን", "ሰሜን ጎጃም", "አዊ ብ/ሰ ዞን",
-  "ዋግኸምራ ብ/ሰ ዞን", "ኦሮሞ ብ/ሰ ዞን"
+// በሜሞሪ ውስጥ የሚቀመጡ ጊዜያዊ ዳታዎች (ለሙከራ)
+let users = [
+    { username: 'superadmin', role: 'superadmin' },
+    { username: 'አበበ', role: 'admin' },
+    { username: 'ከበደ', role: 'user' },
+    { username: 'አልማዝ', role: 'user' }
 ];
 
-async function initDefaultUsers() {
-  try {
-    // 1. Super Admin መኖሩን ማረጋገጥ
-    const superAdminExists = await User.findOne({ username: 'superadmin' });
-    if (!superAdminExists) {
-      const defaultPassword = await bcrypt.hash('admin123', 10);
-      await User.create({ username: 'superadmin', passwordHash: defaultPassword, role: 'superadmin' });
-      console.log('✅ Superadmin initialized');
-    }
+let reports = [];
 
-    // 2. ዞኖችን እና ከተሞችን በራስ-ሰር መፍጠር (የመጀመሪያ ጊዜ የይለፍ ቃል: 123456)
-    const defaultPasswordHash = await bcrypt.hash('123456', 10);
-    for (const loc of defaultLocations) {
-      const exists = await User.findOne({ username: loc });
-      if (!exists) {
-        await User.create({ username: loc, passwordHash: defaultPasswordHash, role: 'user' });
-      }
-    }
-    console.log('✅ Default Zones and Cities users loaded into Database');
-  } catch (error) {
-    console.error('❌ Auto-seed error:', error);
-  }
-}
-
-// Middleware: Token ማረጋገጫ
-function authenticateToken(req, res, next) {
-  const authHeader = req.headers['authorization'];
-  const token = authHeader && authHeader.split(' ')[1];
-  if (!token) return res.status(401).json({ error: 'ቶከን አልተገኘም!' });
-
-  jwt.verify(token, JWT_SECRET, (err, user) => {
-    if (err) return res.status(403).json({ error: 'ቶከኑ ትክክለኛ አይደለም!' });
-    req.user = user;
-    next();
-  });
-}
-
-// ============================================================
-// 1. Login API
-// ============================================================
-app.post('/api/login', async (req, res) => {
-  try {
-    const { username, password } = req.body;
-    const user = await User.findOne({ username });
-    
-    if (!user) return res.status(401).json({ error: 'የተጠቃሚ ስም አልተገኘም!' });
-
-    const isValid = await bcrypt.compare(password, user.passwordHash);
-    if (!isValid) return res.status(401).json({ error: 'የተሳሳተ የይለፍ ቃል!' });
-
-    const token = jwt.sign(
-      { username: user.username, role: user.role }, 
-      JWT_SECRET, 
-      { expiresIn: '12h' }
-    );
-    res.json({ token, role: user.role, username: user.username });
-  } catch (error) {
-    res.status(500).json({ error: 'ስህተት ተከሰተ!' });
-  }
+// 1. የሰርቨር ጤንነት ማረጋገጫ (Health Check)
+app.get('/', (req, res) => {
+    res.json({ status: 'ok', message: 'Technology Transfer API is running smoothly' });
 });
 
-// ============================================================
-// 2. ተጠቃሚዎችን ማውጣት (ለ Super Admin እና Admin)
-// ============================================================
-app.get('/api/users', authenticateToken, async (req, res) => {
-  try {
-    if (req.user.role === 'user') {
-      return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+// 2. Superadmin የመጀመሪያ ስራ (Initialize Superadmin)
+app.post('/api/init-superadmin', (req, res) => {
+    const hasSuperAdmin = users.some(u => u.role === 'superadmin');
+    if (!hasSuperAdmin) {
+        users.push({ username: 'superadmin', role: 'superadmin' });
     }
-    const users = await User.find().select('username role createdAt -_id');
-    res.json(users);
-  } catch (error) {
-    res.status(500).json({ error: 'ተጠቃሚዎችን ማውጣት አልተቻለም!' });
-  }
+    res.json({ message: 'Superadmin initialized successfully' });
 });
 
-// ============================================================
-// 3. አዲስ ተጠቃሚ/አድሚን መፍጠር (Super Admin ብቻ)
-// ============================================================
-app.post('/api/users', authenticateToken, async (req, res) => {
-  try {
-    if (req.user.role !== 'superadmin') {
-      return res.status(403).json({ error: 'Super Admin ብቻ አዲስ አካውንት መፍጠር ይችላል!' });
-    }
-
+// 3. የተጠቃሚዎች መግቢያ API (Login Endpoint)
+app.post('/api/login', (req, res) => {
     const { username, password, role } = req.body;
-    if (!username || !password || !role) {
-      return res.status(400).json({ error: 'እባክዎ ሙሉ መረጃ ያስገቡ!' });
-    }
-
-    const existingUser = await User.findOne({ username });
-    if (existingUser) return res.status(400).json({ error: 'ይህ ስም አስቀድሞ ተይዟል!' });
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    await User.create({ username, passwordHash: hashedPassword, role });
     
-    res.json({ message: `አዲስ አካውንት '${username}' ተፈጥሯል!` });
-  } catch (error) {
-    res.status(500).json({ error: 'ተጠቃሚ መፍጠር አልተቻለም!' });
-  }
-});
-
-// ============================================================
-// 4. ተጠቃሚ መሰረዝ (Super Admin ብቻ)
-// ============================================================
-app.delete('/api/users/:username', authenticateToken, async (req, res) => {
-  try {
-    if (req.user.role !== 'superadmin') {
-      return res.status(403).json({ error: 'Super Admin ብቻ ተጠቃሚ መሰረዝ ይችላል!' });
+    if (!username || !password) {
+        return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!' });
     }
 
-    const { username } = req.params;
-    if (username === 'superadmin') return res.status(400).json({ error: 'Super Admin መሰረዝ አይቻልም!' });
-
-    await User.deleteOne({ username });
-    res.json({ message: `ተጠቃሚ '${username}' ተሰርዟል!` });
-  } catch (error) {
-    res.status(500).json({ error: 'ተጠቃሚ መሰረዝ አልተቻለም!' });
-  }
-});
-
-// ============================================================
-// 5. ሪፖርት/መረጃዎችን ማውጣት (Strict Access Control)
-// ============================================================
-app.get('/api/report', authenticateToken, async (req, res) => {
-  try {
-    // ሱፐር አድሚን እና አድሚን የሁሉንም ያያሉ፤ ተጠቃሚ (User) ግን የራሱን ብቻ ያያል
-    let query = {};
-    if (req.user.role === 'user') {
-      query.enteredBy = req.user.username;
+    // ለጊዜው ለማረጋገጥ ቀላል ፓስወርድ
+    if (password.length < 4) {
+        return res.status(401).json({ error: 'የይለፍ ቃሉ የተሳሳተ ነው!' });
     }
 
-    const reports = await Report.find(query);
-    res.json(reports);
-  } catch (error) {
-    res.status(500).json({ error: 'መረጃ ማውጣት አልተቻለም!' });
-  }
-});
-
-// ============================================================
-// 6. አዲስ መረጃ ማስገባት
-// ============================================================
-app.post('/api/report', authenticateToken, async (req, res) => {
-  try {
-    const newReport = new Report({
-      enteredBy: req.user.username,
-      data: req.body
+    // Dummy JWT Token
+    const token = 'mock-jwt-token-' + Date.now();
+    res.json({
+        message: 'በተሳካ ሁኔታ ገብተዋል',
+        token: token,
+        role: role || 'user',
+        username: username
     });
+});
+
+// 4. የተጠቃሚዎችን ዝርዝር ማምጫ API (Get Users Endpoint)
+app.get('/api/users', (req, res) => {
+    const role = req.query.role;
     
-    await newReport.save();
-    res.json({ message: 'መረጃው በስኬት ተመዝግቧል!' });
-  } catch (error) {
-    res.status(500).json({ error: 'መረጃ ማስገባት አልተቻለም!' });
-  }
-});
-
-// ============================================================
-// 7. የተመዘገበ መረጃን ኤዲት ማድረግ (Edit Own Data)
-// ============================================================
-app.put('/api/report/:id', authenticateToken, async (req, res) => {
-  try {
-    const report = await Report.findById(req.params.id);
-    if (!report) return res.status(404).json({ error: 'መረጃው አልተገኘም!' });
-
-    // ተጠቃሚ ከሆነ የራሱን መረጃ ብቻ ነው ኤዲት ማድረግ የሚችለው
-    if (req.user.role === 'user' && report.enteredBy !== req.user.username) {
-      return res.status(403).json({ error: 'የሌላ አካልን መረጃ ኤዲት ማድረግ አይችሉም!' });
+    if (role && role !== 'superadmin') {
+        const filteredUsers = users.filter(u => u.role === role);
+        return res.json(filteredUsers);
     }
-
-    report.data = req.body;
-    await report.save();
-    res.json({ message: 'መረጃው በስኬት ተስተካክሏል!' });
-  } catch (error) {
-    res.status(500).json({ error: 'ማስተካከል አልተቻለም!' });
-  }
+    
+    res.json(users);
 });
 
-// ============================================================
-// 8. ሪፖርት መሰረዝ
-// ============================================================
-app.delete('/api/report/:id', authenticateToken, async (req, res) => {
-  try {
-    if (req.user.role !== 'superadmin') {
-      return res.status(403).json({ error: 'Super Admin ብቻ መረጃ መሰረዝ ይችላል!' });
+// 5. አዲስ ተጠቃሚ መፍጠሪያ API (Create User)
+app.post('/api/users', (req, res) => {
+    const { username, role } = req.body;
+    if (!username) {
+        return res.status(400).json({ error: 'የተጠቃሚ ስም አስፈላጊ ነው!' });
     }
-
-    await Report.findByIdAndDelete(req.params.id);
-    res.json({ message: 'መረጃው ተሰርዟል!' });
-  } catch (error) {
-    res.status(500).json({ error: 'መሰረዝ አልተቻለም!' });
-  }
+    
+    const newUser = { username, role: role || 'user' };
+    users.push(newUser);
+    res.status(201).json({ message: 'ተጠቃሚው ተፈጥሯል', user: newUser });
 });
 
-// ============================================================
-// 9. የይለፍ ቃል መቀየር
-// ============================================================
-app.post('/api/change-password', authenticateToken, async (req, res) => {
-  try {
-    const { newPassword } = req.body;
-    if (!newPassword || newPassword.length < 6) {
-      return res.status(400).json({ error: 'የይለፍ ቃል ቢያንስ 6 ቁምፊ መሆን አለበት!' });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    await User.updateOne({ username: req.user.username }, { passwordHash: hashedPassword });
-
-    res.json({ message: 'የይለፍ ቃል ተቀይሯል!' });
-  } catch (error) {
-    res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
-  }
+// 6. ተጠቃሚ ማጥፊያ API (Delete User)
+app.delete('/api/users/:username', (req, res) => {
+    const { username } = req.params;
+    users = users.filter(u => u.username !== username);
+    res.json({ message: 'ተጠቃሚው ተሰርዟል' });
 });
 
-const PORT = process.env.PORT || 3000;
+// 7. የሪፖርት መዝገብ API (Reports Endpoints)
+app.get('/api/report', (req, res) => {
+    res.json(reports);
+});
+
+app.post('/api/report', (req, res) => {
+    const reportData = req.body;
+    reportData.id = Date.now();
+    reportData.createdAt = new Date().toISOString();
+    reports.push(reportData);
+    res.status(201).json({ message: 'ሪፖርቱ ተመዝግቧል', report: reportData });
+});
+
+app.delete('/api/report/:id', (req, res) => {
+    const id = parseInt(req.params.id);
+    reports = reports.filter(r => r.id !== id);
+    res.json({ message: 'ሪፖርቱ ተሰርዟል' });
+});
+
+// ሰርቨሩን ማስነሳት
 app.listen(PORT, () => {
-  console.log(`✅ Server running on port ${PORT}`);
+    console.log(`🚀 Server is listening on port ${PORT}`);
 });
