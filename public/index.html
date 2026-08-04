@@ -511,47 +511,29 @@
             function loadAdminUsersList(users) {
                 var ul = document.getElementById('userListUI');
                 ul.innerHTML = '';
-                
+
                 if (!users || users.length === 0) {
-                    ul.innerHTML = '<li>ምንም ተጠቃሚ የለም</li>';
+                    ul.innerHTML = '<li style="justify-content:center;">ምንም ተጠቃሚ አልተገኘም</li>';
                     return;
                 }
 
                 users.forEach(function(u) {
-                    var deleteUserBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ?
+                    var li = document.createElement('li');
+                    var deleteBtn = (userRole === 'superadmin' && u.username !== 'superadmin') ?
                         '<button onclick="deleteUser(\'' + u.username + '\')"><i class="fas fa-trash"></i></button>' : '';
-                    
-                    ul.innerHTML += '<li>' +
-                        '<span>' + u.username + ' <span class="role-tag">' + u.role + '</span></span>' +
-                        deleteUserBtn +
-                    '</li>';
+
+                    li.innerHTML = '<span>' + u.username + ' <span class="role-tag">' + u.role + '</span></span>' + deleteBtn;
+                    ul.appendChild(li);
                 });
             }
-
-            window.deleteReport = function(id) {
-                if (!confirm('ይህንን ሪፖርት በእርግጠኝነት ማጥፋት ይፈልጋሉ?')) return;
-
-                fetch(API + '/report/' + id, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    showToast(data.message || 'ሪፖርቱ ተሰርዟል');
-                    loadReports();
-                })
-                .catch(function() {
-                    showToast('ሪፖርቱን ማጥፋት አልተቻለም');
-                });
-            };
 
             window.createUser = function() {
                 var role = document.getElementById('newUserRole').value;
                 var username = document.getElementById('newUserName').value.trim();
                 var password = document.getElementById('newUserPassword').value.trim();
 
-                if (!username || !password) {
-                    showToast('እባክዎ የተጠቃሚ ስምና የይለፍ ቃል ያስገቡ!');
+                if (!username || !password || password.length < 6) {
+                    showToast('እባክዎ ስም እና ቢያንስ 6 አሃዝ ይለፍ ቃል ያስገቡ!');
                     return;
                 }
 
@@ -564,48 +546,59 @@
                     body: JSON.stringify({ username: username, password: password, role: role })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(res) {
-                    if (res.ok) {
-                        showToast('አካውንቱ በተሳካ ሁኔታ ተፈጥሯል!');
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast('አካውንት በተሳካ ሁኔታ ተፈጥሯል!');
                         document.getElementById('newUserName').value = '';
                         document.getElementById('newUserPassword').value = '';
                         loadUsersDropdown(userRole);
                     } else {
-                        showToast(res.data.error || 'አካውንት መፍጠር አልተቻለም');
+                        showToast(result.data.error || 'አካውንት መፍጠር አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.deleteUser = function(username) {
-                if (!confirm(username + ' የሚለውን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
+                if (!confirm(username + ' የሚለውን ተጠቃሚ ለማጥፋት እርግጠኛ ነዎት?')) return;
 
                 fetch(API + '/users/' + username, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
                 .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    showToast(data.message || 'ተጠቃሚው ተሰርዟል');
+                .then(function() {
+                    showToast('ተጠቃሚው ተሰርዟል!');
                     loadUsersDropdown(userRole);
                 })
-                .catch(function() {
-                    showToast('ተጠቃሚውን ማጥፋት አልተቻለም');
-                });
+                .catch(function() { showToast('ተጠቃሚውን ማጥፋት አልተቻለም!'); });
+            };
+
+            window.deleteReport = function(id) {
+                if (!confirm('ይህንን የሪፖርት መረጃ ለማጥፋት እርግጠኛ ነዎት?')) return;
+
+                fetch(API + '/report/' + id, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(function(res) { return res.json(); })
+                .then(function() {
+                    showToast('ሪፖርቱ ተሰርዟል!');
+                    loadReports();
+                })
+                .catch(function() { showToast('ሪፖርቱን ማጥፋት አልተቻለም!'); });
             };
 
             window.submitChangePassword = function() {
                 var oldPassword = document.getElementById('oldSuperPwd').value.trim();
                 var newPassword = document.getElementById('newSuperPwd').value.trim();
 
-                if (!oldPassword || !newPassword) {
-                    showToast('እባክዎ ሁለቱንም የይለፍ ቃላት ያስገቡ!');
+                if (!oldPassword || !newPassword || newPassword.length < 6) {
+                    showToast('እባክዎ ትክክለኛ የድሮ እና አዲስ ይለፍ ቃል ያስገቡ!');
                     return;
                 }
 
-                fetch(API + '/change-superadmin-password', {
+                fetch(API + '/change-super-password', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -614,17 +607,14 @@
                     body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(res) {
-                    if (res.ok) {
-                        showToast('የይለፍ ቃሉ በተሳካ ሁኔታ ተቀይሯል!');
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast('የሱፐር አድሚን ይለፍ ቃል ተቀይሯል!');
                         document.getElementById('oldSuperPwd').value = '';
                         document.getElementById('newSuperPwd').value = '';
                     } else {
-                        showToast(res.data.error || 'የይለፍ ቃል መቀየር አልተቻለም');
+                        showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!');
                     }
-                })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም');
                 });
             };
 
@@ -637,16 +627,17 @@
                 loggedInUsername = '';
                 document.getElementById('dashboard').style.display = 'none';
                 document.getElementById('loginCard').style.display = 'block';
-                showToast('ወጥተዋል!');
+                document.getElementById('loginPassword').value = '';
+                showToast('በተሳካ ሁኔታ ወጥተዋል!');
             };
 
-            function showToast(msg) {
+            function showToast(message) {
                 var toast = document.getElementById('toast');
-                toast.textContent = msg;
+                toast.textContent = message;
                 toast.style.display = 'block';
                 setTimeout(function() {
                     toast.style.display = 'none';
-                }, 3000);
+                }, 3500);
             }
         })();
     </script>
