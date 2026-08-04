@@ -3,7 +3,8 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const path = require('path');
-const fs = require('fs');
+const mongoose = require('mongoose');
+
 const app = express();
 
 // CORS ን ማንቃት - ለሁሉም ኦሪጂኖች
@@ -21,16 +22,54 @@ app.use(express.static(publicPath));
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your_strong_jwt_secret_key_change_this';
 
-// በቋሚነት የተዘጋጀ Super Admin
-let users = [
-  {
-    username: 'superadmin',
-    passwordHash: bcrypt.hashSync('admin123', 10),
-    role: 'superadmin'
-  }
-];
+// ============================================================
+//  MongoDB Connection (ከዳታቤዝ ጋር ማገናኘት)
+// ============================================================
+const MONGO_URI = process.env.MONGO_URI || "mongodb+srv://addisutsigie16_db_user:0q7UA21Lq8s0bdXZ@cluster0.dzl7lt9.mongodb.net/adda-system?retryWrites=true&w=majority&appName=Cluster0";
 
-let reports = [];
+mongoose.connect(MONGO_URI)
+  .then(() => {
+    console.log("✅ MongoDB connected successfully!");
+    initDefaultSuperAdmin(); // ዳታቤዝ እንደተገናኘ Default Super Admin መኖሩን ማረጋገጥ
+  })
+  .catch(err => console.error("❌ MongoDB connection error:", err));
+
+// ============================================================
+// Database Schemas (የመረጃ አደረጃጀት ሞዴሎች)
+// ============================================================
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  passwordHash: { type: String, required: true },
+  role: { type: String, required: true, enum: ['superadmin', 'admin', 'user'] }
+}, { timestamps: true });
+
+const reportSchema = new mongoose.Schema({
+  enteredBy: { type: String, required: true },
+  data: { type: mongoose.Schema.Types.Mixed } // የሚገባውን ማንኛውንም የሪፖርት መረጃ ይይዛል
+}, { timestamps: true, strict: false });
+
+const User = mongoose.model('User', userSchema);
+const Report = mongoose.model('Report', reportSchema);
+
+// ============================================================
+// Default Super Admin በዳታቤዝ ላይ በቋሚነት መፍጠር
+// ============================================================
+async function initDefaultSuperAdmin() {
+  try {
+    const existing = await User.findOne({ username: 'superadmin' });
+    if (!existing) {
+      const hashedPassword = await bcrypt.hash('admin123', 10);
+      await User.create({
+        username: 'superadmin',
+        passwordHash: hashedPassword,
+        role: 'superadmin'
+      });
+      console.log('✅ Default Superadmin initialized in Database');
+    }
+  } catch (error) {
+    console.error('❌ Error initializing default superadmin:', error);
+  }
+}
 
 // Middleware: Token ማረጋገጫ
 function authenticateToken(req, res, next) {
@@ -53,7 +92,8 @@ app.post('/api/login', async (req, res) => {
     const { username, password, role } = req.body;
     console.log('🔑 Login attempt:', { username, role });
 
-    const user = users.find(u => u.username === username && u.role === role);
+    // ከ MongoDB መፈለግ
+    const user = await User.findOne({ username, role });
     
     if (!user) {
       console.log('❌ User not found');
@@ -84,14 +124,14 @@ app.post('/api/login', async (req, res) => {
 // ============================================================
 app.post('/api/init-superadmin', async (req, res) => {
   try {
-    const existing = users.find(u => u.username === 'superadmin');
+    const existing = await User.findOne({ username: 'superadmin' });
     if (!existing) {
-      users.push({
+      await User.create({
         username: 'superadmin',
         passwordHash: await bcrypt.hash('admin123', 10),
         role: 'superadmin'
       });
-      console.log('✅ Superadmin created');
+      console.log('✅ Superadmin created in Database');
       res.json({ message: 'ሱፐር አድሚን ተፈጥሯል!' });
     } else {
       console.log('ℹ️ Superadmin already exists');
@@ -106,18 +146,18 @@ app.post('/api/init-superadmin', async (req, res) => {
 // ============================================================
 // 3. ተጠቃሚዎችን ማውጣት
 // ============================================================
-app.get('/api/users', (req, res) => {
+app.get('/api/users', async (req, res) => {
   try {
     const { role } = req.query;
-    let filtered = users;
+    let query = {};
     
     if (role) {
-      filtered = users.filter(u => u.role === role);
+      query.role = role;
     }
     
-    const safeUsers = filtered.map(u => ({ username: u.username, role: u.role }));
-    console.log('📋 Users returned:', safeUsers.length);
-    res.json(safeUsers);
+    const users = await User.find(query).select('username role -_id');
+    console.log('📋 Users returned:', users.length);
+    res.json(users);
   } catch (error) {
     console.error('❌ Error:', error);
     res.status(500).json({ error: 'ተጠቃሚዎችን ማውጣት አልተቻለም!' });
@@ -143,7 +183,7 @@ app.post('/api/users', authenticateToken, async (req, res) => {
       return res.status(400).json({ error: 'ተጨማሪ Super Admin መፍጠር አይቻልም!' });
     }
 
-    const existingUser = users.find(u => u.username === username);
+    const existingUser = await User.findOne({ username });
     if (existingUser) {
       return res.status(400).json({ error: 'ይህ ስም አስቀድሞ ተይዟል!' });
     }
@@ -153,9 +193,11 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    users.push({ username, passwordHash: hashedPassword, role });
     
-    console.log('✅ User created:', { username, role });
+    // በ MongoDB ላይ ሴቭ ማድረግ
+    await User.create({ username, passwordHash: hashedPassword, role });
+    
+    console.log('✅ User created and saved to DB:', { username, role });
     res.json({ 
       message: `አዲስ ${role === 'admin' ? 'አድሚን' : 'ተጠቃሚ'} '${username}' ተፈጥሯል!` 
     });
@@ -168,7 +210,7 @@ app.post('/api/users', authenticateToken, async (req, res) => {
 // ============================================================
 // 5. ተጠቃሚ መሰረዝ
 // ============================================================
-app.delete('/api/users/:username', authenticateToken, (req, res) => {
+app.delete('/api/users/:username', authenticateToken, async (req, res) => {
   try {
     if (req.user.role !== 'superadmin') {
       return res.status(403).json({ error: 'Super Admin ብቻ ተጠቃሚ መሰረዝ ይችላል!' });
@@ -179,8 +221,8 @@ app.delete('/api/users/:username', authenticateToken, (req, res) => {
       return res.status(400).json({ error: 'Super Admin አካውንትን ማጥፋት አይቻልም!' });
     }
 
-    users = users.filter(u => u.username !== username);
-    console.log('✅ User deleted:', username);
+    await User.deleteOne({ username });
+    console.log('✅ User deleted from DB:', username);
     res.json({ message: `ተጠቃሚ '${username}' ተሰርዟል!` });
   } catch (error) {
     console.error('❌ Error:', error);
@@ -207,7 +249,7 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
       return res.status(400).json({ error: 'አዲሱ የይለፍ ቃል ቢያንስ 6 ቁምፊ መሆን አለበት!' });
     }
 
-    const superUser = users.find(u => u.username === 'superadmin');
+    const superUser = await User.findOne({ username: 'superadmin' });
     if (!superUser) {
       return res.status(404).json({ error: 'ሱፐር አድሚን አልተገኘም!' });
     }
@@ -218,7 +260,9 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
     }
 
     superUser.passwordHash = await bcrypt.hash(newPassword, 10);
-    console.log('✅ Password changed');
+    await superUser.save();
+
+    console.log('✅ Superadmin password updated in DB');
     res.json({ message: 'የይለፍ ቃል ተቀይሯል!' });
   } catch (error) {
     console.error('❌ Error:', error);
@@ -229,31 +273,44 @@ app.post('/api/superadmin/change-password', authenticateToken, async (req, res) 
 // ============================================================
 // 7. Report APIs
 // ============================================================
-app.get('/api/report', authenticateToken, (req, res) => {
-  res.json(reports);
+app.get('/api/report', authenticateToken, async (req, res) => {
+  try {
+    const reports = await Report.find();
+    res.json(reports);
+  } catch (error) {
+    res.status(500).json({ error: 'ሪፖርቶችን ማውጣት አልተቻለም!' });
+  }
 });
 
-app.post('/api/report', authenticateToken, (req, res) => {
-  if (req.user.role === 'superadmin' || req.user.role === 'admin') {
-    return res.status(403).json({ error: 'ሪፖርት መሙላት የሚችለው ተጠቃሚ ብቻ ነው!' });
-  }
+app.post('/api/report', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role === 'superadmin' || req.user.role === 'admin') {
+      return res.status(403).json({ error: 'ሪፖርት መሙላት የሚችለው ተጠቃሚ ብቻ ነው!' });
+    }
 
-  const newReport = { 
-    id: Date.now(), 
-    ...req.body, 
-    enteredBy: req.user.username 
-  };
-  reports.push(newReport);
-  res.json({ message: 'መረጃው ተመዝግቧል!' });
+    const newReport = new Report({
+      enteredBy: req.user.username,
+      ...req.body
+    });
+    
+    await newReport.save();
+    res.json({ message: 'መረጃው በዳታቤዝ ላይ ተመዝግቧል!' });
+  } catch (error) {
+    res.status(500).json({ error: 'ሪፖርት ማስገባት አልተቻለም!' });
+  }
 });
 
-app.delete('/api/report/:id', authenticateToken, (req, res) => {
-  if (req.user.role !== 'superadmin') {
-    return res.status(403).json({ error: 'Super Admin ብቻ ሪፖርት መሰረዝ ይችላል!' });
-  }
+app.delete('/api/report/:id', authenticateToken, async (req, res) => {
+  try {
+    if (req.user.role !== 'superadmin') {
+      return res.status(403).json({ error: 'Super Admin ብቻ ሪፖርት መሰረዝ ይችላል!' });
+    }
 
-  reports = reports.filter(r => r.id !== parseInt(req.params.id));
-  res.json({ message: 'ሪፖርቱ ተሰርዟል!' });
+    await Report.findByIdAndDelete(req.params.id);
+    res.json({ message: 'ሪፖርቱ ተሰርዟል!' });
+  } catch (error) {
+    res.status(500).json({ error: 'ሪፖርት መሰረዝ አልተቻለም!' });
+  }
 });
 
 // ============================================================
