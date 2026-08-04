@@ -1,23 +1,12 @@
 [build]
+  command = "npm install"
   publish = "public"
 
-# ለሁሉም ብራውዘሮች ተስማሚ የሆኑ ቅንብሮች
-[[headers]]
-  for = "/*"
-  [headers.values]
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    X-XSS-Protection = "1; mode=block"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-
-# API ጥያቄዎችን ወደ Render መላክ
 [[redirects]]
   from = "/api/*"
   to = "https://adda-1.onrender.com/api/:splat"
   status = 200
-  force = true
 
-# SPA ለመስራት - ሁሉንም ጥያቄዎች ወደ index.html መላክ
 [[redirects]]
   from = "/*"
   to = "/index.html"
