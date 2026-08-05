@@ -174,6 +174,7 @@
             font-size: 0.9rem;
             outline: none;
             transition: border-color 0.2s;
+            width: 100%;
         }
 
         .form-group input:focus, .form-group select:focus {
@@ -337,8 +338,47 @@
             
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-bottom: 1rem;">
+                    <label><i class="fas fa-user-shield"></i> ሚና (Role)</label>
+                    <select id="loginRole" onchange="toggleLoginInputs()" required>
+                        <option value="superadmin">Super Admin</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User (ዞን/ከተማ አስተዳደር)</option>
+                    </select>
+                </div>
+
+                <!-- የተጠቃሚ ስም (ለ Super Admin እና Admin) -->
+                <div class="form-group" id="usernameGroup" style="margin-bottom: 1rem;">
                     <label><i class="fas fa-user"></i> የተጠቃሚ ስም (Username)</label>
-                    <input type="text" id="loginUsername" required placeholder="የተጠቃሚ ስምዎን ያስገቡ" style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;">
+                    <input type="text" id="loginUsername" placeholder="የተጠቃሚ ስምዎን ያስገቡ">
+                </div>
+
+                <!-- የዞን እና ከተማ አስተዳደር ድሮፕዳውን (ለ User ብቻ የሚታይ) -->
+                <div class="form-group" id="zoneSelectGroup" style="margin-bottom: 1rem; display: none;">
+                    <label><i class="fas fa-map-marker-alt"></i> ዞን / ከተማ አስተዳደር ይምረጡ</label>
+                    <select id="loginZoneSelect">
+                        <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
+                        <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
+                        <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
+                        <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
+                        <option value="contentInset">ኮምቦልቻ ከተማ</option>
+                        <option value="ኢንጅባራ ከተማ">ኢንጅባራ ከተማ</option>
+                        <option value="ቢቸና ከተማ">ቢቸና ከተማ</option>
+                        <option value="አዲስ ዘመን ከተማ">አዲስ ዘመን ከተማ</option>
+                        <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
+                        <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
+                        <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
+                        <option value="ዋግህምራ ብሔረሰብ አገአዝ ሕዝብ ዞን">ዋግህምራ ብ/አ/ሕ ዞን</option>
+                        <option value="দক্ষিণ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
+                        <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
+                        <option value="দক্ষিণ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
+                        <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
+                        <option value="கிழக்கு ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
+                        <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
+                        <option value="አዊ ዞን">አዊ ዞን</option>
+                        <option value="ኦሮሞ ብ/አ/ዞን">ኦሮሞ ብ/አ/ዞን</option>
+                        <option value="արգ/አ ዞን">አገው ፈጃራ ዞን</option> <!-- Updated layout mapping -->
+                        <option value="አርጎባ ወ/አ ዞን">አርጎባ ወ/አ ዞን</option>
+                    </select>
                 </div>
 
                 <div class="form-group" style="margin-bottom: 1.5rem;">
@@ -581,6 +621,7 @@
                     validateSession();
                 } else {
                     showLoginModal(true);
+                    toggleLoginInputs();
                 }
             };
 
@@ -596,15 +637,40 @@
                 document.getElementById('dashboardWrapper').style.display = show ? 'none' : 'flex';
             }
 
+            // ሚና ሲቀየር የዩዘር ስም ወይም የዞን ድሮፕዳውን መቀያየሪያ ተግባር
+            window.toggleLoginInputs = function() {
+                var role = document.getElementById('loginRole').value;
+                var usernameGroup = document.getElementById('usernameGroup');
+                var zoneSelectGroup = document.getElementById('zoneSelectGroup');
+                var usernameInput = document.getElementById('loginUsername');
+
+                if (role === 'user') {
+                    usernameGroup.style.display = 'none';
+                    zoneSelectGroup.style.display = 'block';
+                    usernameInput.required = false;
+                } else {
+                    usernameGroup.style.display = 'block';
+                    zoneSelectGroup.style.display = 'none';
+                    usernameInput.required = true;
+                }
+            };
+
             window.handleLogin = function(e) {
                 e.preventDefault();
-                var usernameInput = document.getElementById('loginUsername').value.trim();
+                var role = document.getElementById('loginRole').value;
+                var usernameInput = '';
                 var passwordInput = document.getElementById('loginPassword').value.trim();
+
+                if (role === 'user') {
+                    usernameInput = document.getElementById('loginZoneSelect').value;
+                } else {
+                    usernameInput = document.getElementById('loginUsername').value.trim();
+                }
 
                 fetch(API + '/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: usernameInput, password: passwordInput })
+                    body: JSON.stringify({ username: usernameInput, password: passwordInput, role: role })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
@@ -630,6 +696,7 @@
                 document.getElementById('currentUserDisplay').innerText = 'እንግዳ';
                 document.getElementById('adminPanel').style.display = 'none';
                 showLoginModal(true);
+                toggleLoginInputs();
                 showToast('ከሲስተሙ ወጥተዋል!');
             };
 
@@ -663,18 +730,20 @@
 
                 if (userRole === 'superadmin') {
                     adminPanel.style.display = 'grid';
-                    superAdminPassCard.style.display = 'block'; // ሱፐር አድሚን ብቻ የይለፍ ቃል መቀየሪያውን ያያል
+                    superAdminPassCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
                     fetchAdminUsersList();
                 } else if (userRole === 'admin') {
                     adminPanel.style.display = 'grid';
-                    superAdminPassCard.style.display = 'none'; // አድሚን ከዚህ ርዕስ ውጪ ነው (የይለፍ ቃል መቀየሪያ አይኖረውም)
-                    reportFormCard.style.display = 'block'; // አድሚኖች የሁሉንም ዞን መረጃ ማየት እና ኤክስፖርት ማድረግ ይችላሉ
+                    superAdminPassCard.style.display = 'none';
+                    reportFormCard.style.display = 'block';
                     fetchAdminUsersList();
                 } else {
-                    // የተለመደ ዩዘር (ዞን/ኮሌጅ መዝጋቢ)
                     adminPanel.style.display = 'none';
                     reportFormCard.style.display = 'block';
+                    // ዩዘር (ዞን) ሆኖ ሲገባ የዞኑ ስም በራሱ እንዲሞላ ማድረግ ይቻላል
+                    var zoneInput = document.getElementById('zone');
+                    if(zoneInput) zoneInput.value = currentUser;
                 }
             }
 
@@ -833,6 +902,7 @@
                     if (result.ok) {
                         showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
                         document.getElementById('reportForm').reset();
+                        if(userRole === 'user') document.getElementById('zone').value = currentUser;
                         loadReports();
                     } else {
                         showToast(result.data.error || 'ሪፖርቱን መመዝገብ አልተቻለም!');
