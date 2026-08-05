@@ -3,7 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
-const path = require('path');
+const serverless = require('serverless-http');
 
 const app = express();
 
@@ -15,12 +15,8 @@ app.use(cors({
 }));
 
 app.use(express.json());
-app.use(express.static(path.join(__dirname, 'public')));
 
-const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_tech_transfer_key_2026';
-
-// ---------------- MongoDB Connection ----------------
 const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://addisutsigie16_db_user:0q7UA21Lq8s0bdXZ@cluster0.dzl7lt9.mongodb.net/tech_transfer_db?retryWrites=true&w=majority";
 
 // ---------------- MongoDB Schemas ----------------
@@ -53,10 +49,21 @@ const reportSchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now }
 });
 
-const User = mongoose.model('User', userSchema);
-const Report = mongoose.model('Report', reportSchema);
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+const Report = mongoose.models.Report || mongoose.model('Report', reportSchema);
 
-// ---------------- Auto Init Superadmin Function ----------------
+// ---------------- Serverless DB Connection & Superadmin Init ----------------
+let isConnected = false;
+
+const connectAndInitDB = async () => {
+    if (!isConnected) {
+        await mongoose.connect(MONGODB_URI);
+        isConnected = true;
+        console.log('⚡ Connected to MongoDB Atlas successfully!');
+    }
+    await initSuperadmin();
+};
+
 const initSuperadmin = async () => {
     try {
         const exist = await User.findOne({ role: 'superadmin' });
@@ -68,21 +75,21 @@ const initSuperadmin = async () => {
                 role: 'superadmin'
             });
             console.log('✅ Default superadmin created (username: superadmin / password: admin123)');
-        } else {
-            console.log('ℹ️ Superadmin account is ready in MongoDB Atlas.');
         }
     } catch (err) {
         console.error('❌ Superadmin init error:', err.message);
     }
 };
 
-// Connect DB first, then run Superadmin Init
-mongoose.connect(MONGODB_URI)
-    .then(() => {
-        console.log('⚡ Connected to MongoDB Atlas successfully!');
-        initSuperadmin(); // ከዳታቤዝ ጋር ከተገናኘ በኋላ ብቻ ይጥራል
-    })
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+// Middleware to ensure DB connection on every API hit
+app.use(async (req, res, next) => {
+    try {
+        await connectAndInitDB();
+        next();
+    } catch (err) {
+        res.status(500).json({ error: 'የዳታቤዝ ግንኙነት ስህተት ተከሰቷል!' });
+    }
+});
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
@@ -102,7 +109,7 @@ const authenticateToken = (req, res, next) => {
 
 // 1. Health Check
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running smoothly!' });
+    res.json({ status: 'OK', message: 'Netlify Serverless function is running smoothly!' });
 });
 
 // 2. Explicit Superadmin Init Endpoint
@@ -247,11 +254,5 @@ app.delete('/api/report/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// Front-End SPA Fallback
-app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`🚀 Server running globally on port ${PORT}`);
-});
+// Netlify Serverless Handler Export
+module.exports.handler = serverless(app);
