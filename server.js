@@ -153,7 +153,7 @@ app.get('/api/users', (req, res) => {
 // 4. Create New User (Super Admin ብቻ)
 app.post('/api/users', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin') {
-        return res.status(403).json({ error: 'አዲስ ተጠቃሚ የመፍጠር 권한 የለዎትም!' });
+        return res.status(403).json({ error: 'አዲስ ተጠቃሚ የመፍጠር መብት የለዎትም!' });
     }
 
     const { username, password, role } = req.body;
@@ -182,25 +182,62 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
-// 5. Delete User (Super Admin ብቻ)
-app.delete('/api/users/:username', authenticateToken, (req, res) => {
+// 5. Delete User (በ ID ወይም በ Username) - Super Admin ብቻ
+app.delete('/api/users/:identifier', authenticateToken, (req, res) => {
     if (req.user.role !== 'superadmin') {
         return res.status(403).json({ error: 'ተጠቃሚ የማጥፋት መብት የለዎትም!' });
     }
 
-    const { username } = req.params;
+    const { identifier } = req.params;
 
-    if (username === 'superadmin') {
-        return res.status(400).json({ error: 'ዋናውን Super Admin ማጥፋት አይቻልም!' });
-    }
+    // ID ወይም Username መሆኑን በመለየት ማጥፋት
+    const isNum = /^\d+$/.test(identifier);
+    const query = isNum ? `DELETE FROM users WHERE id = ? AND username != 'superadmin'` 
+                        : `DELETE FROM users WHERE username = ? AND username != 'superadmin'`;
 
-    db.run(`DELETE FROM users WHERE username = ?`, [username], function (err) {
+    db.run(query, [identifier], function (err) {
         if (err) return res.status(500).json({ error: err.message });
+        if (this.changes === 0) {
+            return res.status(400).json({ error: 'ተጠቃሚው አልተገኘም ወይም ዋናውን Super Admin ማጥፋት አይቻልም!' });
+        }
         res.json({ message: 'ተጠቃሚው በቋሚነት ተሰርዟል!' });
     });
 });
 
-// 6. Add Report (User ወይም Admin)
+// 6. Change Superadmin Password (ተጨማሪ የተስተካከለ API)
+app.post('/api/change-superadmin-password', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'superadmin') {
+        return res.status(403).json({ error: 'የይለፍ ቃል የመቀየር መብት የለዎትም!' });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ error: 'እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ያስገቡ!' });
+    }
+
+    db.get(`SELECT * FROM users WHERE username = 'superadmin'`, async (err, user) => {
+        if (err) return res.status(500).json({ error: 'የዳታቤዝ ስህተት!' });
+        if (!user) return res.status(404).json({ error: 'Superadmin አልተገኘም!' });
+
+        const validPassword = await bcrypt.compare(oldPassword, user.password);
+        if (!validPassword) {
+            return res.status(400).json({ error: 'የድሮው የይለፍ ቃል የተሳሳተ ነው!' });
+        }
+
+        const hashedNewPassword = await bcrypt.hash(newPassword, 10);
+        db.run(
+            `UPDATE users SET password = ? WHERE username = 'superadmin'`,
+            [hashedNewPassword],
+            function (err) {
+                if (err) return res.status(500).json({ error: err.message });
+                res.json({ message: 'የሱፐር አድሚን የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!' });
+            }
+        );
+    });
+});
+
+// 7. Add Report (User ወይም Admin)
 app.post('/api/report', authenticateToken, (req, res) => {
     const data = req.body;
     const createdBy = req.user.username;
@@ -226,7 +263,7 @@ app.post('/api/report', authenticateToken, (req, res) => {
     });
 });
 
-// 7. Get All Reports
+// 8. Get All Reports
 app.get('/api/report', authenticateToken, (req, res) => {
     db.all(`SELECT * FROM reports ORDER BY id DESC`, [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
@@ -234,7 +271,7 @@ app.get('/api/report', authenticateToken, (req, res) => {
     });
 });
 
-// 8. Delete Report (Super Admin ብቻ)
+// 9. Delete Report (Super Admin ብቻ)
 app.delete('/api/report/:id', authenticateToken, (req, res) => {
     if (req.user.role !== 'superadmin') {
         return res.status(403).json({ error: 'ሪፖርት የማጥፋት መብት የለዎትም!' });
@@ -248,7 +285,7 @@ app.delete('/api/report/:id', authenticateToken, (req, res) => {
     });
 });
 
-// 9. Fallback Route ለ SPA Frontend
+// 10. Fallback Route ለ SPA Frontend
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
