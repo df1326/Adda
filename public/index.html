@@ -318,7 +318,6 @@
                         <option value="አዊ ዞን">አዊ ዞን</option>
                         <option value="ኦሮሞ ብ/አ ዞን">ኦሮሞ ብ/አ ዞን</option>
                         <option value="ዋግህምራ ብ/አ ዞን">ዋግህምራ ብ/አ ዞን</option>
-                        <option value="ሰሜን ጎጃም ዞን">ሰሜን ጎጃም ዞን</option>
                     </select>
                 </div>
 
@@ -346,7 +345,7 @@
         </header>
 
         <main>
-            <!-- Admin / Super Admin Panel -->
+            <!-- Admin & Control Panels -->
             <div id="adminPanel" class="admin-grid" style="display:none;">
                 <div class="card">
                     <h3>አዲስ ተጠቃሚ መፍጠር</h3>
@@ -389,95 +388,100 @@
                 </div>
             </div>
 
-            <!-- Report Form Card -->
+            <!-- Report Form Card (አስተዳዳሪዎች እንዲያዩት ግን መረጃ እንዳይሞሉበት የተደረገ) -->
             <div class="card" id="reportFormCard">
-                <h3>አዲስ ሪፖርት መመዝገቢያ</h3>
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #f1f5f9; padding-bottom: 8px; margin-bottom: 16px;">
+                    <h3 style="margin-bottom: 0; border: none; padding: 0;">አዲስ ሪፖርት መመዝገቢያ (የቅድመ-እይታ መልክ)</h3>
+                    <span id="formNoticeBadge" style="font-size: 0.8rem; background: #e2e8f0; color: #475569; padding: 4px 8px; border-radius: 4px; display: none;">አስተዳዳሪዎች ሪፖርት መመዝገብ አይችሉም</span>
+                </div>
                 <form id="reportForm" onsubmit="handleReportSubmit(event)">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
-                        <div class="form-group">
-                            <label>ዞን/ከተማ አስተዳደር:</label>
-                            <input type="text" id="zone" class="form-control" required>
+                    <fieldset id="reportFieldset" style="border: none; padding: 0; margin: 0;">
+                        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                            <div class="form-group">
+                                <label>ዞን/ከተማ አስተዳደር:</label>
+                                <input type="text" id="zone" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>ፖሊቴክኒክ ኮሌጅ:</label>
+                                <input type="text" id="poly" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>የቴክኖሎጂ ስም:</label>
+                                <input type="text" id="techName" class="form-control" required>
+                            </div>
+                            <div class="form-group">
+                                <label>አስተባባሪ ስም:</label>
+                                <input type="text" id="coordinator" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>ስልክ ቁጥር:</label>
+                                <input type="text" id="phone" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>ዘርፍ:</label>
+                                <select id="sector" class="form-control">
+                                    <option value="ግብርና">ግብርና</option>
+                                    <option value="ኢንዱስትሪ">ኢንዱስትሪ</option>
+                                    <option value="አገልግሎት">አገልግሎት</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>እሴት ሰንሰለት (Value Chain):</label>
+                                <input type="text" id="valueChain" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>የቴክኖሎጂ ዓይነት:</label>
+                                <select id="techType" class="form-control">
+                                    <option value="አዲስ">አዲስ</option>
+                                    <option value="የተሻሻለ">የተሻሻለ</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>ዓመተ ምህረት:</label>
+                                <input type="number" id="year" class="form-control" value="2018">
+                            </div>
+                            <div class="form-group">
+                                <label>የተሸጋገረ ብዛት:</label>
+                                <input type="number" id="transferQty" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>የተሸጋገረበት ዘርፍ:</label>
+                                <input type="text" id="transferSector" class="form-control">
+                            </div>
+                            <div class="form-group">
+                                <label>የሀብት መጠን (ብር):</label>
+                                <input type="number" id="resource" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>ተጠቃሚ ድርጅቶች:</label>
+                                <input type="number" id="b_ent" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>ተጠቃሚ ማይክሮ/አነስተኛ:</label>
+                                <input type="number" id="b_mobile" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>ተጠቃሚ ወንድ:</label>
+                                <input type="number" id="b_male" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>ተጠቃሚ ሴት:</label>
+                                <input type="number" id="b_female" class="form-control" value="0">
+                            </div>
+                            <div class="form-group">
+                                <label>የዲግሪ/ዲአግኖስቲክ ብዛት:</label>
+                                <input type="number" id="diagnosis" class="form-control" value="0">
+                            </div>
                         </div>
-                        <div class="form-group">
-                            <label>ፖሊቴክኒክ ኮሌጅ:</label>
-                            <input type="text" id="poly" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>የቴክኖሎጂ ስም:</label>
-                            <input type="text" id="techName" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label>አስተባባሪ ስም:</label>
-                            <input type="text" id="coordinator" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>ስልክ ቁጥር:</label>
-                            <input type="text" id="phone" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>ዘርፍ:</label>
-                            <select id="sector" class="form-control">
-                                <option value="ግብርና">ግብርና</option>
-                                <option value="ኢንዱስትሪ">ኢንዱስትሪ</option>
-                                <option value="አገልግሎት">አገልግሎት</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>እሴት ሰንሰለት (Value Chain):</label>
-                            <input type="text" id="valueChain" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>የቴክኖሎጂ ዓይነት:</label>
-                            <select id="techType" class="form-control">
-                                <option value="አዲስ">አዲስ</option>
-                                <option value="የተሻሻለ">የተሻሻለ</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label>ዓመተ ምህረት:</label>
-                            <input type="number" id="year" class="form-control" value="2018">
-                        </div>
-                        <div class="form-group">
-                            <label>የተሸጋገረ ብዛት:</label>
-                            <input type="number" id="transferQty" class="form-control" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>የተሸጋገረበት ዘርፍ:</label>
-                            <input type="text" id="transferSector" class="form-control">
-                        </div>
-                        <div class="form-group">
-                            <label>የሀብት መጠን (ብር):</label>
-                            <input type="number" id="resource" class="form-control" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>ተጠቃሚ ድርጅቶች:</label>
-                            <input type="number" id="b_ent" class="form-control" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>ተጠቃሚ ማይክሮ/አነስተኛ:</label>
-                            <input type="number" id="b_mobile" class="form-control" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>ተጠቃሚ ወንድ:</label>
-                            <input type="number" id="b_male" class="form-control" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>ተጠቃሚ ሴት:</label>
-                            <input type="number" id="b_female" class="form-control" value="0">
-                        </div>
-                        <div class="form-group">
-                            <label>የዲግሪ/ዲአግኖስቲክ ብዛት:</label>
-                            <input type="number" id="diagnosis" class="form-control" value="0">
-                        </div>
-                    </div>
-                    <button type="submit" class="btn-primary" style="margin-top: 20px;">ሪፖርት መዝግብ</button>
+                        <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 20px;">ሪፖርት መዝግብ</button>
+                    </fieldset>
                 </form>
             </div>
 
             <!-- Reports Table Display -->
             <div class="table-container">
                 <div class="table-header">
-                    <h3>የተመዘገቡ ሪፖርቶች ዝርዝር</h3>
+                    <h3>የተመዘገቡ ሪፖርቶች ዝርዝር (ሁሉም ዞኖች)</h3>
                     <button class="btn-primary" style="width: auto; padding: 6px 14px; margin:0;" onclick="exportToCSV()">ወደ CSV አውርድ</button>
                 </div>
                 <table>
@@ -633,20 +637,33 @@
                 var adminPanel = document.getElementById('adminPanel');
                 var reportFormCard = document.getElementById('reportFormCard');
                 var superAdminPassCard = document.getElementById('superAdminPassCard');
+                var reportFieldset = document.getElementById('reportFieldset');
+                var submitReportBtn = document.getElementById('submitReportBtn');
+                var formNoticeBadge = document.getElementById('formNoticeBadge');
 
                 if (userRole === 'superadmin') {
                     adminPanel.style.display = 'grid';
                     superAdminPassCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
+                    reportFieldset.disabled = false;
+                    submitReportBtn.style.display = 'block';
+                    formNoticeBadge.style.display = 'none';
                     fetchAdminUsersList();
                 } else if (userRole === 'admin') {
+                    // አድሚኖች ፎርሙ ይታያቸዋል ግን መረጃ እንዳይሞሉ ተቆልፈዋል (Disabled)
                     adminPanel.style.display = 'grid';
                     superAdminPassCard.style.display = 'none';
                     reportFormCard.style.display = 'block';
+                    reportFieldset.disabled = true; // እንዳይሞሉ ይከለክላል
+                    submitReportBtn.style.display = 'none'; // የማስረከቢያ አዝራሩን ይደብቃል
+                    formNoticeBadge.style.display = 'block'; // ማስታወሻ ያሳያል
                     fetchAdminUsersList();
                 } else {
                     adminPanel.style.display = 'none';
                     reportFormCard.style.display = 'block';
+                    reportFieldset.disabled = false;
+                    submitReportBtn.style.display = 'block';
+                    formNoticeBadge.style.display = 'none';
                     var zoneInput = document.getElementById('zone');
                     if(zoneInput) zoneInput.value = currentUser;
                 }
@@ -835,6 +852,11 @@
 
             window.handleReportSubmit = function(e) {
                 e.preventDefault();
+                if (userRole === 'admin') {
+                    showToast('አስተዳዳሪዎች ሪፖርት መመዝገብ አይችሉም!');
+                    return;
+                }
+
                 var reportData = {
                     zone: document.getElementById('zone').value.trim(),
                     poly: document.getElementById('poly').value.trim(),
