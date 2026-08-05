@@ -335,41 +335,50 @@
                 <i class="fas fa-lock"></i> መግቢያ
             </h2>
             
-            <!-- የተስተካከለው የሎግ ኢን ፎርም (ከተማና ዞኖችን በዝርዝር የያዘ) -->
+            <!-- ሎግ ኢን ፎርም (ከተሞች፣ ዞኖች እና አድሚኖች ዝርዝር) -->
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label><i class="fas fa-map-marker-alt"></i> ዞን / ከተማ አስተዳደር ምረጥ</label>
+                    <label><i class="fas fa-user"></i> ተጠቃሚ/አካውንት ይምረጡ</label>
                     <select id="loginUsername" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;">
-                        <option value="" disabled selected>-- እባክዎ ዞን ወይም ከተማ አስተዳደር ይምረጡ --</option>
+                        <option value="" disabled selected>-- እባክዎ አካውንትዎን ይምረጡ --</option>
+                        
+                        <!-- ሱፐር አድሚን -->
+                        <option value="superadmin">Superadmin (ማዕከላዊ አስተዳዳሪ)</option>
                         
                         <!-- ከተማ አስተዳደሮች -->
-                        <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
-                        <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
-                        <option value="ደብረ ታቦር ከተማ">ደብረ ታቦር ከተማ</option>
-                        <option value="ወልድያ ከተማ">ወልድያ ከተማ</option>
-                        <option value="ደሴ ከተማ">ደሴ ከተማ</option>
-                        <option value="ኮምቦልቻ ከተማ">ኮምቦልቻ ከተማ</option>
-                        <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
-                        <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
-                        
+                        <optgroup label="ከተማ አስተዳደሮች">
+                            <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
+                            <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
+                            <option value="ደብረ ታቦር ከተማ">ደብረ ታቦር ከተማ</option>
+                            <option value="ወልድያ ከተማ">ወልድያ ከተማ</option>
+                            <option value="ደሴ ከተማ">ደሴ ከተማ</option>
+                            <option value="ኮምቦልቻ ከተማ">ኮምቦልቻ ከተማ</option>
+                            <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
+                            <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
+                        </optgroup>
+
                         <!-- ዞኖች -->
-                        <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
-                        <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
-                        <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
-                        <option value="ወልቃይት ጠገዴ ስቲት ሁመራ ዞን">ወልቃይት ጠገዴ ስቲት ሁመራ ዞን</option>
-                        <option value="ደቡብ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
-                        <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
-                        <option value="ደቡብ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
-                        <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
-                        <option value="ምስራቅ ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
-                        <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
-                        <option value="ሰሜን ጎጃም">ሰሜን ጎጃም</option>
-                        <option value="አዊ ብ/ሰ ዞን">አዊ ብ/ሰ ዞን</option>
-                        <option value="ዋግኸምራ ብ/ሰ ዞን">ዋግኸምራ ብ/ሰ ዞን</option>
-                        <option value="ኦሮሞ ብ/ሰ ዞን">ኦሮሞ ብ/ሰ ዞን</option>
-                        
-                        <!-- ለሱፐር አድሚን መግቢያ -->
-                        <option value="superadmin">Superadmin (ማዕከላዊ አስተዳዳሪ)</option>
+                        <optgroup label="ዞኖች">
+                            <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
+                            <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
+                            <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
+                            <option value="ወልቃይት ጠገዴ ስቲት ሁመራ ዞን">ወልቃይት ጠገዴ ስቲት ሁመራ ዞን</option>
+                            <option value="ደቡብ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
+                            <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
+                            <option value="ደቡብ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
+                            <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
+                            <option value="ምስራቅ ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
+                            <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
+                            <option value="ሰሜን ጎጃም">ሰሜን ጎጃም</option>
+                            <option value="አዊ ብ/ሰ ዞን">አዊ ብ/ሰ ዞን</option>
+                            <option value="ዋግኸምራ ብ/ሰ ዞን">ዋግኸምራ ብ/ሰ ዞን</option>
+                            <option value="ኦሮሞ ብ/ሰ ዞን">ኦሮሞ ብ/ሰ ዞን</option>
+                        </optgroup>
+
+                        <!-- የተፈጠሩ አድሚኖች ዝርዝር (በዲናሚክ ስክሪፕት የሚጨመሩበት) -->
+                        <optgroup label="የተፈጠሩ Admin አካውንቶች" id="customAdminGroup">
+                            <!-- Custom Admins append here -->
+                        </optgroup>
                     </select>
                 </div>
 
@@ -411,11 +420,11 @@
             <!-- አዲስ ተጠቃሚ ፍጠር -->
             <div class="card">
                 <div class="card-title">
-                    <i class="fas fa-user-plus"></i> አዲስ ተጠቃሚ ፍጠር (ለዞኖች አካውንት መስጫ)
+                    <i class="fas fa-user-plus"></i> አዲስ ተጠቃሚ / Admin ፍጠር
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label>የተጠቃሚ ስም (ዞን/ከተማ)</label>
-                    <input type="text" id="newUserName" placeholder="ምሳሌ፦ ባህር ዳር ከተማ">
+                    <label>የተጠቃሚ ስም (የአድሚን ወይም የዞን ስም)</label>
+                    <input type="text" id="newUserName" placeholder="ምሳሌ፦ Admin_BahirDar">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label>የይለፍ ቃል (ቢያንስ 6 ቁምፊ)</label>
@@ -424,8 +433,8 @@
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label>የአካውንት ደረጃ (Role)</label>
                     <select id="newUserRole">
-                        <option value="user">User (ዞን/ኮሌጅ ሪፖርት መዝጋቢ)</option>
                         <option value="admin">Admin (አስተዳዳሪ)</option>
+                        <option value="user">User (ዞን/ኮሌጅ ሪፖርት መዝጋቢ)</option>
                     </select>
                 </div>
                 <button class="btn-submit" onclick="createUser()">አካውንት ፍጠር</button>
@@ -609,6 +618,7 @@
             var userRole = '';
 
             window.onload = function() {
+                loadLoginDropdownUsers(); // አካውንቶችን ወደ Dropdown ይጫናል
                 if (token) {
                     validateSession();
                 } else {
@@ -626,6 +636,29 @@
             function showLoginModal(show) {
                 document.getElementById('loginOverlay').style.display = show ? 'flex' : 'none';
                 document.getElementById('dashboardWrapper').style.display = show ? 'none' : 'flex';
+            }
+
+            // የመግቢያው ላይ በዲናሚክ አካውንቶችን ለመጨመር
+            function loadLoginDropdownUsers() {
+                fetch(API + '/public-users')
+                .then(function(res) { return res.json(); })
+                .then(function(users) {
+                    var customGroup = document.getElementById('customAdminGroup');
+                    if (customGroup && users && users.length > 0) {
+                        customGroup.innerHTML = '';
+                        users.forEach(function(u) {
+                            if (u.role === 'admin') {
+                                var opt = document.createElement('option');
+                                opt.value = u.username;
+                                opt.innerText = u.username + ' (Admin)';
+                                customGroup.appendChild(opt);
+                            }
+                        });
+                    }
+                })
+                .catch(function(err) {
+                    console.log('Public users load error', err);
+                });
             }
 
             window.handleLogin = function(e) {
@@ -885,6 +918,7 @@
                         document.getElementById('newUserName').value = '';
                         document.getElementById('newUserPassword').value = '';
                         fetchAdminUsersList();
+                        loadLoginDropdownUsers(); // አዲሱን Admin በ Login ዝርዝር ላይ ይጨምረዋል
                     } else {
                         showToast(result.data.error || 'አካውንት መፍጠር አልተቻለም!');
                     }
@@ -906,6 +940,7 @@
                     if (result.ok) {
                         showToast('አካውንቱ ተሰርዟል!');
                         fetchAdminUsersList();
+                        loadLoginDropdownUsers();
                     } else {
                         showToast(result.data.error || 'አካውንቱን መሰረዝ አልተቻለም!');
                     }
