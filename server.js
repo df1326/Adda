@@ -21,7 +21,7 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_tech_transfer_key_2026';
 
 // ---------------- MongoDB Connection ----------------
-const MONGODB_URI = process.env.MONGODB_URI || "እዚህ_ጋር_የእርስዎን_MongoDB_Atlas_URI_ያስገቡ";
+const MONGODB_URI = process.env.MONGODB_URI || "mongodb+srv://addisutsigie16_db_user:0q7UA21Lq8s0bdXZ@cluster0.dzl7lt9.mongodb.net/tech_transfer_db?retryWrites=true&w=majority";
 
 // ---------------- MongoDB Schemas ----------------
 const userSchema = new mongoose.Schema({
@@ -69,7 +69,7 @@ const initSuperadmin = async () => {
             });
             console.log('✅ Default superadmin created (username: superadmin / password: admin123)');
         } else {
-            console.log('ℹ️ Superadmin account is ready.');
+            console.log('ℹ️ Superadmin account is ready in MongoDB Atlas.');
         }
     } catch (err) {
         console.error('❌ Superadmin init error:', err.message);
