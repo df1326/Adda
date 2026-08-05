@@ -123,7 +123,7 @@ app.post('/api/init-superadmin', async (req, res) => {
     res.json({ message: 'Superadmin check/initialization completed!' });
 });
 
-// 4. Login Endpoint
+// 4. Login Endpoint (ለዞኖች እና ለአድሚን የመግቢያ ማጣሪያ)
 app.post('/api/login', async (req, res) => {
     const { username, password, role } = req.body;
 
@@ -136,7 +136,7 @@ app.post('/api/login', async (req, res) => {
         const user = await User.findOne(query);
 
         if (!user) {
-            return res.status(400).json({ error: 'የተጠቃሚው ስም ወይም ሚና አልተገኘም!' });
+            return res.status(400).json({ error: 'የተጠቃሚው ስም ወይም ሚና አልተገኘም! እባክዎ በትክክል መመረጡን ያረጋግጡ።' });
         }
 
         const validPassword = await bcrypt.compare(password, user.password);
@@ -186,7 +186,7 @@ app.post('/api/change-password', authenticateToken, async (req, res) => {
     }
 });
 
-// 6. Admin Reset Password Endpoint (አዲስ የተጨመረ - ለዞኖች/ተጠቃሚዎች ፓስዋርድ ሪሴት ለማድረግ)
+// 6. Admin / Super Admin Reset Password Endpoint (ማንኛውንም ተጠቃሚ/ዞን ፓስዋርድ በሱፐር አድሚን ለመቀየር)
 app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
@@ -200,7 +200,7 @@ app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
     try {
         const hashedPassword = await bcrypt.hash(newPassword, 10);
         const updatedUser = await User.findOneAndUpdate(
-            { username: username },
+            { username: username.trim() },
             { password: hashedPassword },
             { new: true }
         );
@@ -232,16 +232,17 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     const { username, password, role } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
-        const newUser = await User.create({ username, password: hashedPassword, role });
+        const newUser = await User.create({ username: username.trim(), password: hashedPassword, role });
         res.json({ message: 'ተጠቃሚ ተፈጥሯል!', user: { id: newUser._id, username, role } });
     } catch (err) {
         res.status(400).json({ error: 'የተጠቃሚ ስም ቀደም ሲል ተይዟል!' });
     }
 });
 
+// Super Admin User Delete Endpoint (ተጠቃሚን ሙሉ በሙሉ ለመሰረዝ)
 app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin') {
-        return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+        return res.status(403).json({ error: 'ተጠቃሚዎችን የመሰረዝ መብት ያለው Super Admin ብቻ ነው!' });
     }
     try {
         const targetUser = await User.findById(req.params.id);
@@ -249,7 +250,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
             return res.status(400).json({ error: 'ዋናውን Super Admin ማጥፋት አይቻልም!' });
         }
         await User.findByIdAndDelete(req.params.id);
-        res.json({ message: 'ተጠቃሚው ተሰርዟል!' });
+        res.json({ message: 'ተጠቃሚው በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
