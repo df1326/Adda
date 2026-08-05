@@ -12,8 +12,7 @@
     <style>
         :root {
             --brand-blue: #1e3a8a;
-            --brand-green: #059669;
-            --accent-gold: #d97706;
+            --accent-color: #09f0cd;
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-main: #1e293b;
@@ -44,7 +43,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(15, 23, 42, 0.8);
+            background: rgba(30, 58, 138, 0.85);
             display: flex;
             justify-content: center;
             align-items: center;
@@ -58,8 +57,9 @@
             border-radius: 12px;
             width: 100%;
             max-width: 420px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
             text-align: center;
+            border-top: 5px solid var(--accent-color);
         }
 
         .login-card h2 {
@@ -93,6 +93,7 @@
 
         .form-control:focus {
             border-color: var(--brand-blue);
+            box-shadow: 0 0 0 3px rgba(9, 240, 205, 0.2);
         }
 
         .btn-primary {
@@ -106,6 +107,7 @@
             cursor: pointer;
             transition: background 0.2s;
             margin-top: 10px;
+            border-bottom: 3px solid var(--accent-color);
         }
 
         .btn-primary:hover {
@@ -127,6 +129,7 @@
             justify-content: space-between;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            border-bottom: 3px solid var(--accent-color);
         }
 
         header h1 {
@@ -174,6 +177,7 @@
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid #e2e8f0;
+            border-top: 4px solid var(--brand-blue);
         }
 
         .card h3 {
@@ -191,6 +195,7 @@
             padding: 20px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             border: 1px solid #e2e8f0;
+            border-top: 4px solid var(--brand-blue);
             overflow-x: auto;
         }
 
@@ -215,8 +220,9 @@
 
         th {
             background: #f8fafc;
-            color: var(--text-muted);
+            color: var(--brand-blue);
             font-weight: 600;
+            border-bottom: 2px solid var(--accent-color);
         }
 
         .action-del {
@@ -232,8 +238,8 @@
         #toast {
             visibility: hidden;
             min-width: 250px;
-            background-color: #333;
-            color: #fff;
+            background-color: var(--brand-blue);
+            color: var(--accent-color);
             text-align: center;
             border-radius: 4px;
             padding: 12px;
@@ -243,6 +249,9 @@
             bottom: 30px;
             transform: translateX(-50%);
             font-size: 0.9rem;
+            border: 1px solid var(--accent-color);
+            font-weight: 600;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
         }
 
         #toast.show {
@@ -266,10 +275,13 @@
     <!-- Login Modal -->
     <div id="loginOverlay">
         <div class="login-card">
+            <div style="margin-bottom: 15px;">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 75px; width: 75px; object-fit: contain; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid var(--accent-color);">
+            </div>
             <h2>የቴክኖሎጂ ሽግግር ስርዓት</h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
-                    <label for="loginRole">የመግቢያ ዶሮ (Role):</label>
+                    <label for="loginRole">የመግቢያ ሚና (Role):</label>
                     <select id="loginRole" class="form-control" onchange="toggleLoginInputs()">
                         <option value="user">ዞን / ተጠቃሚ (Zone User)</option>
                         <option value="admin">አስተዳዳሪ (Admin)</option>
@@ -285,13 +297,28 @@
                 <div class="form-group" id="zoneSelectGroup">
                     <label for="loginZoneSelect">ዞን ይምረጡ:</label>
                     <select id="loginZoneSelect" class="form-control">
-                        <option value="Bahir Dar">ባህር ዳር</option>
-                        <option value="Gondar">ጎንደር</option>
-                        <option value="Dessie">ደሴ</option>
-                        <option value="Debre Markos">ደብረ ማርቆስ</option>
-                        <option value="Debre Tabor">ደብረ ታቦር</option>
-                        <option value="Woldia">ዎልዲያ</option>
-                        <option value="Finote Selam">ፍኖተ ሰላም</option>
+                        <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
+                        <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
+                        <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
+                        <option value="ወልድያ ከተማ">ወልድያ ከተማ</option>
+                        <option value="ደሴ ከተማ">ደሴ ከተማ</option>
+                        <option value="ኮምቦልቻ ከተማ">ኮምቦልቻ ከተማ</option>
+                        <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
+                        <option value="ደብረ ታቦር ከተማ">ደብረ ታቦር ከተማ</option>
+                        <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
+                        <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
+                        <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
+                        <option value="ወልቃይት ጠገዴ ሰቲት ሁመራ ዞን">ወልቃይት ጠገዴ ሰቲት ሁመራ ዞን</option>
+                        <option value="ደቡብ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
+                        <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
+                        <option value="ደቡብ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
+                        <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
+                        <option value="ምስራቅ ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
+                        <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
+                        <option value="አዊ ዞን">አዊ ዞን</option>
+                        <option value="ኦሮሞ ብ/አ ዞን">ኦሮሞ ብ/አ ዞን</option>
+                        <option value="ዋግህምራ ብ/አ ዞን">ዋግህምራ ብ/አ ዞን</option>
+                        <option value="ሰሜን ጎጃም ዞን">ሰሜን ጎጃም ዞን</option>
                     </select>
                 </div>
 
@@ -308,7 +335,10 @@
     <!-- Main Dashboard Wrapper -->
     <div id="dashboardWrapper">
         <header>
-            <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
+            <div style="display: flex; align-items: center; gap: 12px;">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 45px; width: 45px; object-fit: contain; border-radius: 50%; background: white; padding: 2px; border: 2px solid var(--accent-color);">
+                <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
+            </div>
             <div class="user-info">
                 <span id="currentUserDisplay">እንግዳ</span>
                 <button class="btn-logout" onclick="handleLogout()">ውጣ</button>
@@ -882,7 +912,7 @@
                             '<td>' + (r.b_female || 0) + '</td>' +
                             '<td>' + (r.diagnosis || 0) + '</td>' +
                             '<td><b>' + escapeHtml(r.createdBy || '') + '</b></td>' +
-                            '<td>' + ((userRole === 'superadmin' || userRole === 'admin') ? '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')"><i class="fas fa-trash"></i></button>' : '') + '</td>';
+                            '<td>' + ((userRole === 'superadmin' || userRole === 'admin') ? '<button class="action-del" onclick="deleteReport('' + r._id + '')"><i class="fas fa-trash"></i></button>' : '') + '</td>';
                         tbody.appendChild(tr);
                     });
                 })
@@ -922,7 +952,8 @@
                     }
                     csv.push(row.join(','));
                 }
-                var csvFile = new Blob(["\uFEFF" + csv.join('\n')], { type: 'text/csv;charset=utf-8;' });
+                var csvFile = new Blob(["﻿" + csv.join('
+')], { type: 'text/csv;charset=utf-8;' });
                 var downloadLink = document.createElement('a');
                 downloadLink.download = 'technology_transfer_reports.csv';
                 downloadLink.href = window.URL.createObjectURL(csvFile);
