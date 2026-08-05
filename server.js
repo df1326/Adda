@@ -21,12 +21,7 @@ const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_tech_transfer_key_2026';
 
 // ---------------- MongoDB Connection ----------------
-// Render/Railway ላይ Environment Variable MONGODB_URI ማስገባት ትችላለህ
 const MONGODB_URI = process.env.MONGODB_URI || "እዚህ_ጋር_የእርስዎን_MongoDB_Atlas_URI_ያስገቡ";
-
-mongoose.connect(MONGODB_URI)
-    .then(() => console.log('⚡ Connected to MongoDB Atlas successfully!'))
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
 
 // ---------------- MongoDB Schemas ----------------
 const userSchema = new mongoose.Schema({
@@ -61,6 +56,34 @@ const reportSchema = new mongoose.Schema({
 const User = mongoose.model('User', userSchema);
 const Report = mongoose.model('Report', reportSchema);
 
+// ---------------- Auto Init Superadmin Function ----------------
+const initSuperadmin = async () => {
+    try {
+        const exist = await User.findOne({ role: 'superadmin' });
+        if (!exist) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            await User.create({
+                username: 'superadmin',
+                password: hashedPassword,
+                role: 'superadmin'
+            });
+            console.log('✅ Default superadmin created (username: superadmin / password: admin123)');
+        } else {
+            console.log('ℹ️ Superadmin account is ready.');
+        }
+    } catch (err) {
+        console.error('❌ Superadmin init error:', err.message);
+    }
+};
+
+// Connect DB first, then run Superadmin Init
+mongoose.connect(MONGODB_URI)
+    .then(() => {
+        console.log('⚡ Connected to MongoDB Atlas successfully!');
+        initSuperadmin(); // ከዳታቤዝ ጋር ከተገናኘ በኋላ ብቻ ይጥራል
+    })
+    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
@@ -77,30 +100,12 @@ const authenticateToken = (req, res, next) => {
 
 // ==================== API ROUTES ====================
 
-// 1. Health Check (ሰርቨሩ እየሰራ መሆኑን በማንኛውም ብራውዘር ለማየት)
+// 1. Health Check
 app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Server is running smoothly!' });
 });
 
-// 2. Initialize Superadmin Auto/Manual
-const initSuperadmin = async () => {
-    try {
-        const exist = await User.findOne({ role: 'superadmin' });
-        if (!exist) {
-            const hashedPassword = await bcrypt.hash('admin123', 10);
-            await User.create({
-                username: 'superadmin',
-                password: hashedPassword,
-                role: 'superadmin'
-            });
-            console.log('✅ Default superadmin account created (superadmin / admin123)');
-        }
-    } catch (err) {
-        console.error('Superadmin init error:', err);
-    }
-};
-initSuperadmin();
-
+// 2. Explicit Superadmin Init Endpoint
 app.post('/api/init-superadmin', async (req, res) => {
     await initSuperadmin();
     res.json({ message: 'Superadmin check/initialization completed!' });
@@ -142,7 +147,36 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 4. Manage Users
+// 4. Change Superadmin Password
+app.post('/api/change-superadmin-password', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'superadmin') {
+        return res.status(403).json({ error: 'የይለፍ ቃል የመቀየር መብት የለዎትም!' });
+    }
+
+    const { oldPassword, newPassword } = req.body;
+    if (!oldPassword || !newPassword) {
+        return res.status(400).json({ error: 'እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ያስገቡ!' });
+    }
+
+    try {
+        const user = await User.findOne({ username: 'superadmin' });
+        if (!user) return res.status(404).json({ error: 'Superadmin አልተገኘም!' });
+
+        const validPassword = await bcrypt.compare(oldPassword, user.password);
+        if (!validPassword) {
+            return res.status(400).json({ error: 'የድሮው የይለፍ ቃል የተሳሳተ ነው!' });
+        }
+
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+
+        res.json({ message: 'የሱፐር አድሚን የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!' });
+    } catch (err) {
+        res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
+    }
+});
+
+// 5. Manage Users
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
         const users = await User.find({}, '-password');
@@ -171,6 +205,10 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
         return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
     }
     try {
+        const targetUser = await User.findById(req.params.id);
+        if (targetUser && targetUser.role === 'superadmin') {
+            return res.status(400).json({ error: 'ዋናውን Super Admin ማጥፋት አይቻልም!' });
+        }
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: 'ተጠቃሚው ተሰርዟል!' });
     } catch (err) {
@@ -178,7 +216,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 5. Reports API
+// 6. Reports API
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
         const newReport = await Report.create({ ...req.body, createdBy: req.user.username });
@@ -192,6 +230,18 @@ app.get('/api/report', authenticateToken, async (req, res) => {
     try {
         const reports = await Report.find().sort({ created_at: -1 });
         res.json(reports);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/report/:id', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'superadmin') {
+        return res.status(403).json({ error: 'ሪፖርት የማጥፋት መብት የለዎትም!' });
+    }
+    try {
+        await Report.findByIdAndDelete(req.params.id);
+        res.json({ message: 'ሪፖርቱ በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
