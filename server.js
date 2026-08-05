@@ -3,6 +3,7 @@ const cors = require('cors');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
+const path = require('path');
 
 const app = express();
 
@@ -14,6 +15,14 @@ app.use(cors({
 }));
 
 app.use(express.json());
+
+// ---------------- Static Files & Root Route Setup ----------------
+// index.html የሚገኘበትን ቦታ ማቅረብ (Cannot GET / ን ይፈታል)
+app.use(express.static(path.join(__dirname))); 
+
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
+});
 
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'super_secret_tech_transfer_key_2026';
@@ -101,22 +110,33 @@ app.get('/api/health', (req, res) => {
     res.json({ status: 'OK', message: 'Render Node.js Server is running smoothly!' });
 });
 
-// 2. Explicit Superadmin Init Endpoint
+// 2. Currently Logged in User Details (/api/me)
+app.get('/api/me', authenticateToken, (req, res) => {
+    res.json({
+        username: req.user.username,
+        role: req.user.role
+    });
+});
+
+// 3. Explicit Superadmin Init Endpoint
 app.post('/api/init-superadmin', async (req, res) => {
     await initSuperadmin();
     res.json({ message: 'Superadmin check/initialization completed!' });
 });
 
-// 3. Login Endpoint
+// 4. Login Endpoint (የተሻሻለ)
 app.post('/api/login', async (req, res) => {
     const { username, password, role } = req.body;
 
-    if (!username || !password || !role) {
-        return res.status(400).json({ error: 'እባክዎ ሁሉንም መስኮች ይሙሉ!' });
+    if (!username || !password) {
+        return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!' });
     }
 
     try {
-        const user = await User.findOne({ username: username.trim(), role: role.trim() });
+        // ሚና (role) ተልኮ ከሆነ በዚያ ይፈልጋል፤ ካልተላከ በተጠቃሚ ስም ብቻ ይፈልጋል
+        const query = role ? { username: username.trim(), role: role.trim() } : { username: username.trim() };
+        const user = await User.findOne(query);
+
         if (!user) {
             return res.status(400).json({ error: 'የተጠቃሚው ስም ወይም ሚና አልተገኘም!' });
         }
@@ -143,7 +163,7 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 4. Change Superadmin Password
+// 5. Change Superadmin Password
 app.post('/api/change-superadmin-password', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin') {
         return res.status(403).json({ error: 'የይለፍ ቃል የመቀየር መብት የለዎትም!' });
@@ -172,7 +192,7 @@ app.post('/api/change-superadmin-password', authenticateToken, async (req, res) 
     }
 });
 
-// 5. Manage Users
+// 6. Manage Users
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
         const users = await User.find({}, '-password');
@@ -212,7 +232,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 6. Reports API
+// 7. Reports API
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
         const newReport = await Report.create({ ...req.body, createdBy: req.user.username });
@@ -232,7 +252,7 @@ app.get('/api/report', authenticateToken, async (req, res) => {
 });
 
 app.delete('/api/report/:id', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin') {
+    if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'ሪፖርት የማጥፋት መብት የለዎትም!' });
     }
     try {
