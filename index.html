@@ -11,14 +11,14 @@
     
     <style>
         :root {
-           --brand-blue: #1E3A8A;     
-    --accent-color: #09F0CD;   
-    --bg-color: #F8FAFC;       
-    --card-bg: #FFFFFF;       
-    --text-main: #0F172A;      
-    --text-muted: #475569;     
-    --border-color: #E2E8F0;   
-    --danger-red: #DC2626;   
+            --brand-blue: #1b365d;     /* ማራኪ እና ጥልቅ የቢሮ ሰማያዊ */
+            --accent-color: #00b4d8;   /* ደማቅ የቱርክዋይዝ ቀለም ለትኩረት */
+            --bg-color: #f0f4f8;       /* ለዓይን ምቹ የሆነ ለስላሳ ብርሃናማ ዳራ */
+            --card-bg: #ffffff;        /* ንጹህ ነጭ ለካርዶች */
+            --text-main: #0f172a;      /* ጽሑፎች በግልጽ እንዲታዩ ጥቁር ቀለም */
+            --text-muted: #475569;     /* ሁለተኛ ደረጃ ግራጫ ጽሑፍ */
+            --border-color: #cbd5e1;   /* የክፈፍ መስመር */
+            --danger-red: #ef4444;     /* የማጥፊያ ቀይ ቀለም */
         }
 
         * {
@@ -43,57 +43,60 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(30, 58, 138, 0.85);
+            background: linear-gradient(135deg, rgba(27, 54, 93, 0.92), rgba(15, 23, 42, 0.95));
             display: flex;
             justify-content: center;
             align-items: center;
             z-index: 1000;
-            backdrop-filter: blur(5px);
+            backdrop-filter: blur(8px);
         }
 
         .login-card {
             background: var(--card-bg);
             padding: 40px;
-            border-radius: 12px;
+            border-radius: 16px;
             width: 100%;
-            max-width: 420px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2);
+            max-width: 440px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
             text-align: center;
-            border-top: 5px solid var(--accent-color);
+            border-top: 6px solid var(--accent-color);
         }
 
         .login-card h2 {
             color: var(--brand-blue);
             margin-bottom: 24px;
-            font-size: 1.5rem;
+            font-size: 1.35rem;
+            font-weight: 600;
         }
 
         .form-group {
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             text-align: left;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 6px;
-            font-size: 0.85rem;
-            font-weight: 500;
+            font-size: 0.88rem;
+            font-weight: 600;
             color: var(--text-main);
         }
 
         .form-control {
             width: 100%;
-            padding: 10px 14px;
+            padding: 12px 14px;
             border: 1px solid var(--border-color);
-            border-radius: 6px;
+            border-radius: 8px;
             font-size: 0.95rem;
             outline: none;
-            transition: border-color 0.2s;
+            transition: all 0.3s ease;
+            background-color: #f8fafc;
         }
 
         .form-control:focus {
-            border-color: var(--brand-blue);
-            box-shadow: 0 0 0 3px rgba(9, 240, 205, 0.2);
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 4px rgba(0, 180, 216, 0.15);
         }
 
         .btn-primary {
@@ -102,16 +105,16 @@
             background: var(--brand-blue);
             color: white;
             border: none;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 600;
             cursor: pointer;
-            transition: background 0.2s;
+            transition: background 0.3s ease;
             margin-top: 10px;
-            border-bottom: 3px solid var(--accent-color);
+            box-shadow: 0 4px 12px rgba(27, 54, 93, 0.25);
         }
 
         .btn-primary:hover {
-            background: #1e40af;
+            background: #0f2347;
         }
 
         /* Dashboard Layout */
@@ -124,12 +127,12 @@
         header {
             background: var(--brand-blue);
             color: white;
-            padding: 15px 30px;
+            padding: 18px 30px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            border-bottom: 3px solid var(--accent-color);
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            border-bottom: 4px solid var(--accent-color);
         }
 
         header h1 {
@@ -147,10 +150,16 @@
             background: var(--danger-red);
             color: white;
             border: none;
-            padding: 6px 12px;
-            border-radius: 4px;
+            padding: 7px 14px;
+            border-radius: 6px;
             cursor: pointer;
             font-size: 0.85rem;
+            font-weight: 500;
+            transition: opacity 0.2s;
+        }
+
+        .btn-logout:hover {
+            opacity: 0.9;
         }
 
         main {
@@ -161,41 +170,42 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 30px;
+            gap: 25px;
         }
 
         /* Admin & Control Panels */
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
         }
 
         .card {
             background: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e2e8f0;
-            border-top: 4px solid var(--brand-blue);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            border-top: 5px solid var(--brand-blue);
         }
 
         .card h3 {
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             color: var(--brand-blue);
-            margin-bottom: 16px;
+            margin-bottom: 18px;
             border-bottom: 2px solid #f1f5f9;
-            padding-bottom: 8px;
+            padding-bottom: 10px;
+            font-weight: 600;
         }
 
         /* Reports Table Section */
         .table-container {
             background: var(--card-bg);
-            border-radius: 8px;
-            padding: 20px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            border: 1px solid #e2e8f0;
-            border-top: 4px solid var(--brand-blue);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            border-top: 5px solid var(--brand-blue);
             overflow-x: auto;
         }
 
@@ -203,18 +213,18 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 16px;
+            margin-bottom: 20px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.85rem;
+            font-size: 0.88rem;
         }
 
         th, td {
-            padding: 10px 12px;
+            padding: 12px 14px;
             border-bottom: 1px solid #e2e8f0;
         }
 
@@ -225,38 +235,43 @@
             border-bottom: 2px solid var(--accent-color);
         }
 
+        tr:hover {
+            background-color: #f8fafc;
+        }
+
         .action-del {
             background: var(--danger-red);
             color: white;
             border: none;
-            padding: 4px 8px;
-            border-radius: 4px;
+            padding: 6px 10px;
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 0.75rem;
         }
 
         /* Toast Notification */
         #toast {
             visibility: hidden;
-            min-width: 250px;
+            min-width: 260px;
             background-color: var(--brand-blue);
-            color: var(--accent-color);
+            color: #ffffff;
             text-align: center;
-            border-radius: 4px;
-            padding: 12px;
+            border-radius: 8px;
+            padding: 14px;
             position: fixed;
             z-index: 2000;
             left: 50%;
             bottom: 30px;
             transform: translateX(-50%);
-            font-size: 0.9rem;
-            border: 1px solid var(--accent-color);
-            font-weight: 600;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            font-size: 0.95rem;
+            border-left: 5px solid var(--accent-color);
+            font-weight: 500;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
         }
 
         #toast.show {
             visibility: visible;
-            animation: fadein 0.5s, fadeout 0.5s 2.5s;
+            animation: fadein 0.4s, fadeout 0.4s 2.6s;
         }
 
         @keyframes fadein {
@@ -276,9 +291,9 @@
     <div id="loginOverlay">
         <div class="login-card">
             <div style="margin-bottom: 15px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 75px; width: 75px; object-fit: contain; border-radius: 50%; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 2px solid var(--accent-color);">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 80px; width: 80px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
             </div>
-            <h2>የቴክኖሎጂ ሽግግር ሪፖርት   ማድርጊያ እንኳን ደህና መጡ!</h2>
+            <h2>የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ እንኳን ደህና መጡ!</h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label for="loginRole">ሚና (Role):</label>
@@ -336,11 +351,11 @@
     <div id="dashboardWrapper">
         <header>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 45px; width: 45px; object-fit: contain; border-radius: 50%; background: white; padding: 2px; border: 2px solid var(--accent-color);">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 48px; width: 48px; object-fit: contain; border-radius: 50%; background: white; padding: 2px; border: 2px solid var(--accent-color);">
                 <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
             </div>
             <div class="user-info">
-                <span id="currentUserDisplay">እንግዳ</span>
+                <span id="currentUserDisplay" style="font-weight: 500;">እንግዳ</span>
                 <button class="btn-logout" onclick="handleLogout()">ውጣ</button>
             </div>
         </header>
@@ -370,7 +385,7 @@
 
                 <div class="card">
                     <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
-                    <ul id="userListUI" style="list-style:none; max-height:200px; overflow-y:auto;">
+                    <ul id="userListUI" style="list-style:none; max-height:200px; overflow-y:auto; padding-right: 5px;">
                         <!-- Dynamically populated -->
                     </ul>
                 </div>
@@ -391,7 +406,7 @@
 
             <!-- Report Form Card -->
             <div class="card" id="reportFormCard">
-                <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል እባክዎ በጥንቃቄ ይሙሉ </h3>
+                <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል እባክዎ በጥንቃቄ ይሙሉ</h3>
                 <form id="reportForm" onsubmit="handleReportSubmit(event)">
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
                         <div class="form-group">
@@ -470,7 +485,7 @@
                             <input type="number" id="diagnosis" class="form-control" value="0">
                         </div>
                     </div>
-                    <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 20px;">ሪፖርት መዝግብ</button>
+                    <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 20px; width: auto; padding: 10px 24px;">ሪፖርት መዝግብ</button>
                 </form>
             </div>
 
@@ -478,7 +493,7 @@
             <div class="table-container">
                 <div class="table-header">
                     <h3>የተመዘገቡ ሪፖርቶች ዝርዝር</h3>
-                    <button class="btn-primary" style="width: auto; padding: 6px 14px; margin:0;" onclick="exportToCSV()">ወደ CSV አውርድ</button>
+                    <button class="btn-primary" style="width: auto; padding: 8px 16px; margin:0;" onclick="exportToCSV()">ወደ CSV አውርድ</button>
                 </div>
                 <table>
                     <thead>
@@ -645,10 +660,10 @@
                     fetchAdminUsersList();
                 } else if (userRole === 'admin') {
                     adminPanel.style.display = 'grid';
-                    createUserCard.style.display = 'none'; // አድሚን አካውንት መፍጠር አይችልም
+                    createUserCard.style.display = 'none';
                     superAdminPassCard.style.display = 'none';
                     reportFormCard.style.display = 'block';
-                    setReportFormEditable(false); // ፎርሙ ይታያል ግን መረጃ መሞላት አይችልም
+                    setReportFormEditable(false);
                     fetchAdminUsersList();
                 } else {
                     adminPanel.style.display = 'none';
@@ -668,7 +683,7 @@
                 
                 var submitBtn = document.getElementById('submitReportBtn');
                 if (submitBtn) {
-                    submitBtn.style.display = isEditable ? 'block' : 'none';
+                    submitBtn.style.display = isEditable ? 'inline-block' : 'none';
                 }
             }
 
@@ -700,7 +715,7 @@
                 var userListUI = document.getElementById('userListUI');
                 userListUI.innerHTML = '';
                 if (!users || users.length === 0) {
-                    userListUI.innerHTML = '<li style="color:#64748b; justify-content:center;">ምንም ተጠቃሚ የለም</li>';
+                    userListUI.innerHTML = '<li style="color:#64748b; text-align:center; padding:10px;">ምንም ተጠቃሚ የለም</li>';
                     return;
                 }
                 users.forEach(function(u) {
@@ -708,7 +723,11 @@
                     li.style.display = 'flex';
                     li.style.justifyContent = 'space-between';
                     li.style.alignItems = 'center';
-                    li.style.marginBottom = '8px';
+                    li.style.marginBottom = '10px';
+                    li.style.padding = '8px';
+                    li.style.background = '#f8fafc';
+                    li.style.borderRadius = '6px';
+                    li.style.border = '1px solid #e2e8f0';
 
                     var infoSpan = document.createElement('span');
                     infoSpan.innerHTML = '<b>' + escapeHtml(u.username) + '</b> <span style="font-size:0.8rem; color:#64748b;">(' + escapeHtml(u.role) + ')</span>';
@@ -915,7 +934,7 @@
                     var tbody = document.getElementById('reportTableBody');
                     tbody.innerHTML = '';
                     if (!reports || reports.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም ሪፖርት አልተመዘገበም</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b; padding:20px;">ምንም ሪፖርት አልተመዘገበም</td></tr>';
                         return;
                     }
                     reports.forEach(function(r) {
