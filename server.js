@@ -17,7 +17,6 @@ app.use(cors({
 app.use(express.json());
 
 // ---------------- Static Files & Root Route Setup ----------------
-// index.html የሚገኘበትን ቦታ ማቅረብ (Cannot GET / ን ይፈታል)
 app.use(express.static(path.join(__dirname))); 
 
 app.get('/', (req, res) => {
@@ -124,7 +123,7 @@ app.post('/api/init-superadmin', async (req, res) => {
     res.json({ message: 'Superadmin check/initialization completed!' });
 });
 
-// 4. Login Endpoint (የተሻሻለ)
+// 4. Login Endpoint
 app.post('/api/login', async (req, res) => {
     const { username, password, role } = req.body;
 
@@ -133,7 +132,6 @@ app.post('/api/login', async (req, res) => {
     }
 
     try {
-        // ሚና (role) ተልኮ ከሆነ በዚያ ይፈልጋል፤ ካልተላከ በተጠቃሚ ስም ብቻ ይፈልጋል
         const query = role ? { username: username.trim(), role: role.trim() } : { username: username.trim() };
         const user = await User.findOne(query);
 
@@ -163,20 +161,16 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 5. Change Superadmin Password
-app.post('/api/change-superadmin-password', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin') {
-        return res.status(403).json({ error: 'የይለፍ ቃል የመቀየር መብት የለዎትም!' });
-    }
-
+// 5. Change Password (ለሱፐር አድሚን የራሱን ፓስዋርድ ለመቀየር)
+app.post('/api/change-password', authenticateToken, async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     if (!oldPassword || !newPassword) {
         return res.status(400).json({ error: 'እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ያስገቡ!' });
     }
 
     try {
-        const user = await User.findOne({ username: 'superadmin' });
-        if (!user) return res.status(404).json({ error: 'Superadmin አልተገኘም!' });
+        const user = await User.findById(req.user.id);
+        if (!user) return res.status(404).json({ error: 'ተጠቃሚው አልተገኘም!' });
 
         const validPassword = await bcrypt.compare(oldPassword, user.password);
         if (!validPassword) {
@@ -186,13 +180,42 @@ app.post('/api/change-superadmin-password', authenticateToken, async (req, res) 
         user.password = await bcrypt.hash(newPassword, 10);
         await user.save();
 
-        res.json({ message: 'የሱፐር አድሚን የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!' });
+        res.json({ message: 'የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!' });
     } catch (err) {
         res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
     }
 });
 
-// 6. Manage Users
+// 6. Admin Reset Password Endpoint (አዲስ የተጨመረ - ለዞኖች/ተጠቃሚዎች ፓስዋርድ ሪሴት ለማድረግ)
+app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
+        return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+    }
+
+    const { username, newPassword } = req.body;
+    if (!username || !newPassword) {
+        return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና አዲስ የይለፍ ቃል ያስገቡ!' });
+    }
+
+    try {
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        const updatedUser = await User.findOneAndUpdate(
+            { username: username },
+            { password: hashedPassword },
+            { new: true }
+        );
+
+        if (!updatedUser) {
+            return res.status(404).json({ error: 'ተጠቃሚው በዳታቤዝ ውስጥ አልተገኘም!' });
+        }
+
+        res.json({ message: 'የተጠቃሚው ፓስዋርድ በተሳካ ሁኔታ ተቀይሯል!' });
+    } catch (err) {
+        res.status(500).json({ error: 'ሰርቨር ላይ ስህተት ተፈጥሯል!' });
+    }
+});
+
+// 7. Manage Users
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
         const users = await User.find({}, '-password');
@@ -232,7 +255,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 7. Reports API
+// 8. Reports API
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
         const newReport = await Report.create({ ...req.body, createdBy: req.user.username });
