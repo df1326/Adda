@@ -77,7 +77,7 @@
         }
 
         .login-logo {
-            height: 70px;
+            height: 75px;
             width: auto;
             object-fit: contain;
             display: block;
@@ -329,8 +329,8 @@
     <!-- Login Modal -->
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
-            <!-- የሎጎ ማስገቢያ በ Login Form ላይ -->
-            <img src="https://your-domain.com/logo.png" alt="Logo" class="login-logo">
+            <!-- የተካው የሎጎ ሊንክ በ Login Form ላይ -->
+            <img src="https://ibb.co/9mYLk2SX" alt="Logo" class="login-logo">
             
             <h2 style="text-align:center; margin-bottom:1.5rem; color:var(--primary-text);">
                 <i class="fas fa-lock"></i> መግቢያ
@@ -355,8 +355,8 @@
         <!-- Top Header Card -->
         <div class="header-card">
             <div class="header-title">
-                <!-- የሎጎ ማስገቢያ በ Header ላይ -->
-                <img src="https://your-domain.com/logo.png" alt="Logo" class="app-logo">
+                <!-- የተካው የሎጎ ሊንክ በ Header ላይ -->
+                <img src="https://ibb.co/9mYLk2SX" alt="Logo" class="app-logo">
                 የቴክኖሎጂ ሽግግር ፕሮፋይል መረጃ ቋት
             </div>
             <div class="header-right">
@@ -641,7 +641,7 @@
                         userRole = data.role;
                         document.getElementById('currentUserDisplay').innerText = currentUser;
                         
-                        showLoginModal(false); // Dashboard ዉስጥ እንዲገባ ያደርጋል
+                        showLoginModal(false);
                         setupRoleViews();
                         loadReports();
                     } else {
@@ -657,7 +657,6 @@
                 var adminPanel = document.getElementById('adminPanel');
                 var superCard = document.getElementById('superAdminPassCard');
 
-                // Superadmin ወይም Admin ከሆነ ብቻ የAdmin Controls እንዲታዩ ማድረግ
                 if (userRole === 'superadmin' || userRole === 'admin') {
                     adminPanel.style.display = 'grid';
                     fetchAdminUsersList();
@@ -748,7 +747,6 @@
                     data.forEach(function(item) {
                         var tr = document.createElement('tr');
                         
-                        // ሰርዝ (Delete) ቁልፍ ለ Superadmin/Admin ብቻ እንዲወጣ ማድረግ
                         var deleteBtn = (userRole === 'superadmin' || userRole === 'admin') 
                             ? '<button class="action-del" onclick="deleteReport(\'' + item._id + '\')" title="ሰርዝ"><i class="fas fa-trash-alt"></i> ሰርዝ</button>' 
                             : '-';
