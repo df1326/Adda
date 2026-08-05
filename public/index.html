@@ -65,7 +65,23 @@
             color: var(--primary-text);
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
+        }
+
+        /* Logo Styling */
+        .app-logo {
+            height: 48px;
+            width: auto;
+            object-fit: contain;
+            border-radius: 6px;
+        }
+
+        .login-logo {
+            height: 70px;
+            width: auto;
+            object-fit: contain;
+            display: block;
+            margin: 0 auto 1rem auto;
         }
 
         .header-right {
@@ -313,6 +329,9 @@
     <!-- Login Modal -->
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
+            <!-- የሎጎ ማስገቢያ በ Login Form ላይ -->
+            <img src="https://your-domain.com/logo.png" alt="Logo" class="login-logo">
+            
             <h2 style="text-align:center; margin-bottom:1.5rem; color:var(--primary-text);">
                 <i class="fas fa-lock"></i> መግቢያ
             </h2>
@@ -336,6 +355,8 @@
         <!-- Top Header Card -->
         <div class="header-card">
             <div class="header-title">
+                <!-- የሎጎ ማስገቢያ በ Header ላይ -->
+                <img src="https://your-domain.com/logo.png" alt="Logo" class="app-logo">
                 የቴክኖሎጂ ሽግግር ፕሮፋይል መረጃ ቋት
             </div>
             <div class="header-right">
