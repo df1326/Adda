@@ -319,7 +319,7 @@
             padding: 2.5rem;
             border-radius: 16px;
             width: 100%;
-            max-width: 380px;
+            max-width: 420px;
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
         }
     </style>
@@ -329,33 +329,68 @@
     <!-- Login Modal -->
     <div id="loginOverlay" class="login-overlay">
         <div class="login-box">
-            <!-- የተካው የሎጎ Direct Link በ Login Form ላይ -->
             <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="Logo" class="login-logo">
             
             <h2 style="text-align:center; margin-bottom:1.5rem; color:var(--primary-text);">
                 <i class="fas fa-lock"></i> መግቢያ
             </h2>
+            
+            <!-- የተስተካከለው የሎግ ኢን ፎርም (ከተማና ዞኖችን በዝርዝር የያዘ) -->
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label>የተጠቃሚ ስም</label>
-                    <input type="text" id="loginUsername" required placeholder="የተጠቃሚ ስም">
+                    <label><i class="fas fa-map-marker-alt"></i> ዞን / ከተማ አስተዳደር ምረጥ</label>
+                    <select id="loginUsername" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;">
+                        <option value="" disabled selected>-- እባክዎ ዞን ወይም ከተማ አስተዳደር ይምረጡ --</option>
+                        
+                        <!-- ከተማ አስተዳደሮች -->
+                        <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
+                        <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
+                        <option value="ደብረ ታቦር ከተማ">ደብረ ታቦር ከተማ</option>
+                        <option value="ወልድያ ከተማ">ወልድያ ከተማ</option>
+                        <option value="ደሴ ከተማ">ደሴ ከተማ</option>
+                        <option value="ኮምቦልቻ ከተማ">ኮምቦልቻ ከተማ</option>
+                        <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
+                        <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
+                        
+                        <!-- ዞኖች -->
+                        <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
+                        <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
+                        <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
+                        <option value="ወልቃይት ጠገዴ ስቲት ሁመራ ዞን">ወልቃይት ጠገዴ ስቲት ሁመራ ዞን</option>
+                        <option value="ደቡብ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
+                        <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
+                        <option value="ደቡብ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
+                        <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
+                        <option value="ምስራቅ ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
+                        <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
+                        <option value="ሰሜን ጎጃም">ሰሜን ጎጃም</option>
+                        <option value="አዊ ብ/ሰ ዞን">አዊ ብ/ሰ ዞን</option>
+                        <option value="ዋግኸምራ ብ/ሰ ዞን">ዋግኸምራ ብ/ሰ ዞን</option>
+                        <option value="ኦሮሞ ብ/ሰ ዞን">ኦሮሞ ብ/ሰ ዞን</option>
+                        
+                        <!-- ለሱፐር አድሚን መግቢያ -->
+                        <option value="superadmin">Superadmin (ማዕከላዊ አስተዳዳሪ)</option>
+                    </select>
                 </div>
+
                 <div class="form-group" style="margin-bottom: 1.5rem;">
-                    <label>የይለፍ ቃል</label>
+                    <label><i class="fas fa-key"></i> የይለፍ ቃል</label>
                     <input type="password" id="loginPassword" required placeholder="******">
                 </div>
-                <button type="submit" class="btn-submit" style="width:100%;">ይግቡ</button>
+
+                <button type="submit" class="btn-submit" style="width:100%;">
+                    <i class="fas fa-sign-in-alt"></i> ይግቡ
+                </button>
             </form>
         </div>
     </div>
 
-    <!-- Main Dashboard Area (ተጠቃሚ ሲገባ ብቻ የሚታይ) -->
+    <!-- Main Dashboard Area -->
     <div id="dashboardWrapper" class="app-container" style="display: none;">
 
         <!-- Top Header Card -->
         <div class="header-card">
             <div class="header-title">
-                <!-- የተካው የሎጎ Direct Link በ Header ላይ -->
                 <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="Logo" class="app-logo">
                 የቴክኖሎጂ ሽግግር ፕሮፋይል መረጃ ቋት
             </div>
@@ -370,7 +405,7 @@
             </div>
         </div>
 
-        <!-- 1. Admin Controls Section (ለ Superadmin/Admin ብቻ) -->
+        <!-- 1. Admin Controls Section -->
         <div id="adminPanel" class="admin-grid" style="display: none;">
             
             <!-- አዲስ ተጠቃሚ ፍጠር -->
@@ -379,8 +414,8 @@
                     <i class="fas fa-user-plus"></i> አዲስ ተጠቃሚ ፍጠር (ለዞኖች አካውንት መስጫ)
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label>የተጠቃሚ ስም</label>
-                    <input type="text" id="newUserName" placeholder="የተጠቃሚ ስም">
+                    <label>የተጠቃሚ ስም (ዞን/ከተማ)</label>
+                    <input type="text" id="newUserName" placeholder="ምሳሌ፦ ባህር ዳር ከተማ">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label>የይለፍ ቃል (ቢያንስ 6 ቁምፊ)</label>
@@ -424,7 +459,7 @@
 
         </div>
 
-        <!-- 2. የሪፖርት መሙያ ፎርም (Report Form) -->
+        <!-- 2. የሪፖርት መሙያ ፎርም -->
         <div class="card">
             <div class="welcome-msg">እንኳን ደህና መጡ!</div>
 
@@ -518,7 +553,7 @@
             </form>
         </div>
 
-        <!-- 3. የሪፖርቶች ሰንጠረዥ (Report Table & Analytics) -->
+        <!-- 3. የሪፖርቶች ሰንጠረዥ -->
         <div class="card">
             <div class="table-controls">
                 <div class="card-title" style="margin:0; border:none; padding:0;">
@@ -595,7 +630,7 @@
 
             window.handleLogin = function(e) {
                 e.preventDefault();
-                var usernameInput = document.getElementById('loginUsername').value.trim();
+                var usernameInput = document.getElementById('loginUsername').value;
                 var passwordInput = document.getElementById('loginPassword').value.trim();
 
                 fetch(API + '/login', {
