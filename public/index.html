@@ -174,6 +174,7 @@
             font-size: 0.9rem;
             outline: none;
             transition: border-color 0.2s;
+            width: 100%;
         }
 
         .form-group input:focus, .form-group select:focus {
@@ -335,41 +336,48 @@
                 <i class="fas fa-lock"></i> መግቢያ
             </h2>
             
-            <!-- የተስተካከለው የሎግ ኢን ፎርም (ከተማና ዞኖችን በዝርዝር የያዘ) -->
             <form id="loginForm" onsubmit="handleLogin(event)">
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label><i class="fas fa-map-marker-alt"></i> ዞን / ከተማ አስተዳደር ምረጥ</label>
-                    <select id="loginUsername" required style="width: 100%; padding: 10px; border-radius: 8px; border: 1px solid var(--border-color); font-size: 0.9rem;">
-                        <option value="" disabled selected>-- እባክዎ ዞን ወይም ከተማ አስተዳደር ይምረጡ --</option>
-                        
-                        <!-- ከተማ አስተዳደሮች -->
+                    <label><i class="fas fa-user-shield"></i> ሚና (Role)</label>
+                    <select id="loginRole" onchange="toggleLoginInputs()" required>
+                        <option value="superadmin">Super Admin</option>
+                        <option value="admin">Admin</option>
+                        <option value="user">User (ዞን/ከተማ አስተዳደር)</option>
+                    </select>
+                </div>
+
+                <!-- የተጠቃሚ ስም (ለ Super Admin እና Admin) -->
+                <div class="form-group" id="usernameGroup" style="margin-bottom: 1rem;">
+                    <label><i class="fas fa-user"></i> የተጠቃሚ ስም (Username)</label>
+                    <input type="text" id="loginUsername" placeholder="የተጠቃሚ ስምዎን ያስገቡ">
+                </div>
+
+                <!-- የዞን እና ከተማ አስተዳደር ድሮፕዳውን (ለ User ብቻ የሚታይ) -->
+                <div class="form-group" id="zoneSelectGroup" style="margin-bottom: 1rem; display: none;">
+                    <label><i class="fas fa-map-marker-alt"></i> ዞን / ከተማ አስተዳደር ይምረጡ</label>
+                    <select id="loginZoneSelect">
                         <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
                         <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
-                        <option value="ደብረ ታቦር ከተማ">ደብረ ታቦር ከተማ</option>
-                        <option value="ወልድያ ከተማ">ወልድያ ከተማ</option>
-                        <option value="ደሴ ከተማ">ደሴ ከተማ</option>
-                        <option value="ኮምቦልቻ ከተማ">ኮምቦልቻ ከተማ</option>
-                        <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
                         <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
-                        
-                        <!-- ዞኖች -->
+                        <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
+                        <option value="contentInset">ኮምቦልቻ ከተማ</option>
+                        <option value="ኢንጅባራ ከተማ">ኢንጅባራ ከተማ</option>
+                        <option value="ቢቸና ከተማ">ቢቸና ከተማ</option>
+                        <option value="አዲስ ዘመን ከተማ">አዲስ ዘመን ከተማ</option>
                         <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
                         <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
                         <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
-                        <option value="ወልቃይት ጠገዴ ስቲት ሁመራ ዞን">ወልቃይት ጠገዴ ስቲት ሁመራ ዞን</option>
-                        <option value="ደቡብ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
+                        <option value="ዋግህምራ ብሔረሰብ አገአዝ ሕዝብ ዞን">ዋግህምራ ብ/አ/ሕ ዞን</option>
+                        <option value="দক্ষিণ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
                         <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
-                        <option value="ደቡብ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
+                        <option value="দক্ষিণ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
                         <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
-                        <option value="ምስራቅ ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
+                        <option value="கிழக்கு ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
                         <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
-                        <option value="ሰሜን ጎጃም">ሰሜን ጎጃም</option>
-                        <option value="አዊ ብ/ሰ ዞን">አዊ ብ/ሰ ዞን</option>
-                        <option value="ዋግኸምራ ብ/ሰ ዞን">ዋግኸምራ ብ/ሰ ዞን</option>
-                        <option value="ኦሮሞ ብ/ሰ ዞን">ኦሮሞ ብ/ሰ ዞን</option>
-                        
-                        <!-- ለሱፐር አድሚን መግቢያ -->
-                        <option value="superadmin">Superadmin (ማዕከላዊ አስተዳዳሪ)</option>
+                        <option value="አዊ ዞን">አዊ ዞን</option>
+                        <option value="ኦሮሞ ብ/አ/ዞን">ኦሮሞ ብ/አ/ዞን</option>
+                        <option value="արգ/አ ዞን">አገው ፈጃራ ዞን</option> <!-- Updated layout mapping -->
+                        <option value="አርጎባ ወ/አ ዞን">አርጎባ ወ/አ ዞን</option>
                     </select>
                 </div>
 
@@ -414,8 +422,8 @@
                     <i class="fas fa-user-plus"></i> አዲስ ተጠቃሚ ፍጠር (ለዞኖች አካውንት መስጫ)
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
-                    <label>የተጠቃሚ ስም (ዞን/ከተማ)</label>
-                    <input type="text" id="newUserName" placeholder="ምሳሌ፦ ባህር ዳር ከተማ">
+                    <label>የተጠቃሚ ስም (Username)</label>
+                    <input type="text" id="newUserName" placeholder="ምሳሌ፦ bahirdar_admin">
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label>የይለፍ ቃል (ቢያንስ 6 ቁምፊ)</label>
@@ -431,20 +439,20 @@
                 <button class="btn-submit" onclick="createUser()">አካውንት ፍጠር</button>
             </div>
 
-            <!-- የተጠቃሚዎች ዝርዝር -->
+            <!-- የተጠቃሚዎች ዝርዝር እና የፓስዋርድ ሪሴት ማድረጊያ -->
             <div class="card">
                 <div class="card-title">
-                    <i class="fas fa-users-cog"></i> የተጠቃሚዎች ዝርዝር
+                    <i class="fas fa-users-cog"></i> የተጠቃሚዎች ዝርዝር እና የይለፍ ቃል ማስተካከያ
                 </div>
                 <ul class="user-list" id="userListUI">
                     <!-- Dynamic User List -->
                 </ul>
             </div>
 
-            <!-- የይለፍ ቃል ቀይር (ለ Superadmin) -->
+            <!-- የይለፍ ቃል ቀይር (ለሱፐር አድሚን ብቻ የሚታይ) -->
             <div id="superAdminPassCard" class="card" style="display: none;">
                 <div class="card-title">
-                    <i class="fas fa-key"></i> የሱፐር አድሚን ይለፍ ቃል መቀየሪያ
+                    <i class="fas fa-key"></i> የይለፍ ቃል መቀየሪያ (Password Change)
                 </div>
                 <div class="form-group" style="margin-bottom: 1rem;">
                     <label>የድሮ የይለፍ ቃል</label>
@@ -459,8 +467,8 @@
 
         </div>
 
-        <!-- 2. የሪፖርት መሙያ ፎርም -->
-        <div class="card">
+        <!-- 2. የሪፖርት መሙያ ፎርም (ለተጠቃሚዎች/የዞን መዝጋቢዎች ብቻ የሚታይ) -->
+        <div id="reportFormCard" class="card">
             <div class="welcome-msg">እንኳን ደህና መጡ!</div>
 
             <div class="card-title">
@@ -613,6 +621,7 @@
                     validateSession();
                 } else {
                     showLoginModal(true);
+                    toggleLoginInputs();
                 }
             };
 
@@ -628,15 +637,40 @@
                 document.getElementById('dashboardWrapper').style.display = show ? 'none' : 'flex';
             }
 
+            // ሚና ሲቀየር የዩዘር ስም ወይም የዞን ድሮፕዳውን መቀያየሪያ ተግባር
+            window.toggleLoginInputs = function() {
+                var role = document.getElementById('loginRole').value;
+                var usernameGroup = document.getElementById('usernameGroup');
+                var zoneSelectGroup = document.getElementById('zoneSelectGroup');
+                var usernameInput = document.getElementById('loginUsername');
+
+                if (role === 'user') {
+                    usernameGroup.style.display = 'none';
+                    zoneSelectGroup.style.display = 'block';
+                    usernameInput.required = false;
+                } else {
+                    usernameGroup.style.display = 'block';
+                    zoneSelectGroup.style.display = 'none';
+                    usernameInput.required = true;
+                }
+            };
+
             window.handleLogin = function(e) {
                 e.preventDefault();
-                var usernameInput = document.getElementById('loginUsername').value;
+                var role = document.getElementById('loginRole').value;
+                var usernameInput = '';
                 var passwordInput = document.getElementById('loginPassword').value.trim();
+
+                if (role === 'user') {
+                    usernameInput = document.getElementById('loginZoneSelect').value;
+                } else {
+                    usernameInput = document.getElementById('loginUsername').value.trim();
+                }
 
                 fetch(API + '/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: usernameInput, password: passwordInput })
+                    body: JSON.stringify({ username: usernameInput, password: passwordInput, role: role })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
@@ -662,6 +696,7 @@
                 document.getElementById('currentUserDisplay').innerText = 'እንግዳ';
                 document.getElementById('adminPanel').style.display = 'none';
                 showLoginModal(true);
+                toggleLoginInputs();
                 showToast('ከሲስተሙ ወጥተዋል!');
             };
 
@@ -690,19 +725,25 @@
 
             function setupRoleViews() {
                 var adminPanel = document.getElementById('adminPanel');
-                var superCard = document.getElementById('superAdminPassCard');
+                var reportFormCard = document.getElementById('reportFormCard');
+                var superAdminPassCard = document.getElementById('superAdminPassCard');
 
-                if (userRole === 'superadmin' || userRole === 'admin') {
+                if (userRole === 'superadmin') {
                     adminPanel.style.display = 'grid';
+                    superAdminPassCard.style.display = 'block';
+                    reportFormCard.style.display = 'block';
                     fetchAdminUsersList();
-                    
-                    if (userRole === 'superadmin') {
-                        superCard.style.display = 'block';
-                    } else {
-                        superCard.style.display = 'none';
-                    }
+                } else if (userRole === 'admin') {
+                    adminPanel.style.display = 'grid';
+                    superAdminPassCard.style.display = 'none';
+                    reportFormCard.style.display = 'block';
+                    fetchAdminUsersList();
                 } else {
                     adminPanel.style.display = 'none';
+                    reportFormCard.style.display = 'block';
+                    // ዩዘር (ዞን) ሆኖ ሲገባ የዞኑ ስም በራሱ እንዲሞላ ማድረግ ይቻላል
+                    var zoneInput = document.getElementById('zone');
+                    if(zoneInput) zoneInput.value = currentUser;
                 }
             }
 
@@ -718,6 +759,112 @@
                     console.error('Users load failed', err);
                 });
             }
+
+            function loadAdminUsersList(users) {
+                var userListUI = document.getElementById('userListUI');
+                userListUI.innerHTML = '';
+                if (!users || users.length === 0) {
+                    userListUI.innerHTML = '<li style="color:#64748b; justify-content:center;">ምንም ተጠቃሚ የለም</li>';
+                    return;
+                }
+                users.forEach(function(u) {
+                    var li = document.createElement('li');
+                    li.innerHTML = '<span><b>' + escapeHtml(u.username) + '</b> (' + escapeHtml(u.role) + ')</span>' +
+                                   '<button onclick="resetUserPassword(\'' + u.username + '\')" style="background:var(--accent-blue); color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-size:0.8rem;">ፓስዋርድ ሪሴት</button>';
+                    userListUI.appendChild(li);
+                });
+            }
+
+            window.resetUserPassword = function(username) {
+                var newPwd = prompt(username + ' ለሚገኘው ተጠቃሚ አዲስ የይለፍ ቃል ያስገቡ፡');
+                if (!newPwd || newPwd.trim() === '') return;
+
+                fetch(API + '/admin/reset-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ username: username, newPassword: newPwd.trim() })
+                })
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast('የተጠቃሚው ፓስዋርድ በተሳካ ሁኔታ ተቀይሯል!');
+                    } else {
+                        showToast(result.data.error || 'ፓስዋርዱን መቀየር አልተቻለም!');
+                    }
+                })
+                .catch(function() {
+                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+                });
+            };
+
+            window.createUser = function() {
+                var username = document.getElementById('newUserName').value.trim();
+                var password = document.getElementById('newUserPassword').value.trim();
+                var role = document.getElementById('newUserRole').value;
+
+                if (!username || !password) {
+                    showToast('እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!');
+                    return;
+                }
+
+                fetch(API + '/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ username: username, password: password, role: role })
+                })
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast('አዲስ ተጠቃሚ በተሳካ ሁኔታ ተፈጥሯል!');
+                        document.getElementById('newUserName').value = '';
+                        document.getElementById('newUserPassword').value = '';
+                        fetchAdminUsersList();
+                    } else {
+                        showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም!');
+                    }
+                })
+                .catch(function() {
+                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+                });
+            };
+
+            window.submitChangePassword = function() {
+                var oldPassword = document.getElementById('oldSuperPwd').value.trim();
+                var newPassword = document.getElementById('newSuperPwd').value.trim();
+
+                if (!oldPassword || !newPassword) {
+                    showToast('እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል በትክክል ያስገቡ!');
+                    return;
+                }
+
+                fetch(API + '/change-password', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+                })
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast('የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!');
+                        document.getElementById('oldSuperPwd').value = '';
+                        document.getElementById('newSuperPwd').value = '';
+                    } else {
+                        showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!');
+                    }
+                })
+                .catch(function() {
+                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+                });
+            };
 
             window.handleReportSubmit = function(e) {
                 e.preventDefault();
@@ -755,6 +902,7 @@
                     if (result.ok) {
                         showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
                         document.getElementById('reportForm').reset();
+                        if(userRole === 'user') document.getElementById('zone').value = currentUser;
                         loadReports();
                     } else {
                         showToast(result.data.error || 'ሪፖርቱን መመዝገብ አልተቻለም!');
@@ -826,120 +974,10 @@
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
                     if (result.ok) {
-                        showToast('መረጃው ተሰርዟል!');
+                        showToast('ሪፖርቱ ተሰርዟል!');
                         loadReports();
                     } else {
-                        showToast(result.data.error || 'መሰረዝ አልተቻለም!');
-                    }
-                })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
-            };
-
-            function loadAdminUsersList(users) {
-                var ul = document.getElementById('userListUI');
-                ul.innerHTML = '';
-
-                if (!users || users.length === 0) {
-                    ul.innerHTML = '<li style="justify-content:center; color:#64748b;">ምንም አካውንት አልተገኘም</li>';
-                    return;
-                }
-
-                users.forEach(function(u) {
-                    var li = document.createElement('li');
-                    var userTag = '<div><strong>' + escapeHtml(u.username) + '</strong> <span style="font-size:0.75rem; background:#e2e8f0; padding:2px 6px; border-radius:4px; margin-left:6px;">' + escapeHtml(u.role) + '</span></div>';
-                    
-                    var delAction = '';
-                    if (userRole === 'superadmin' && u.role !== 'superadmin') {
-                        delAction = '<button onclick="deleteUser(\'' + u._id + '\')" title="አካውንት ሰርዝ" style="color:var(--danger-red); border:none; background:none; cursor:pointer;"><i class="fas fa-user-minus"></i></button>';
-                    }
-
-                    li.innerHTML = userTag + delAction;
-                    ul.appendChild(li);
-                });
-            }
-
-            window.createUser = function() {
-                var name = document.getElementById('newUserName').value.trim();
-                var pwd = document.getElementById('newUserPassword').value.trim();
-                var role = document.getElementById('newUserRole').value;
-
-                if (!name || !pwd) {
-                    showToast('እባክዎ የተጠቃሚ ስምና የይለፍ ቃል ያስገቡ!');
-                    return;
-                }
-
-                fetch(API + '/users', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({ username: name, password: pwd, role: role })
-                })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('አዲስ አካውንት ተፈጥሯል!');
-                        document.getElementById('newUserName').value = '';
-                        document.getElementById('newUserPassword').value = '';
-                        fetchAdminUsersList();
-                    } else {
-                        showToast(result.data.error || 'አካውንት መፍጠር አልተቻለም!');
-                    }
-                })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
-            };
-
-            window.deleteUser = function(userId) {
-                if (!confirm('ይህንን የተጠቃሚ አካውንት በእርግጥ መሰረዝ ይፈልጋሉ?')) return;
-
-                fetch(API + '/users/' + userId, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('አካውንቱ ተሰርዟል!');
-                        fetchAdminUsersList();
-                    } else {
-                        showToast(result.data.error || 'አካውንቱን መሰረዝ አልተቻለም!');
-                    }
-                })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
-            };
-
-            window.submitChangePassword = function() {
-                var oldPwd = document.getElementById('oldSuperPwd').value.trim();
-                var newPwd = document.getElementById('newSuperPwd').value.trim();
-
-                if (!oldPwd || !newPwd) {
-                    showToast('እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ያስገቡ!');
-                    return;
-                }
-
-                fetch(API + '/change-superadmin-password', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
-                })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!');
-                        document.getElementById('oldSuperPwd').value = '';
-                        document.getElementById('newSuperPwd').value = '';
-                    } else {
-                        showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!');
+                        showToast(result.data.error || 'ሪፖርቱን መሰረዝ አልተቻለም!');
                     }
                 })
                 .catch(function() {
@@ -948,76 +986,10 @@
             };
 
             window.exportToCSV = function() {
-                fetch(API + '/report', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    if (!data || data.length === 0) {
-                        showToast('የሚላክ ምንም መረጃ የለም!');
-                        return;
-                    }
-
-                    var headers = [
-                        'ዞን/ከተማ', 'ፖሊ/ኮሌጅ', 'የቴክኖሎጂው ስም', 'ኮኦርዲኔተር', 'ስልክ', 
-                        'ዘርፍ', 'እሴት ሰንሰለት', 'ችግር ፈቺነቱ', 'ዓ/ም', 'በብዛት', 
-                        'የተሸጋገረበት ዘርፍ', 'ሃብት (ብር)', 'ተጠቃሚ (ኢ/ዝ)', 'ተጠቃሚ (አንቀ)', 
-                        'ተጠቃሚ (ወ)', 'ተጠቃሚ (ሴ)', 'ተጠቃሚ (ድ)', 'መዝጋቢ'
-                    ];
-
-                    var csvRows = [];
-                    csvRows.push('\uFEFF' + headers.join(','));
-
-                    data.forEach(function(row) {
-                        var values = [
-                            formatCSVCell(row.zone),
-                            formatCSVCell(row.poly),
-                            formatCSVCell(row.techName),
-                            formatCSVCell(row.coordinator),
-                            formatCSVCell(row.phone),
-                            formatCSVCell(row.sector),
-                            formatCSVCell(row.valueChain),
-                            formatCSVCell(row.techType),
-                            formatCSVCell(row.year),
-                            row.transferQty || 0,
-                            formatCSVCell(row.transferSector),
-                            row.resource || 0,
-                            row.b_ent || 0,
-                            row.b_mobile || 0,
-                            row.b_male || 0,
-                            row.b_female || 0,
-                            row.diagnosis || 0,
-                            formatCSVCell(row.createdBy)
-                        ];
-                        csvRows.push(values.join(','));
-                    });
-
-                    var csvString = csvRows.join('\n');
-                    var blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-                    var url = URL.createObjectURL(blob);
-                    var link = document.createElement('a');
-                    
-                    link.setAttribute('href', url);
-                    link.setAttribute('download', 'Technology_Transfer_Report_' + new Date().toISOString().slice(0,10) + '.csv');
-                    document.body.appendChild(link);
-                    link.click();
-                    document.body.removeChild(link);
-                    showToast('መረጃው ወደ CSV ተልኳል!');
-                })
-                .catch(function(err) {
-                    console.error('❌ Export error:', err);
-                    showToast('ኤክስፖርት ማድረግ አልተቻለም!');
-                });
+                window.location.href = API + '/export/csv?token=' + token;
             };
 
-            function formatCSVCell(str) {
-                if (!str) return '""';
-                var clean = String(str).replace(/"/g, '""');
-                return '"' + clean + '"';
-            }
-
             function escapeHtml(str) {
-                if (!str) return '';
                 return String(str)
                     .replace(/&/g, '&amp;')
                     .replace(/</g, '&lt;')
