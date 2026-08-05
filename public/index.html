@@ -173,29 +173,71 @@
             gap: 25px;
         }
 
-        /* Admin & Control Panels */
+        /* Admin & Control Panels Grid */
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
             gap: 20px;
         }
 
+        /* የተወሰኑ ክፍሎች (Cards) በልዩ ልዩ ባለቀለም ዳራዎች ተለይተዋል */
         .card {
-            background: var(--card-bg);
             border-radius: 12px;
             padding: 24px;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
-            border-top: 5px solid var(--brand-blue);
         }
 
         .card h3 {
             font-size: 1.15rem;
-            color: var(--brand-blue);
             margin-bottom: 18px;
-            border-bottom: 2px solid #f1f5f9;
+            border-bottom: 2px solid rgba(255,255,255,0.3);
             padding-bottom: 10px;
             font-weight: 600;
+        }
+
+        /* 1. አዲስ ተጠቃሚ መፍጠር ካርድ (ለስላሳ ሰማያዊ/አዙር ዳራ) */
+        #createUserCard {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            border-top: 5px solid #22c55e;
+            border-color: #bbf7d0;
+        }
+        #createUserCard h3 {
+            color: #15803d;
+            border-bottom-color: #bbf7d0;
+        }
+
+        /* 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር ካርድ (ለስላሳ ቢጫ/ክሬም ዳራ) */
+        #userListCard {
+            background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
+            border-top: 5px solid #eab308;
+            border-color: #fde047;
+        }
+        #userListCard h3 {
+            color: #a16207;
+            border-bottom-color: #fde047;
+        }
+
+        /* 3. የይለፍ ቃል መቀየሪያ ካርድ (ለስላሳ ሐምራዊ/ሮዝ ዳራ) */
+        #superAdminPassCard {
+            background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
+            border-top: 5px solid #a855f7;
+            border-color: #e9d5ff;
+        }
+        #superAdminPassCard h3 {
+            color: #7e22ce;
+            border-bottom-color: #e9d5ff;
+        }
+
+        /* 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ (ለስላሳ ንጹህ ሰማያዊ/ኢንዲጎ ዳራ) */
+        #reportFormCard {
+            background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+            border-top: 5px solid var(--brand-blue);
+            border-color: #bfdbfe;
+        }
+        #reportFormCard h3 {
+            color: var(--brand-blue);
+            border-bottom-color: #bfdbfe;
         }
 
         /* Reports Table Section */
@@ -363,19 +405,21 @@
         <main>
             <!-- Admin / Super Admin Panel -->
             <div id="adminPanel" class="admin-grid" style="display:none;">
+                
+                <!-- 1. አዲስ ተጠቃሚ መፍጠር -->
                 <div class="card" id="createUserCard">
                     <h3>አዲስ ተጠቃሚ መፍጠር</h3>
                     <div class="form-group">
                         <label>የተጠቃሚ ስም:</label>
-                        <input type="text" id="newUserName" class="form-control">
+                        <input type="text" id="newUserName" class="form-control" style="background:#ffffff;">
                     </div>
                     <div class="form-group">
                         <label>የይለፍ ቃል:</label>
-                        <input type="password" id="newUserPassword" class="form-control">
+                        <input type="password" id="newUserPassword" class="form-control" style="background:#ffffff;">
                     </div>
                     <div class="form-group">
                         <label>ደረጃ (Role):</label>
-                        <select id="newUserRole" class="form-control">
+                        <select id="newUserRole" class="form-control" style="background:#ffffff;">
                             <option value="user">ተጠቃሚ (User)</option>
                             <option value="admin">አስተዳዳሪ (Admin)</option>
                         </select>
@@ -383,28 +427,30 @@
                     <button class="btn-primary" onclick="createUser()">ተጠቃሚ ፍጠር</button>
                 </div>
 
-                <div class="card">
+                <!-- 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር -->
+                <div class="card" id="userListCard">
                     <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
                     <ul id="userListUI" style="list-style:none; max-height:200px; overflow-y:auto; padding-right: 5px;">
                         <!-- Dynamically populated -->
                     </ul>
                 </div>
 
+                <!-- 3. የይለፍ ቃል መቀየሪያ -->
                 <div class="card" id="superAdminPassCard" style="display:none;">
                     <h3>የይለፍ ቃል መቀየሪያ</h3>
                     <div class="form-group">
                         <label>የድሮ የይለፍ ቃል:</label>
-                        <input type="password" id="oldSuperPwd" class="form-control">
+                        <input type="password" id="oldSuperPwd" class="form-control" style="background:#ffffff;">
                     </div>
                     <div class="form-group">
                         <label>አዲስ የይለፍ ቃል:</label>
-                        <input type="password" id="newSuperPwd" class="form-control">
+                        <input type="password" id="newSuperPwd" class="form-control" style="background:#ffffff;">
                     </div>
-                    <button class="btn-primary" onclick="submitChangePassword()">ቀይር</button>
+                    <button class="btn-primary" onclick="submitChangePassword()" style="background:#7e22ce;">ቀይር</button>
                 </div>
             </div>
 
-            <!-- Report Form Card -->
+            <!-- 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ -->
             <div class="card" id="reportFormCard">
                 <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል እባክዎ በጥንቃቄ ይሙሉ</h3>
                 <form id="reportForm" onsubmit="handleReportSubmit(event)">
@@ -725,12 +771,12 @@
                     li.style.alignItems = 'center';
                     li.style.marginBottom = '10px';
                     li.style.padding = '8px';
-                    li.style.background = '#f8fafc';
+                    li.style.background = '#ffffff';
                     li.style.borderRadius = '6px';
-                    li.style.border = '1px solid #e2e8f0';
+                    li.style.border = '1px solid #fde047';
 
                     var infoSpan = document.createElement('span');
-                    infoSpan.innerHTML = '<b>' + escapeHtml(u.username) + '</b> <span style="font-size:0.8rem; color:#64748b;">(' + escapeHtml(u.role) + ')</span>';
+                    infoSpan.innerHTML = '<b>' + escapeHtml(u.username) + '</b> <span style="font-size:0.8rem; color:#713f12;">(' + escapeHtml(u.role) + ')</span>';
                     li.appendChild(infoSpan);
 
                     var btnDiv = document.createElement('div');
