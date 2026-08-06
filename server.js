@@ -206,21 +206,23 @@ app.post('/api/change-password', authenticateToken, [
     }
 });
 
-// 6. Admin Reset Password
-app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
+// 6. Super Admin / Admin User Password Reset Route (በ ID የሚቀይርበት ትክክለኛው 路线)
+app.put('/api/users/:id/reset-password', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
     }
 
-    const { username, newPassword } = req.body;
-    if (!username || !newPassword) {
-        return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና አዲስ የይለፍ ቃል ያስገቡ!' });
+    const { newPassword } = req.body;
+    const userId = req.params.id;
+
+    if (!newPassword || newPassword.trim() === '') {
+        return res.status(400).json({ error: 'እባክዎ አዲስ የይለፍ ቃል ያስገቡ!' });
     }
 
     try {
-        const hashedPassword = await bcrypt.hash(newPassword, 10);
-        const updatedUser = await User.findOneAndUpdate(
-            { username: username.trim() },
+        const hashedPassword = await bcrypt.hash(newPassword.trim(), 10);
+        const updatedUser = await User.findByIdAndUpdate(
+            userId, 
             { password: hashedPassword },
             { new: true }
         );
@@ -229,7 +231,7 @@ app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'ተጠቃሚው በዳታቤዝ ውስጥ አልተገኘም!' });
         }
 
-        res.json({ message: 'የተጠቃሚው ፓስዋርድ በተሳካ ሁኔታ ተቀይሯል!' });
+        res.json({ message: 'የተጠቃሚው የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!' });
     } catch (err) {
         res.status(500).json({ error: 'ሰርቨር ላይ ስህተት ተፈጥሯል!' });
     }
