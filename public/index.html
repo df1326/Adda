@@ -21,6 +21,7 @@
             --text-muted: #475569;     /* ሁለተኛ ደረጃ ግራጫ ጽሑፍ */
             --border-color: #cbd5e1;   /* የክፈፍ መስመር */
             --danger-red: #ef4444;     /* የማጥፊያ ቀይ ቀለም */
+            --warning-amber: #d97706;  /* የማስጠንቀቂያ/ሪሴት ብርቱካናማ ቀለም */
         }
 
         * {
@@ -292,6 +293,16 @@
             font-size: 0.75rem;
         }
 
+        .action-reset {
+            background: var(--warning-amber);
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+        }
+
         /* Toast Notification */
         #toast {
             visibility: hidden;
@@ -432,7 +443,7 @@
                 <!-- 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር -->
                 <div class="card" id="userListCard">
                     <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
-                    <ul id="userListUI" style="list-style:none; max-height:200px; overflow-y:auto; padding-right: 5px;">
+                    <ul id="userListUI" style="list-style:none; max-height:220px; overflow-y:auto; padding-right: 5px;">
                         <!-- Dynamically populated -->
                     </ul>
                 </div>
@@ -532,7 +543,7 @@
                         </div>
                         <div class="form-group">
                             <label>ምርመራ:</label>
-                            <input type="text" id="diagnosis" class="form-control" value="0">
+                            <input type="number" id="diagnosis" class="form-control" value="0">
                         </div>
                     </div>
                     <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 20px; width: auto; padding: 10px 24px;">ሪፖርት መዝግብ</button>
@@ -703,14 +714,14 @@
                 if (userRole === 'superadmin') {
                     adminPanel.style.display = 'grid';
                     createUserCard.style.display = 'block';
-                    superAdminPassCard.style.display = 'block'; // አድሚን እንዳይቀይር፣ ለሱፐር አድሚን ብቻ ይታያል
+                    superAdminPassCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
                     setReportFormEditable(true);
                     fetchAdminUsersList();
                 } else if (userRole === 'admin') {
                     adminPanel.style.display = 'grid';
                     createUserCard.style.display = 'none';
-                    superAdminPassCard.style.display = 'none'; // አድሚን የይለፍ ቃል እንዳይቀይር ተደብቋል
+                    superAdminPassCard.style.display = 'none';
                     reportFormCard.style.display = 'block';
                     setReportFormEditable(false);
                     fetchAdminUsersList();
@@ -787,6 +798,17 @@
                     btnDiv.style.gap = '6px';
 
                     if (userRole === 'superadmin') {
+                        // Reset Password Button
+                        var resetBtn = document.createElement('button');
+                        resetBtn.innerHTML = 'ሪሴት';
+                        resetBtn.className = 'action-reset';
+                        resetBtn.title = 'የይለፍ ቃል ሪሴት አድርግ';
+                        resetBtn.onclick = (function(userId, username) {
+                            return function() { resetUserPassword(userId, username); };
+                        })(u._id, u.username);
+                        btnDiv.appendChild(resetBtn);
+
+                        // Delete User Button
                         var delBtn = document.createElement('button');
                         delBtn.innerHTML = 'አጥፋ';
                         delBtn.className = 'action-del';
@@ -832,6 +854,34 @@
                 })
                 .catch(function() {
                     showToast('የሰርቨር ስህተት ተፈጥሯል!');
+                });
+            };
+
+            // Super Admin: Reset other user's password
+            window.resetUserPassword = function(userId, username) {
+                var newPass = prompt("ለተጠቃሚ '" + username + "' አዲስ የይለፍ ቃል ያስገቡ:");
+                if (!newPass || !newPass.trim()) {
+                    return; // አሰርዟል ወይም ባዶ ነው
+                }
+
+                fetch(API + '/users/' + userId + '/reset-password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + token
+                    },
+                    body: JSON.stringify({ newPassword: newPass.trim() })
+                })
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast("የተጠቃሚ '" + username + "' የይለፍ ቃል ተቀይሯል!");
+                    } else {
+                        showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!');
+                    }
+                })
+                .catch(function() {
+                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
                 });
             };
 
@@ -981,7 +1031,7 @@
                 if (!confirm('ይህን ሪፖርት ማጥፋት ይፈልጋሉ?')) return;
                 fetch(API + '/report/' + id, {
                     method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
+                    headers: { 'Authorization': 'Bearer '  + token }
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
