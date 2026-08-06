@@ -4,18 +4,18 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const path = require('path');
-const helmet = require('helmet'); // የደህንነት ሄደሮችን ለመቆጣጠር
-const { body, validationResult } = require('express-validator'); // ግቤቶችን በባክኤንድ ለማጣራት
+const helmet = require('helmet');
+const { body, validationResult } = require('express-validator');
 
 const app = express();
 
 // 1. የ HTTP የደህንነት ሄደሮች (Security Headers) በ Helmet ማካተት
 app.use(helmet({
-    contentSecurityPolicy: false, // እንደ ፋይል ሎጎ እና ስክሪፕቶች ያሉትን እንዳያስተጓጎል
+    contentSecurityPolicy: false,
     crossOriginEmbedderPolicy: false
 }));
 
-// በማንኛውም ብራውዘር እና መሳሪያ እንዳይዘጋ CORS መፍቀድ (ለማምረቻ ደረጃ የዶሜይን ገደብ ማድረግ ይመረጣል)
+// CORS ማዋቀር
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -94,7 +94,10 @@ mongoose.connect(MONGODB_URI)
         console.log('⚡ Connected to MongoDB Atlas successfully!');
         initSuperadmin();
     })
-    .catch(err => console.error('❌ MongoDB Connection Error:', err));
+    .catch(err => {
+        console.error('❌ MongoDB Connection Error:', err);
+        process.exit(1);
+    });
 
 // Auth Middleware
 const authenticateToken = (req, res, next) => {
@@ -131,7 +134,7 @@ app.post('/api/init-superadmin', async (req, res) => {
     res.json({ message: 'Superadmin check/initialization completed!' });
 });
 
-// 4. Login Endpoint (ግቤቶችን በማጣራት ላይ የተመሰረተ)
+// 4. Login Endpoint
 app.post('/api/login', [
     body('username').notEmpty().withMessage('የተጠቃሚ ስም ባዶ መሆን አይችልም!'),
     body('password').notEmpty().withMessage('የይለፍ ቃል ባዶ መሆን አይችልም!')
@@ -312,25 +315,21 @@ app.delete('/api/report/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// ==================== ERROR HANDLING & 404 MIDDLEWARES ====================
-
-// 9. ለሁሉም የማይታወቁ የ API ጥያቄዎች (API Routes) የ JSON 404 መልዕክት መመለስ
+// ==================== ERROR HANDLING ====================
 app.use('/api/*', (req, res) => {
     res.status(404).json({ success: false, error: 'የጠየቁት የ API አድራሻ (Route) አልተገኘም!' });
 });
 
-// 10. ለድር አሳሽ ጥያቄዎች (SPA) የ index.html ፋይልን መመለስ
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 11. አጠቃላይ የስህተት መቆጣጠሪያ (Global Error Handler) - የሲስተሙን ውስጣዊ አወቃቀር ከጠላፊዎች መደበቅ
 app.use((err, req, res, next) => {
     console.error('❌ Internal Server Error:', err.stack);
-    res.status(500).json({ success: false, error: ' በሰርቨር ላይ ያልተጠበቀ ስህተት አጋጥሟል!' });
+    res.status(500).json({ success: false, error: 'በሰርቨር ላይ ያልተጠበቀ ስህተት አጋጥሟል!' });
 });
 
-// Start Express Server
+// Start Server
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });
