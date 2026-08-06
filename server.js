@@ -4,10 +4,18 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcryptjs');
 const mongoose = require('mongoose');
 const path = require('path');
+const helmet = require('helmet'); // የደህንነት ሄደሮችን ለመቆጣጠር
+const { body, validationResult } = require('express-validator'); // ግቤቶችን በባክኤንድ ለማጣራት
 
 const app = express();
 
-// በማንኛውም ብራውዘር እና መሳሪያ እንዳይዘጋ CORS መፍቀድ
+// 1. የ HTTP የደህንነት ሄደሮች (Security Headers) በ Helmet ማካተት
+app.use(helmet({
+    contentSecurityPolicy: false, // እንደ ፋይል ሎጎ እና ስክሪፕቶች ያሉትን እንዳያስተጓጎል
+    crossOriginEmbedderPolicy: false
+}));
+
+// በማንኛውም ብራውዘር እና መሳሪያ እንዳይዘጋ CORS መፍቀድ (ለማምረቻ ደረጃ የዶሜይን ገደብ ማድረግ ይመረጣል)
 app.use(cors({
     origin: '*',
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
@@ -17,10 +25,10 @@ app.use(cors({
 app.use(express.json());
 
 // ---------------- Static Files & Root Route Setup ----------------
-app.use(express.static(path.join(__dirname))); 
+app.use(express.static(path.join(__dirname, 'public'))); 
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
 const PORT = process.env.PORT || 5000;
@@ -123,13 +131,17 @@ app.post('/api/init-superadmin', async (req, res) => {
     res.json({ message: 'Superadmin check/initialization completed!' });
 });
 
-// 4. Login Endpoint (ለዞኖች እና ለአድሚን የመግቢያ ማጣሪያ)
-app.post('/api/login', async (req, res) => {
-    const { username, password, role } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!' });
+// 4. Login Endpoint (ግቤቶችን በማጣራት ላይ የተመሰረተ)
+app.post('/api/login', [
+    body('username').notEmpty().withMessage('የተጠቃሚ ስም ባዶ መሆን አይችልም!'),
+    body('password').notEmpty().withMessage('የይለፍ ቃል ባዶ መሆን አይችልም!')
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
     }
+
+    const { username, password, role } = req.body;
 
     try {
         const query = role ? { username: username.trim(), role: role.trim() } : { username: username.trim() };
@@ -161,12 +173,17 @@ app.post('/api/login', async (req, res) => {
     }
 });
 
-// 5. Change Password (ለሱፐር አድሚን የራሱን ፓስዋርድ ለመቀየር)
-app.post('/api/change-password', authenticateToken, async (req, res) => {
-    const { oldPassword, newPassword } = req.body;
-    if (!oldPassword || !newPassword) {
-        return res.status(400).json({ error: 'እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ያስገቡ!' });
+// 5. Change Password
+app.post('/api/change-password', authenticateToken, [
+    body('oldPassword').notEmpty(),
+    body('newPassword').isLength({ min: 6 }).withMessage('አዲሱ የይለፍ ቃል ቢያንስ 6 ሆሄያት ሊኖሩት ይገባል!')
+], async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: errors.array()[0].msg });
     }
+
+    const { oldPassword, newPassword } = req.body;
 
     try {
         const user = await User.findById(req.user.id);
@@ -186,7 +203,7 @@ app.post('/api/change-password', authenticateToken, async (req, res) => {
     }
 });
 
-// 6. Admin / Super Admin Reset Password Endpoint (ማንኛውንም ተጠቃሚ/ዞን ፓስዋርድ በሱፐር አድሚን ለመቀየር)
+// 6. Admin Reset Password
 app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
@@ -221,14 +238,23 @@ app.get('/api/users', authenticateToken, async (req, res) => {
         const users = await User.find({}, '-password');
         res.json(users);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'መረጃዎችን ማምጣት አልተቻለም!' });
     }
 });
 
-app.post('/api/users', authenticateToken, async (req, res) => {
+app.post('/api/users', authenticateToken, [
+    body('username').notEmpty().trim(),
+    body('password').isLength({ min: 6 }),
+    body('role').isIn(['superadmin', 'admin', 'user'])
+], async (req, res) => {
     if (req.user.role !== 'superadmin') {
         return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
     }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        return res.status(400).json({ error: 'ያስገቡት መረጃ የተሳሳተ ወይም ያልተሟላ ነው!' });
+    }
+
     const { username, password, role } = req.body;
     try {
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -239,7 +265,6 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
-// Super Admin User Delete Endpoint (ተጠቃሚን ሙሉ በሙሉ ለመሰረዝ)
 app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin') {
         return res.status(403).json({ error: 'ተጠቃሚዎችን የመሰረዝ መብት ያለው Super Admin ብቻ ነው!' });
@@ -252,7 +277,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
         await User.findByIdAndDelete(req.params.id);
         res.json({ message: 'ተጠቃሚው በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'መሰረዝ አልተቻለም!' });
     }
 });
 
@@ -262,7 +287,7 @@ app.post('/api/report', authenticateToken, async (req, res) => {
         const newReport = await Report.create({ ...req.body, createdBy: req.user.username });
         res.json({ message: 'ሪፖርቱ ተመዝግቧል!', id: newReport._id });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'ሪፖርት መመዝገብ አልተቻለም!' });
     }
 });
 
@@ -271,7 +296,7 @@ app.get('/api/report', authenticateToken, async (req, res) => {
         const reports = await Report.find().sort({ created_at: -1 });
         res.json(reports);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'ሪፖርቶችን ማምጣት አልተቻለም!' });
     }
 });
 
@@ -283,8 +308,26 @@ app.delete('/api/report/:id', authenticateToken, async (req, res) => {
         await Report.findByIdAndDelete(req.params.id);
         res.json({ message: 'ሪፖርቱ በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ error: 'ሪፖርቱን መሰረዝ አልተቻለም!' });
     }
+});
+
+// ==================== ERROR HANDLING & 404 MIDDLEWARES ====================
+
+// 9. ለሁሉም የማይታወቁ የ API ጥያቄዎች (API Routes) የ JSON 404 መልዕክት መመለስ
+app.use('/api/*', (req, res) => {
+    res.status(404).json({ success: false, error: 'የጠየቁት የ API አድራሻ (Route) አልተገኘም!' });
+});
+
+// 10. ለድር አሳሽ ጥያቄዎች (SPA) የ index.html ፋይልን መመለስ
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+// 11. አጠቃላይ የስህተት መቆጣጠሪያ (Global Error Handler) - የሲስተሙን ውስጣዊ አወቃቀር ከጠላፊዎች መደበቅ
+app.use((err, req, res, next) => {
+    console.error('❌ Internal Server Error:', err.stack);
+    res.status(500).json({ success: false, error: ' በሰርቨር ላይ ያልተጠበቀ ስህተት አጋጥሟል!' });
 });
 
 // Start Express Server
