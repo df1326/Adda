@@ -206,7 +206,7 @@ app.post('/api/change-password', authenticateToken, [
     }
 });
 
-// 6. Super Admin / Admin User Password Reset Route (በ ID የሚቀይርበት ትክክለኛው 路线)
+// 6. Super Admin / Admin User Password Reset Route
 app.put('/api/users/:id/reset-password', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
@@ -286,8 +286,8 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 8. Reports API
-app.post('/api/report', authenticateToken, async (req, res) => {
+// 8. Reports API (በብዙ ቁጥር /api/reports የተስተካከለ)
+app.post('/api/reports', authenticateToken, async (req, res) => {
     try {
         const newReport = await Report.create({ ...req.body, createdBy: req.user.username });
         res.json({ message: 'ሪፖርቱ ተመዝግቧል!', id: newReport._id });
@@ -296,7 +296,7 @@ app.post('/api/report', authenticateToken, async (req, res) => {
     }
 });
 
-app.get('/api/report', authenticateToken, async (req, res) => {
+app.get('/api/reports', authenticateToken, async (req, res) => {
     try {
         const reports = await Report.find().sort({ created_at: -1 });
         res.json(reports);
@@ -305,7 +305,7 @@ app.get('/api/report', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/report/:id', authenticateToken, async (req, res) => {
+app.delete('/api/reports/:id', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
         return res.status(403).json({ error: 'ሪፖርት የማጥፋት መብት የለዎትም!' });
     }
