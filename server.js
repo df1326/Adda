@@ -21,7 +21,7 @@ if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads');
 }
 
-// MongoDB Connection
+// MongoDB Connection (የድሮው ዳታቤዝ እንዳይጠፋ በነባሩ ስም ተገናኝቷል)
 mongoose.connect('mongodb://localhost:27017/tech_transfer_db', {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -97,7 +97,7 @@ createSuperadmin();
 // Login
 app.post('/api/auth/login', async (req, res) => {
     try {
-        const { username, password, role } = req.body;
+        const { username, password } = req.body;
         const user = await User.findOne({ username });
         if (!user) return res.status(400).json({ error: 'ተጠቃሚው አልተገኘም!' });
 
@@ -178,11 +178,39 @@ app.post('/api/reports', verifyToken, upload.fields([{ name: 'photo' }, { name: 
         }
         data.createdBy = req.user.username;
 
-        if (req.files['photo']) data.photoUrl = '/uploads/' + req.files['photo'][0].filename;
-        if (req.files['video']) data.videoUrl = '/uploads/' + req.files['video'][0].filename;
+        if (req.files && req.files['photo']) data.photoUrl = '/uploads/' + req.files['photo'][0].filename;
+        if (req.files && req.files['video']) data.videoUrl = '/uploads/' + req.files['video'][0].filename;
 
         const report = await Report.create(data);
         res.status(201).json(report);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// Update Report (የተጨመረው አዲስ ክፍል - የድሮ መረጃ እንዳይጠፋ አድርጎ ለማስተካከል)
+app.put('/api/reports/:id', verifyToken, upload.fields([{ name: 'photo' }, { name: 'video' }]), async (req, res) => {
+    try {
+        const reportId = req.params.id;
+        const existingReport = await Report.findById(reportId);
+        if (!existingReport) return res.status(404).json({ error: 'ሪፖርቱ አልተገኘም!' });
+
+        if (req.user.role === 'user' && existingReport.createdBy !== req.user.username) {
+            return res.status(403).json({ error: 'ይህንን ሪፖርት ለማስተካከል ፈቃድ የለዎትም!' });
+        }
+
+        const updateData = { ...req.body };
+
+        // አዲስ ፋይል ካለ ማስተካከል፣ ካለፈው የነበረውን መጠበቅ
+        if (req.files && req.files['photo']) {
+            updateData.photoUrl = '/uploads/' + req.files['photo'][0].filename;
+        }
+        if (req.files && req.files['video']) {
+            updateData.videoUrl = '/uploads/' + req.files['video'][0].filename;
+        }
+
+        const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, { new: true });
+        res.json(updatedReport);
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
