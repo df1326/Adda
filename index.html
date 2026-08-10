@@ -38,6 +38,16 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35); text-align: center; border-top: 6px solid var(--accent-color);
         }
 
+        .logo-img {
+            width: 75px;
+            height: 75px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+            border: 3px solid var(--accent-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+
         .login-card h2 { color: var(--brand-blue); margin-bottom: 24px; font-size: 1.25rem; font-weight: 600; }
         .form-group { margin-bottom: 16px; text-align: left; }
         .form-group label { display: block; margin-bottom: 5px; font-size: 0.82rem; font-weight: 600; color: var(--text-main); }
@@ -48,7 +58,9 @@
         .btn-primary:hover { background: #0f2347; }
 
         #dashboardWrapper { display: none; flex-direction: column; flex: 1; }
-        header { background: var(--brand-blue); color: white; padding: 18px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent-color); }
+        header { background: var(--brand-blue); color: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 4px solid var(--accent-color); }
+        .header-brand { display: flex; align-items: center; gap: 12px; }
+        .header-logo { width: 45px; height: 45px; border-radius: 50%; object-fit: cover; border: 2px solid var(--accent-color); }
         header h1 { font-size: 1.25rem; font-weight: 600; }
         .user-info { display: flex; align-items: center; gap: 15px; }
         .btn-logout { background: var(--danger-red); color: white; border: none; padding: 7px 14px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; }
@@ -84,6 +96,7 @@
     <!-- Login Modal -->
     <div id="loginOverlay">
         <div class="login-card">
+            <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="Logo" class="logo-img">
             <h2>የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ</h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
@@ -138,7 +151,10 @@
     <!-- Main Dashboard Wrapper -->
     <div id="dashboardWrapper">
         <header>
-            <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
+            <div class="header-brand">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="Logo" class="header-logo">
+                <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
+            </div>
             <div class="user-info">
                 <span id="currentUserDisplay" style="font-weight: 500;">እንግዳ</span>
                 <button class="btn-logout" onclick="handleLogout()">ውጣ</button>
@@ -324,7 +340,6 @@
                         
                         if (userRole === 'user') document.getElementById('zone').value = currentUser;
                         
-                        // Superadmin ፓነል ማሳያ
                         if (userRole === 'superadmin') {
                             document.getElementById('adminUserPanel').style.display = 'block';
                             loadUsers();
@@ -336,7 +351,6 @@
                 }).catch(() => handleLogout());
             }
 
-            // --- Superadmin Functions ---
             window.handleCreateUser = function(e) {
                 e.preventDefault();
                 const username = document.getElementById('newUsername').value.trim();
@@ -392,7 +406,6 @@
                 }).then(() => showToast('የይለፍ ቃል ተቀይሯል!'));
             };
 
-            // --- Report Functions ---
             window.handleReportSubmit = function(e) {
                 e.preventDefault();
                 const formData = new FormData(document.getElementById('reportForm'));
