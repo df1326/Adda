@@ -7,9 +7,28 @@ const cors = require('cors');
 const path = require('path');
 const fs = require('fs');
 
+// የደህንነት ፓኬጆች
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+
+// dotenv ማዋቀር (ከተቻለ .env ፋይል በመጠቀም ሚስጥራዊ መረጃዎችን መያዝ)
+require('dotenv').config();
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'tech_transfer_secret_key_2018';
+
+// --- Security Middlewares ---
+// 1. የ HTTP Headers ደህንነትን በ Helmet ማጠናከር
+app.use(helmet());
+
+// 2. የጥያቄ ብዛት መገደብ (Rate Limiting - Brute-force ጥቃቶችን ለመከላከል)
+const limiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // ለ 15 ደቂቃዎች
+    max: 100, // ከአንድ IP አድራሻ ከፍተኛው የጥያቄ ብዛት
+    message: { error: 'በጣም ብዙ ጥያቄዎች ከዚህ IP መጥተዋል፣ እባክዎ ቆይተው ይሞክሩ።' }
+});
+app.use('/api/', limiter);
 
 // Middleware
 app.use(express.json());
@@ -102,7 +121,7 @@ createSuperadmin();
 
 // --- API Routes ---
 
-// Login (Frontend /api/login የሚለውን ስለሚጠቀም ሁለቱንም አማራጮች አቅርበናል)
+// Login
 app.post(['/api/auth/login', '/api/login'], async (req, res) => {
     try {
         const { username, password } = req.body;
@@ -128,7 +147,7 @@ app.get('/api/me', verifyToken, async (req, res) => {
     }
 });
 
-// User Management Routes (Admin/Superadmin)
+// User Management Routes
 app.get('/api/users', verifyToken, async (req, res) => {
     try {
         const users = await User.find().select('-password');
