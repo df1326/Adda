@@ -75,8 +75,8 @@ const reportSchema = new mongoose.Schema({
     b_male: String,
     b_female: String,
     diagnosis: String,
-    photoUrl: String, // የፎቶ ክላውድ ሊንክ
-    videoUrl: String, // የቪዲዮ ክላውድ ሊንክ
+    photoUrl: String, 
+    videoUrl: String, 
     createdBy: String,
     created_at: { type: Date, default: Date.now }
 });
@@ -143,16 +143,15 @@ const uploadToCloudinary = (buffer, resourceType = 'image') => {
 // ==================== API ROUTES ====================
 
 app.get('/api/health', (req, res) => {
-    res.json({ status: 'OK', message: 'Server is running with Cloudinary support!' });
+    res.json({ status: 'OK', message: 'Server is running with full permissions & multi-color support!' });
 });
 
 app.get('/api/me', authenticateToken, (req, res) => {
     res.json({ username: req.user.username, role: req.user.role });
 });
 
-// ተስተካክሏል: ከ Frontend (index.html) ጋር እንዲጣጣም /api/auth/login ተደረገ
 app.post('/api/auth/login', async (req, res) => {
-    const { username, password, role } = req.body;
+    const { username, password } = req.body;
     try {
         if (!username || !password) {
             return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!' });
@@ -169,7 +168,7 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// User Management Routes
+// User Management Routes (Superadmin Only Permissions)
 app.get('/api/users', authenticateToken, async (req, res) => {
     try {
         const users = await User.find({}, '-password');
@@ -180,39 +179,46 @@ app.get('/api/users', authenticateToken, async (req, res) => {
 });
 
 app.post('/api/users', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ይህንን ተግባር ለማከናወን የሱፐር አድሚን ፈቃድ ያስፈልግዎታል!' });
     const { username, password, role } = req.body;
     try {
+        if (!username || !password || !role) {
+            return res.status(400).json({ error: 'እባክዎ ሁሉንም መስኮች ይሙሉ!' });
+        }
         const hashedPassword = await bcrypt.hash(password, 10);
         const newUser = await User.create({ username: username.trim(), password: hashedPassword, role });
-        res.json({ message: 'ተጠቃሚ ተፈጥሯል!', user: { id: newUser._id, username, role } });
+        res.json({ message: 'አዲስ ተጠቃሚ በተሳካ ሁኔታ ተፈጥሯል!', user: { id: newUser._id, username, role } });
     } catch (err) {
         res.status(400).json({ error: 'የተጠቃሚ ስም ቀደም ሲል ተይዟል!' });
     }
 });
 
 app.delete('/api/users/:username', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ይህንን ተግባር ለማከናወን የሱፐር አድሚን ፈቃድ ያስፈልግዎታል!' });
     try {
+        if (req.params.username === 'superadmin') {
+            return res.status(400).json({ error: 'ዋናውን ሱፐር አድሚን መሰረዝ አይቻልም!' });
+        }
         await User.findOneAndDelete({ username: req.params.username });
-        res.json({ message: 'ተጠቃሚው ተሰርዟል!' });
+        res.json({ message: 'ተጠቃሚው በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
-        res.status(500).json({ error: 'ማጥፋት አልተቻለም!' });
+        res.status(500).json({ error: 'ተጠቃሚውን ማጥፋት አልተቻለም!' });
     }
 });
 
 app.put('/api/users/:username/password', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ይህንን ተግባር ለማከናወን የሱፐር አድሚን ፈቃድ ያስፈልግዎታል!' });
     try {
-        const hashedPassword = await bcrypt.hash(req.body.password.trim(), 10);
+        const { password } = req.body;
+        if (!password) return res.status(400).json({ error: 'አዲስ የይለፍ ቃል ያስገቡ!' });
+        const hashedPassword = await bcrypt.hash(password.trim(), 10);
         await User.findOneAndUpdate({ username: req.params.username }, { password: hashedPassword });
-        res.json({ message: 'የይለፍ ቃል ተቀይሯል!' });
+        res.json({ message: 'የተጠቃሚው የይለፍ ቃል ተቀይሯል!' });
     } catch (err) {
-        res.status(500).json({ error: 'መቀየር አልተቻለም!' });
+        res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
     }
 });
 
-// Superadmin or Admin changing their own password via dashboard profile
 app.put('/api/password', authenticateToken, async (req, res) => {
     const { oldPassword, newPassword } = req.body;
     try {
@@ -228,7 +234,7 @@ app.put('/api/password', authenticateToken, async (req, res) => {
     }
 });
 
-// ---------------- Reports API with Photo & Video Upload ----------------
+// ---------------- Reports API ----------------
 app.post('/api/reports', authenticateToken, upload.fields([
     { name: 'photo', maxCount: 1 },
     { name: 'video', maxCount: 1 }
