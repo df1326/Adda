@@ -150,8 +150,8 @@ app.get('/api/me', authenticateToken, (req, res) => {
     res.json({ username: req.user.username, role: req.user.role });
 });
 
-app.post('/api/auth/login', async (req, res) => {
-    const { username, password } = req.body;
+app.post('/api/login', async (req, res) => {
+    const { username, password, role } = req.body;
     try {
         if (!username || !password) {
             return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!' });
@@ -190,22 +190,38 @@ app.post('/api/users', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/users/:id', authenticateToken, async (req, res) => {
+app.delete('/api/users/:username', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
     try {
-        await User.findByIdAndDelete(req.params.id);
+        await User.findOneAndDelete({ username: req.params.username });
         res.json({ message: 'ተጠቃሚው ተሰርዟል!' });
     } catch (err) {
         res.status(500).json({ error: 'ማጥፋት አልተቻለም!' });
     }
 });
 
-app.put('/api/users/:id/reset-password', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin' && req.user.role !== 'admin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+app.put('/api/users/:username/password', authenticateToken, async (req, res) => {
+    if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
     try {
-        const hashedPassword = await bcrypt.hash(req.body.newPassword.trim(), 10);
-        await User.findByIdAndUpdate(req.params.id, { password: hashedPassword });
+        const hashedPassword = await bcrypt.hash(req.body.password.trim(), 10);
+        await User.findOneAndUpdate({ username: req.params.username }, { password: hashedPassword });
         res.json({ message: 'የይለፍ ቃል ተቀይሯል!' });
+    } catch (err) {
+        res.status(500).json({ error: 'መቀየር አልተቻለም!' });
+    }
+});
+
+// Superadmin or Admin changing their own password via dashboard profile
+app.put('/api/password', authenticateToken, async (req, res) => {
+    const { oldPassword, newPassword } = req.body;
+    try {
+        const user = await User.findById(req.user.id);
+        if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
+            return res.status(400).json({ error: 'የድሮው የይለፍ ቃል ልክ አይደለም!' });
+        }
+        user.password = await bcrypt.hash(newPassword.trim(), 10);
+        await user.save();
+        res.json({ message: 'የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!' });
     } catch (err) {
         res.status(500).json({ error: 'መቀየር አልተቻለም!' });
     }
@@ -220,13 +236,11 @@ app.post('/api/reports', authenticateToken, upload.fields([
         let photoUrl = '';
         let videoUrl = '';
 
-        // ፎቶ ካለ ወደ Cloudinary መጫን
         if (req.files && req.files.photo) {
             const photoRes = await uploadToCloudinary(req.files.photo[0].buffer, 'image');
             photoUrl = photoRes.secure_url;
         }
 
-        // ቪዲዮ ካለ ወደ Cloudinary መጫን
         if (req.files && req.files.video) {
             const videoRes = await uploadToCloudinary(req.files.video[0].buffer, 'video');
             videoUrl = videoRes.secure_url;
@@ -256,9 +270,6 @@ app.get('/api/reports', authenticateToken, async (req, res) => {
 });
 
 app.delete('/api/reports/:id', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
-    }
     try {
         await Report.findByIdAndDelete(req.params.id);
         res.json({ message: 'ሪፖርቱ ተሰርዟል!' });
