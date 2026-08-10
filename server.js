@@ -9,13 +9,11 @@ const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-// በከፍተኛ ደህንነት (Production) ወቅት ይህንን በ environment variable (.env) ማስተዳደር አለብዎት
 const JWT_SECRET = process.env.JWT_SECRET || 'tech_transfer_secret_key_2018';
 
 // Middleware
 app.use(express.json());
 app.use(cors());
-// የፋይል ማውጫን መከላከል
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // Ensure upload directory exists
@@ -56,7 +54,7 @@ const ReportSchema = new mongoose.Schema({
     b_mobile: { type: Number, default: 0 },
     b_male: { type: Number, default: 0 },
     b_female: { type: Number, default: 0 },
-    diagnosis: String, // ከNumber ወደ String ተቀይሯል (ምክንያቱም ጽሁፍ ስለሚቀበል)
+    diagnosis: String,
     photoUrl: String,
     videoUrl: String,
     createdBy: { type: String, required: true },
@@ -71,7 +69,7 @@ const storage = multer.diskStorage({
 });
 const upload = multer({ 
     storage: storage,
-    limits: { fileSize: 10 * 1024 * 1024 } // የፋይል መጠን ገደብ (10MB)
+    limits: { fileSize: 10 * 1024 * 1024 }
 });
 
 // --- Auth Middleware ---
@@ -102,10 +100,10 @@ async function createSuperadmin() {
 }
 createSuperadmin();
 
-// --- API Routes (ስልታዊ በሆነ መንገድ የተደራጁ) ---
+// --- API Routes ---
 
-// Login
-app.post('/api/auth/login', async (req, res) => {
+// Login (Frontend /api/login የሚለውን ስለሚጠቀም ሁለቱንም አማራጮች አቅርበናል)
+app.post(['/api/auth/login', '/api/login'], async (req, res) => {
     try {
         const { username, password } = req.body;
         const user = await User.findOne({ username });
@@ -119,7 +117,81 @@ app.post('/api/auth/login', async (req, res) => {
     }
 });
 
-// --- Report Routes (የተቀሩትንም በዚህ መልክ ያደራጁ) ---
+// Get Current User Profile
+app.get('/api/me', verifyToken, async (req, res) => {
+    try {
+        const user = await User.findById(req.user.id).select('-password');
+        if (!user) return res.status(404).json({ error: 'ተጠቃሚው አልተገኘም' });
+        res.json({ username: user.username, role: user.role });
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// User Management Routes (Admin/Superadmin)
+app.get('/api/users', verifyToken, async (req, res) => {
+    try {
+        const users = await User.find().select('-password');
+        res.json(users);
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+app.post('/api/users', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+        }
+        const { username, password, role } = req.body;
+        const existing = await User.findOne({ username });
+        if (existing) return res.status(400).json({ error: 'ይህ የተጠቃሚ ስም უკვე አለ!' });
+
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const newUser = await User.create({ username, password: hashedPassword, role: role || 'user' });
+        res.status(201).json({ message: 'ተጠቃሚው ተፈጥሯል', username: newUser.username });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+app.delete('/api/users/:username', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+        await User.findOneAndDelete({ username: req.params.username });
+        res.json({ message: 'ተጠቃሚው ተሰርዟል' });
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+app.put('/api/users/:username/password', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'superadmin') return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        await User.findOneAndUpdate({ username: req.params.username }, { password: hashedPassword });
+        res.json({ message: 'የይለፍ ቃል ተቀይሯል' });
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+app.put('/api/change-password', verifyToken, async (req, res) => {
+    try {
+        const { oldPassword, newPassword } = req.body;
+        const user = await User.findById(req.user.id);
+        if (!user || !(await bcrypt.compare(oldPassword, user.password))) {
+            return res.status(400).json({ error: 'የድሮው የይለፍ ቃል ስህተት ነው!' });
+        }
+        user.password = await bcrypt.hash(newPassword, 10);
+        await user.save();
+        res.json({ message: 'የይለፍ ቃል ተቀይሯል' });
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+// --- Report Routes ---
 app.post('/api/reports', verifyToken, upload.fields([{ name: 'photo' }, { name: 'video' }]), async (req, res) => {
     try {
         const reportData = { ...req.body, createdBy: req.user.username };
@@ -131,6 +203,31 @@ app.post('/api/reports', verifyToken, upload.fields([{ name: 'photo' }, { name: 
         res.status(201).json(report);
     } catch (err) {
         res.status(500).json({ error: err.message });
+    }
+});
+
+app.get('/api/reports', verifyToken, async (req, res) => {
+    try {
+        let query = {};
+        if (req.user.role === 'user') {
+            query.zone = req.user.username;
+        }
+        const reports = await Report.find(query).sort({ createdAt: -1 });
+        res.json(reports);
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
+    }
+});
+
+app.delete('/api/reports/:id', verifyToken, async (req, res) => {
+    try {
+        if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
+            return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+        }
+        await Report.findByIdAndDelete(req.params.id);
+        res.json({ message: 'ሪፖርቱ ተሰርዟል' });
+    } catch (err) {
+        res.status(500).json({ error: 'Server Error' });
     }
 });
 
