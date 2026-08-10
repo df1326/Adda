@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>የቴክኖሎጂ ሽግግር ክትትል እና አስተዳደር ሲስተም </title>
+    <title>የቴክኖሎጂ ሽግግር ክትትል እና አስተዳደር ስርዓት</title>
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Google Fonts -->
@@ -13,15 +13,15 @@
     
     <style>
         :root {
-            --brand-blue: #1b365d;     /* ማራኪ እና ጥልቅ የቢሮ ሰማያዊ */
-            --accent-color: #00b4d8;   /* ደማቅ የቱርክዋይዝ ቀለም ለትኩረት */
-            --bg-color: #f0f4f8;       /* ለዓይን ምቹ የሆነ ለስላሳ ብርሃናማ ዳራ */
-            --card-bg: #ffffff;        /* ንጹህ ነጭ ለካርዶች */
-            --text-main: #0f172a;      /* ጽሑፎች በግልጽ እንዲታዩ ጥቁር ቀለም */
-            --text-muted: #475569;     /* ሁለተኛ ደረጃ ግራጫ ጽሑፍ */
-            --border-color: #cbd5e1;   /* የክፈፍ መስመር */
-            --danger-red: #ef4444;     /* የማጥፊያ ቀይ ቀለም */
-            --warning-amber: #d97706;  /* የማስጠንቀቂያ/ሪሴት ብርቱካናማ ቀለም */
+            --brand-blue: #1b365d;
+            --accent-color: #00b4d8;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+            --danger-red: #ef4444;
+            --warning-amber: #d97706;
         }
 
         * {
@@ -39,7 +39,6 @@
             min-height: 100vh;
         }
 
-        /* Login Overlay */
         #loginOverlay {
             position: fixed;
             top: 0;
@@ -120,7 +119,6 @@
             background: #0f2347;
         }
 
-        /* Dashboard Layout */
         #dashboardWrapper {
             display: none;
             flex-direction: column;
@@ -176,7 +174,6 @@
             gap: 25px;
         }
 
-        /* Admin & Control Panels Grid */
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -198,7 +195,6 @@
             font-weight: 600;
         }
 
-        /* 1. አዲስ ተጠቃሚ መፍጠር ካርድ */
         #createUserCard {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             border-top: 5px solid #22c55e;
@@ -209,7 +205,6 @@
             border-bottom-color: #bbf7d0;
         }
 
-        /* 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር ካርድ */
         #userListCard {
             background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
             border-top: 5px solid #eab308;
@@ -220,7 +215,6 @@
             border-bottom-color: #fde047;
         }
 
-        /* 3. የይለፍ ቃል መቀየሪያ ካርድ */
         #superAdminPassCard {
             background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
             border-top: 5px solid #a855f7;
@@ -231,7 +225,6 @@
             border-bottom-color: #e9d5ff;
         }
 
-        /* 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ */
         #reportFormCard {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
             border-top: 5px solid var(--brand-blue);
@@ -242,7 +235,6 @@
             border-bottom-color: #bfdbfe;
         }
 
-        /* Reports Table Section */
         .table-container {
             background: var(--card-bg);
             border-radius: 12px;
@@ -303,7 +295,6 @@
             font-size: 0.75rem;
         }
 
-        /* Toast Notification */
         #toast {
             visibility: hidden;
             min-width: 260px;
@@ -348,7 +339,7 @@
                 <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 200px; width: 200px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
             </div>
             <h2>እንኳን ደህና መጡ!
-                የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ እባክዎ ኃላፊነትዎን ይምረጡ  </h2>
+                የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ </h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label for="loginRole">ሚና (Role):</label>
@@ -570,12 +561,12 @@
                             <th>ዓመት</th>
                             <th>ብዛት</th>
                             <th>የተሸጋገረበት ዘርፍ</th>
-                            <th>የተፈራ ሀብት (ብር)</th>
-                            <th>ተጠቃሚ ኢንተርፕራይዝ</th>
-                            <th>ተጠቃሚ አንቀሳቃሽ ድምር</th>
+                            <th>ሀብት (ብር)</th>
+                            <th>ድርጅት</th>
+                            <th>MSE</th>
                             <th>ወንድ</th>
                             <th>ሴት</th>
-                            <th>ምርመራ </th>
+                            <th>ዲአግኖስቲክ</th>
                             <th>መዝጋቢ</th>
                             <th>እርምጃ</th>
                         </tr>
@@ -719,7 +710,6 @@
                     setReportFormEditable(true);
                     fetchAdminUsersList();
                 } else if (userRole === 'admin') {
-                    // አድሚን ሪፖርት መሙላት አይችልም (ማየት ብቻ)
                     adminPanel.style.display = 'grid';
                     createUserCard.style.display = 'none';
                     superAdminPassCard.style.display = 'none';
@@ -795,7 +785,6 @@
 
                     var btnDiv = document.createElement('div');
                     
-                    // ለ Super Admin ብቻ የማጥፋት ወይም የይለፍ ቃል የማስተካከል አማራጭ መስጠት ይቻላል
                     if (userRole === 'superadmin' && u.username !== currentUser) {
                         var resetBtn = document.createElement('button');
                         resetBtn.className = 'action-reset';
