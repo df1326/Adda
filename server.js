@@ -11,10 +11,14 @@ const fs = require('fs');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 
-// dotenv ማዋቀር (ከተቻለ .env ፋይል በመጠቀም ሚስጥራዊ መረጃዎችን መያዝ)
+// dotenv ማዋቀር
 require('dotenv').config();
 
 const app = express();
+
+// --- አስፈላጊ፡ ለክላውድ ሆስቲንግ የ Proxy ማስተካከያ (ለ Rate Limit) ---
+app.set('trust proxy', 1);
+
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || 'tech_transfer_secret_key_2018';
 
