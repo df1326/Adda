@@ -8,7 +8,7 @@ const path = require('path');
 const fs = require('fs');
 
 const app = express();
-const PORT = 5000;
+const PORT = process.env.PORT || 5000;
 const JWT_SECRET = 'tech_transfer_secret_key_2018';
 
 // Middleware
@@ -16,13 +16,18 @@ app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
+// Serve Frontend static files if needed
+app.use(express.static(path.join(__dirname)));
+
 // Ensure upload directory exists
 if (!fs.existsSync('./uploads')) {
     fs.mkdirSync('./uploads');
 }
 
-// MongoDB Connection (የድሮው ዳታቤዝ እንዳይጠፋ በነባሩ ስም ተገናኝቷል)
-mongoose.connect('mongodb://localhost:27017/tech_transfer_db', {
+// MongoDB Connection (Render ላይ ከኦንላይን MongoDB Atlas ጋር ለመገናኘት process.env.MONGO_URI እንጠቀማለን፣ካልተሰጠ በሎካል ይገናኛል)
+const MONGO_URI = process.env.MONGO_URI || 'mongodb://localhost:27017/tech_transfer_db';
+
+mongoose.connect(MONGO_URI, {
     useNewUrlParser: true,
     useUnifiedTopology: true
 }).then(() => console.log('MongoDB Connected Successfully.'))
@@ -83,11 +88,15 @@ function verifyToken(req, res, next) {
 
 // --- Seed Superadmin ---
 async function createSuperadmin() {
-    const admin = await User.findOne({ username: 'superadmin' });
-    if (!admin) {
-        const hashedPassword = await bcrypt.hash('admin123', 10);
-        await User.create({ username: 'superadmin', password: hashedPassword, role: 'superadmin' });
-        console.log('Superadmin created (username: superadmin, password: admin123)');
+    try {
+        const admin = await User.findOne({ username: 'superadmin' });
+        if (!admin) {
+            const hashedPassword = await bcrypt.hash('admin123', 10);
+            await User.create({ username: 'superadmin', password: hashedPassword, role: 'superadmin' });
+            console.log('Superadmin created (username: superadmin, password: admin123)');
+        }
+    } catch (err) {
+        console.log('Superadmin creation check error:', err.message);
     }
 }
 createSuperadmin();
@@ -188,7 +197,7 @@ app.post('/api/reports', verifyToken, upload.fields([{ name: 'photo' }, { name: 
     }
 });
 
-// Update Report (የተጨመረው አዲስ ክፍል - የድሮ መረጃ እንዳይጠፋ አድርጎ ለማስተካከል)
+// Update Report
 app.put('/api/reports/:id', verifyToken, upload.fields([{ name: 'photo' }, { name: 'video' }]), async (req, res) => {
     try {
         const reportId = req.params.id;
@@ -201,7 +210,6 @@ app.put('/api/reports/:id', verifyToken, upload.fields([{ name: 'photo' }, { nam
 
         const updateData = { ...req.body };
 
-        // አዲስ ፋይል ካለ ማስተካከል፣ ካለፈው የነበረውን መጠበቅ
         if (req.files && req.files['photo']) {
             updateData.photoUrl = '/uploads/' + req.files['photo'][0].filename;
         }
@@ -231,6 +239,11 @@ app.delete('/api/reports/:id', verifyToken, async (req, res) => {
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
+});
+
+// Fallback to index.html for SPA routing
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {
