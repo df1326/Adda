@@ -983,6 +983,8 @@
                     }
                     reports.forEach(function(r) {
                         var tr = document.createElement('tr');
+                        var actionButtonHTML = (userRole === 'superadmin') ? `<button class="action-del" onclick="deleteReport('${r._id || r.id}')">ሰርዝ</button>` : '-';
+                        
                         tr.innerHTML = `
                             <td>${escapeHtml(r.zone || '')}</td>
                             <td>${escapeHtml(r.poly || '')}</td>
@@ -1002,9 +1004,7 @@
                             <td>${r.b_female || 0}</td>
                             <td>${r.diagnosis || 0}</td>
                             <td>${escapeHtml(r.recorder || '')}</td>
-                            <td>
-                                ${(userRole === 'superadmin' || userRole === 'admin') ? `<button class="action-del" onclick="deleteReport('${r._id || r.id}')">ሰርዝ</button>` : '-'}
-                            </td>
+                            <td>${actionButtonHTML}</td>
                         `;
                         tbody.appendChild(tr);
                     });
