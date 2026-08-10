@@ -7,11 +7,10 @@ const path = require('path');
 const helmet = require('helmet');
 const cloudinary = require('cloudinary').v2;
 const multer = require('multer');
-const { body, validationResult } = require('express-validator');
 
 const app = express();
 
-// 1. Cloudinary Setup (በትክክለኛው መረጃዎ ተሞልቷል)
+// 1. Cloudinary Setup
 cloudinary.config({
     cloud_name: 'tdrscp1g',
     api_key: '985967155381663',
@@ -68,14 +67,14 @@ const reportSchema = new mongoose.Schema({
     valueChain: String,
     techType: String,
     year: String,
-    transferQty: Number,
+    transferQty: String,
     transferSector: String,
-    resource: Number,
-    b_ent: Number,
-    b_mobile: Number,
-    b_male: Number,
-    b_female: Number,
-    diagnosis: Number,
+    resource: String,
+    b_ent: String,
+    b_mobile: String,
+    b_male: String,
+    b_female: String,
+    diagnosis: String,
     photoUrl: String, // የፎቶ ክላውድ ሊንክ
     videoUrl: String, // የቪዲዮ ክላውድ ሊንክ
     createdBy: String,
@@ -151,17 +150,20 @@ app.get('/api/me', authenticateToken, (req, res) => {
     res.json({ username: req.user.username, role: req.user.role });
 });
 
-app.post('/api/login', async (req, res) => {
-    const { username, password, role } = req.body;
+app.post('/api/auth/login', async (req, res) => {
+    const { username, password } = req.body;
     try {
-        const query = role ? { username: username.trim(), role: role.trim() } : { username: username.trim() };
-        const user = await User.findOne(query);
+        if (!username || !password) {
+            return res.status(400).json({ error: 'እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!' });
+        }
+        const user = await User.findOne({ username: username.trim() });
         if (!user || !(await bcrypt.compare(password, user.password))) {
             return res.status(400).json({ error: 'የተጠቃሚ ስም ወይም የይለፍ ቃል ስህተት ነው!' });
         }
         const token = jwt.sign({ id: user._id, username: user.username, role: user.role }, JWT_SECRET, { expiresIn: '12h' });
         res.json({ message: 'በተሳካ ሁኔታ ገብተዋል', token, role: user.role, username: user.username });
     } catch (err) {
+        console.error('Login error:', err);
         res.status(500).json({ error: 'የሰርቨር ስህተት ተከሰቷል!' });
     }
 });
