@@ -150,7 +150,8 @@ app.get('/api/me', authenticateToken, (req, res) => {
     res.json({ username: req.user.username, role: req.user.role });
 });
 
-app.post('/api/login', async (req, res) => {
+// ተስተካክሏል: ከ Frontend (index.html) ጋር እንዲጣጣም /api/auth/login ተደረገ
+app.post('/api/auth/login', async (req, res) => {
     const { username, password, role } = req.body;
     try {
         if (!username || !password) {
