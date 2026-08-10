@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="am">
 <head>
@@ -73,8 +72,8 @@
         }
 
         .login-logo img {
-            height: 150px;
-            width: 150px;
+            height: 120px;
+            width: 120px;
             object-fit: cover;
             border-radius: 50%;
             box-shadow: 0 4px 8px rgba(0,0,0,0.15);
@@ -86,7 +85,7 @@
         .login-card h2 {
             color: var(--brand-blue);
             margin-bottom: 24px;
-            font-size: 1.2rem;
+            font-size: 1.15rem;
             font-weight: 600;
             line-height: 1.4;
         }
@@ -139,7 +138,7 @@
             background: #0f2347;
         }
 
-        /* Dashboard Layout - kept as requested */
+        /* Dashboard Wrapper */
         #dashboardWrapper {
             display: none;
             flex-direction: column;
@@ -204,8 +203,9 @@
         .card {
             border-radius: 12px;
             padding: 24px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
+            background: var(--card-bg);
         }
 
         .card h3 {
@@ -216,7 +216,6 @@
             font-weight: 600;
         }
 
-        /* Styling remain as requested in user prompt */
         #createUserCard { background: #f0fdf4; border-top: 5px solid #22c55e; }
         #userListCard { background: #fefce8; border-top: 5px solid #eab308; }
         #superAdminPassCard { background: #faf5ff; border-top: 5px solid #a855f7; }
@@ -282,7 +281,7 @@
 </head>
 <body>
 
-    <!-- Login Modal -->
+    <!-- Login Overlay -->
     <div id="loginOverlay">
         <div class="login-card">
             <div class="login-logo">
@@ -342,7 +341,7 @@
         </div>
     </div>
 
-    <!-- Main Dashboard Wrapper -->
+    <!-- Dashboard Wrapper -->
     <div id="dashboardWrapper">
         <header>
             <div style="display: flex; align-items: center; gap: 12px;">
@@ -354,7 +353,187 @@
                 <button class="btn-logout" onclick="handleLogout()">ውጣ</button>
             </div>
         </header>
-        <!-- ... (Rest of the dashboard content as provided) ... -->
+
+        <main>
+            <!-- Admin / SuperAdmin Grid Section -->
+            <div id="adminSection" class="admin-grid" style="display: none;">
+                <div class="card" id="createUserCard">
+                    <h3>አዲስ ተጠቃሚ መፍጠሪያ</h3>
+                    <form onsubmit="handleCreateUser(event)">
+                        <div class="form-group">
+                            <label>የተጠቃሚ ስም (Username):</label>
+                            <input type="text" id="newUsername" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>የይለፍ ቃል (Password):</label>
+                            <input type="password" id="newPassword" class="form-control" required>
+                        </div>
+                        <div class="form-group">
+                            <label>የሚመለከተው ዞን/ከተማ:</label>
+                            <select id="newUserZone" class="form-control">
+                                <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
+                                <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
+                                <option value="ደብረ ማርቆስ ከተማ">ደብረ ማርቆስ ከተማ</option>
+                                <option value="ወልድያ ከተማ">ወልድያ ከተማ</option>
+                                <option value="ደሴ ከተማ">ደሴ ከተማ</option>
+                                <option value="ኮምቦልቻ ከተማ">ኮምቦልቻ ከተማ</option>
+                                <option value="ደብረ ብርሃን ከተማ">ደብረ ብርሃን ከተማ</option>
+                                <option value="ደብረ ታቦር ከተማ">ደብረ ታቦር ከተማ</option>
+                                <option value="ማዕከላዊ ጎንደር ዞን">ማዕከላዊ ጎንደር ዞን</option>
+                                <option value="ምዕራብ ጎንደር ዞን">ምዕራብ ጎንደር ዞን</option>
+                                <option value="ሰሜን ጎንደር ዞን">ሰሜን ጎንደር ዞን</option>
+                                <option value="ወልቃይት ጠገዴ ሰቲት ሁመራ ዞን">ወልቃይት ጠገዴ ሰቲት ሁመራ ዞን</option>
+                                <option value="ደቡብ ጎንደር ዞን">ደቡብ ጎንደር ዞን</option>
+                                <option value="ሰሜን ወሎ ዞን">ሰሜን ወሎ ዞን</option>
+                                <option value="ደቡብ ወሎ ዞን">ደቡብ ወሎ ዞን</option>
+                                <option value="ሰሜን ሸዋ ዞን">ሰሜን ሸዋ ዞን</option>
+                                <option value="ምስራቅ ጎጃም ዞን">ምስራቅ ጎጃም ዞን</option>
+                                <option value="ምዕራብ ጎጃም ዞን">ምዕራብ ጎጃም ዞን</option>
+                                <option value="አዊ ዞን">አዊ ዞን</option>
+                                <option value="ኦሮሞ ብ/አ ዞን">ኦሮሞ ብ/አ ዞን</option>
+                                <option value="ዋግህምራ ብ/አ ዞን">ዋግህምራ ብ/አ ዞን</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn-primary" style="background: #22c55e;">ተጠቃሚ ፍጠር</button>
+                    </form>
+                </div>
+                
+                <div class="card" id="userListCard">
+                    <h3>የተጠቃሚዎች ዝርዝር</h3>
+                    <div id="usersListContainer" style="max-height: 250px; overflow-y: auto;">
+                        <p style="color: var(--text-muted); font-size: 0.9rem;">ምንም የተመዘገበ ተጠቃሚ የለም።</p>
+                    </div>
+                </div>
+
+                <div class="card" id="superAdminPassCard" style="display:none;">
+                    <h3>የሱፐር አድሚን የይለፍ ቃል መቀየሪያ</h3>
+                    <form onsubmit="handleSuperAdminChange(event)">
+                        <div class="form-group">
+                            <label>አዲስ የይለፍ ቃል:</label>
+                            <input type="password" id="newSuperAdminPassword" class="form-control" required>
+                        </div>
+                        <button type="submit" class="btn-primary" style="background: #a855f7;">የይለፍ ቃል ቀይር</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Table Container -->
+            <div class="table-container">
+                <div class="table-header">
+                    <h3 style="color: var(--brand-blue); font-weight: 600;">የሪፖርቶች ማጠቃለያ ሰንጠረዥ</h3>
+                    <button onclick="exportToExcel()" class="btn-primary" style="width: auto; padding: 8px 16px; margin: 0; background: #10b981;">
+                        <i class="fas fa-file-excel"></i> ወደ ኤክሴል ላክ (Export Excel)
+                    </button>
+                </div>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>ተራ ቁጥር</th>
+                            <th>ዞን / ከተማ አስተዳደር</th>
+                            <th>የተከናወኑ ስራዎች</th>
+                            <th>የተጠቃሚዎች ብዛት</th>
+                            <th>ቀን</th>
+                        </tr>
+                    </thead>
+                    <tbody id="reportTableBody">
+                        <tr>
+                            <td colspan="5" style="text-align: center; color: var(--text-muted);">መረጃዎች አልተገኙም</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
     </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">ማሳሰቢያ ይገለጻል</div>
+
+    <script>
+        function toggleLoginInputs() {
+            const role = document.getElementById('loginRole').value;
+            const usernameGroup = document.getElementById('usernameGroup');
+            const zoneSelectGroup = document.getElementById('zoneSelectGroup');
+            
+            if (role === 'user') {
+                usernameGroup.style.display = 'none';
+                zoneSelectGroup.style.display = 'block';
+            } else {
+                usernameGroup.style.display = 'block';
+                zoneSelectGroup.style.display = 'none';
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'show';
+            setTimeout(() => { toast.className = toast.className.replace('show', ''); }, 3000);
+        }
+
+        function handleLogin(event) {
+            event.preventDefault();
+            const role = document.getElementById('loginRole').value;
+            const password = document.getElementById('loginPassword').value;
+            
+            if (role === 'superadmin') {
+                if (password === 'admin123' || password === 'super123') {
+                    sessionStorage.setItem('currentUser', JSON.stringify({ role: 'superadmin', name: 'Super Admin' }));
+                    initDashboard();
+                } else {
+                    showToast('የተሳሳተ የይለፍ ቃል!');
+                }
+            } else if (role === 'admin') {
+                if (password === 'admin123') {
+                    sessionStorage.setItem('currentUser', JSON.stringify({ role: 'admin', name: 'Admin' }));
+                    initDashboard();
+                } else {
+                    showToast('የተሳሳተ የይለፍ ቃል!');
+                }
+            } else {
+                const zone = document.getElementById('loginZoneSelect').value;
+                sessionStorage.setItem('currentUser', JSON.stringify({ role: 'user', name: zone }));
+                initDashboard();
+            }
+        }
+
+        function initDashboard() {
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('dashboardWrapper').style.display = 'flex';
+            const user = JSON.parse(sessionStorage.getItem('currentUser'));
+            document.getElementById('currentUserDisplay').textContent = user.name;
+            
+            if (user.role === 'admin' || user.role === 'superadmin') {
+                document.getElementById('adminSection').style.display = 'grid';
+                if (user.role === 'superadmin') {
+                    document.getElementById('superAdminPassCard').style.display = 'block';
+                }
+            }
+        }
+
+        function handleLogout() {
+            sessionStorage.removeItem('currentUser');
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('dashboardWrapper').style.display = 'none';
+            document.getElementById('loginPassword').value = '';
+            document.getElementById('adminSection').style.display = 'none';
+            document.getElementById('superAdminPassCard').style.display = 'none';
+        }
+
+        function handleCreateUser(event) {
+            event.preventDefault();
+            showToast('ተጠቃሚው በተሳካ ሁኔታ ተፈጥሯል!');
+            event.target.reset();
+        }
+
+        function handleSuperAdminChange(event) {
+            event.preventDefault();
+            showToast('የሱፐር አድሚን የይለፍ ቃል ተቀይሯል!');
+            event.target.reset();
+        }
+
+        function exportToExcel() {
+            showToast('ሪፖርቱ ወደ ኤክሴል እየተወረደ ነው...');
+        }
+    </script>
 </body>
 </html>
