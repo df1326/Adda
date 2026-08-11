@@ -1,5 +1,4 @@
 <script>
-        // ሚናው ሲቀየር በቀጥታ እንዲስተካከል የተደረገ ማስተካከያ
         function toggleLoginInputs() {
             var role = document.getElementById('loginRole').value;
             var usernameGroup = document.getElementById('usernameGroup');
@@ -61,7 +60,9 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username: usernameInput, password: passwordInput, role: role })
                 })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(res) { 
+                    return res.json().then(function(d) { return { ok: res.ok, status: res.status, data: d }; }); 
+                })
                 .then(function(result) {
                     if (result.ok) {
                         token = result.data.token;
@@ -93,9 +94,15 @@
                 fetch(API + '/me', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) { return res.json(); })
+                .then(function(res) { 
+                    if (res.status === 401) {
+                        handleLogout();
+                        throw new Error('Unauthorized');
+                    }
+                    return res.json(); 
+                })
                 .then(function(data) {
-                    if (data.username) {
+                    if (data && data.username) {
                         currentUser = data.username;
                         userRole = data.role;
                         document.getElementById('currentUserDisplay').innerText = currentUser;
@@ -107,8 +114,10 @@
                         handleLogout();
                     }
                 })
-                .catch(function() {
-                    handleLogout();
+                .catch(function(err) {
+                    if (err.message !== 'Unauthorized') {
+                        console.error('Session validation error:', err);
+                    }
                 });
             }
 
@@ -136,15 +145,20 @@
                     reportFormCard.style.display = 'block';
                     setReportFormEditable(true);
                     var zoneInput = document.getElementById('zone');
-                    if(zoneInput) zoneInput.value = currentUser;
+                    if(zoneInput) {
+                        zoneInput.value = currentUser;
+                        zoneInput.readOnly = true; // የዞን ተጠቃሚዎች የዞኑን ስም እንዳይቀይሩ መቆለፊያ
+                    }
                 }
             }
 
             function setReportFormEditable(isEditable) {
                 var formElements = document.querySelectorAll('#reportForm input, #reportForm select');
                 formElements.forEach(function(el) {
-                    el.disabled = !isEditable;
-                    el.style.backgroundColor = isEditable ? '#ffffff' : '#f1f5f9';
+                    if (el.id !== 'zone' || userRole !== 'user') { // የዞን ስም በዞን ተጠቃሚ እንዳይቀየር
+                        el.disabled = !isEditable;
+                        el.style.backgroundColor = isEditable ? '#ffffff' : '#f1f5f9';
+                    }
                 });
                 
                 var submitBtn = document.getElementById('submitReportBtn');
@@ -157,9 +171,12 @@
                 fetch(API + '/users', {
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) { return res.json(); })
+                .then(function(res) { 
+                    if (res.status === 401) { handleLogout(); return null; }
+                    return res.json(); 
+                })
                 .then(function(users) {
-                    loadAdminUsersList(users);
+                    if(users) loadAdminUsersList(users);
                 })
                 .catch(function(err) {
                     console.error('Users load failed', err);
@@ -316,6 +333,7 @@
                     body: JSON.stringify(reportData)
                 })
                 .then(function(res) {
+                    if (res.status === 401) { handleLogout(); return; }
                     if (res.ok) {
                         showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
                         document.getElementById('reportForm').reset();
@@ -328,11 +346,15 @@
 
             function loadReports() {
                 fetch(API + '/reports', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(function(res) { return res.json(); })
+                .then(function(res) { 
+                    if (res.status === 401) { handleLogout(); return null; }
+                    return res.json(); 
+                })
                 .then(function(reports) {
+                    if (!reports) return;
                     var tbody = document.getElementById('reportTableBody');
                     tbody.innerHTML = '';
-                    if (!reports || reports.length === 0) {
+                    if (reports.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም ሪፖርት አልተመዘገበም</td></tr>';
                         return;
                     }
@@ -370,6 +392,7 @@
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
                 .then(function(res) {
+                    if (res.status === 401) { handleLogout(); return; }
                     if (res.ok) {
                         showToast('ሪፖርቱ ተሰርዟል!');
                         loadReports();
