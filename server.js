@@ -214,19 +214,22 @@ app.put('/api/change-password', verifyToken, async (req, res) => {
     }
 });
 
-// --- Report Routes ---
-app.post('/api/reports', verifyToken, upload.fields([{ name: 'photo' }, { name: 'video' }]), async (req, res) => {
-    try {
-        const reportData = { ...req.body, createdBy: req.user.username };
-        if (req.user.role === 'user') reportData.zone = req.user.username;
-        if (req.files?.photo) reportData.photoUrl = '/uploads/' + req.files.photo[0].filename;
-        if (req.files?.video) reportData.videoUrl = '/uploads/' + req.files.video[0].filename;
-        
-        const report = await Report.create(reportData);
-        res.status(201).json(report);
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
+// --- Report Routes (በሁለቱም በ JSON እና በ Multipart Form ላት የሚሰራ) ---
+app.post('/api/reports', verifyToken, async (req, res) => {
+    upload.fields([{ name: 'photo' }, { name: 'video' }])(req, res, async function (err) {
+        if (err) return res.status(400).json({ error: err.message });
+        try {
+            const reportData = { ...req.body, createdBy: req.user.username };
+            if (req.user.role === 'user') reportData.zone = req.user.username;
+            if (req.files?.photo) reportData.photoUrl = '/uploads/' + req.files.photo[0].filename;
+            if (req.files?.video) reportData.videoUrl = '/uploads/' + req.files.video[0].filename;
+            
+            const report = await Report.create(reportData);
+            res.status(201).json(report);
+        } catch (error) {
+            res.status(500).json({ error: error.message });
+        }
+    });
 });
 
 app.get('/api/reports', verifyToken, async (req, res) => {
