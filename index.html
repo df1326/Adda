@@ -318,9 +318,9 @@
         <div class="login-card">
             <div style="margin-bottom: 15px;">
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.3px;">በአዲሱ ጽጌ ተዘጋጀ</div>
-                <!-- አስተማማኝ የሎጎ ቅርጸት (SVG ምልክት በመጠቀም ሎጎው ሳይጠፋ እንዲታይ ተደርጓል) -->
-                <div style="display: inline-flex; align-items: center; justify-content: center; width: 90px; height: 90px; border-radius: 50%; background: #ffffff; border: 3px solid var(--accent-color); box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
-                    <i class="fa-solid fa-industry" style="font-size: 40px; color: var(--brand-blue);"></i>
+                <!-- ሎጎ ሊንክ -->
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 110px; height: 110px; border-radius: 50%; background: #ffffff; border: 3px solid var(--accent-color); box-shadow: 0 4px 10px rgba(0,0,0,0.15); overflow: hidden; padding: 5px;">
+                    <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የቢሮው ሎጎ" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
                 </div>
             </div>
             <h2>እንኳን ደህና መጡ!<br>
@@ -384,8 +384,8 @@
     <div id="dashboardWrapper">
         <header>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: white; border: 2px solid var(--accent-color);">
-                    <i class="fa-solid fa-industry" style="font-size: 20px; color: var(--brand-blue);"></i>
+                <div style="display: flex; align-items: center; justify-content: center; width: 45px; height: 45px; border-radius: 50%; background: white; border: 2px solid var(--accent-color); overflow: hidden; padding: 3px;">
+                    <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="ሎጎ" style="width: 100%; height: 100%; object-fit: contain; border-radius: 50%;">
                 </div>
                 <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
             </div>
@@ -560,6 +560,26 @@
     <div id="toast">ማሳሰቢያ</div>
 
     <script>
+        // Global functions defined first so they are accessible by inline HTML event handlers
+        function toggleLoginInputs() {
+            var roleSelect = document.getElementById('loginRole');
+            if (!roleSelect) return;
+            var role = roleSelect.value;
+            var usernameGroup = document.getElementById('usernameGroup');
+            var zoneSelectGroup = document.getElementById('zoneSelectGroup');
+            var usernameInput = document.getElementById('loginUsername');
+
+            if (role === 'user') {
+                if (usernameGroup) usernameGroup.style.display = 'none';
+                if (zoneSelectGroup) zoneSelectGroup.style.display = 'block';
+                if (usernameInput) usernameInput.required = false;
+            } else {
+                if (usernameGroup) usernameGroup.style.display = 'block';
+                if (zoneSelectGroup) zoneSelectGroup.style.display = 'none';
+                if (usernameInput) usernameInput.required = true;
+            }
+        }
+
         (function() {
             var API = '/api'; 
             var token = localStorage.getItem('token') || '';
@@ -586,23 +606,6 @@
                 document.getElementById('loginOverlay').style.display = show ? 'flex' : 'none';
                 document.getElementById('dashboardWrapper').style.display = show ? 'none' : 'flex';
             }
-
-            window.toggleLoginInputs = function() {
-                var role = document.getElementById('loginRole').value;
-                var usernameGroup = document.getElementById('usernameGroup');
-                var zoneSelectGroup = document.getElementById('zoneSelectGroup');
-                var usernameInput = document.getElementById('loginUsername');
-
-                if (role === 'user') {
-                    usernameGroup.style.display = 'none';
-                    zoneSelectGroup.style.display = 'block';
-                    usernameInput.required = false;
-                } else {
-                    usernameGroup.style.display = 'block';
-                    zoneSelectGroup.style.display = 'none';
-                    usernameInput.required = true;
-                }
-            };
 
             window.handleLogin = function(e) {
                 e.preventDefault();
