@@ -1,411 +1,422 @@
 <script>
-        function toggleLoginInputs() {
+    function toggleLoginInputs() {
+        var role = document.getElementById('loginRole').value;
+        var usernameGroup = document.getElementById('usernameGroup');
+        var zoneSelectGroup = document.getElementById('zoneSelectGroup');
+        var usernameInput = document.getElementById('loginUsername');
+
+        if (role === 'user') {
+            usernameGroup.style.display = 'none';
+            zoneSelectGroup.style.display = 'block';
+            usernameInput.required = false;
+        } else {
+            usernameGroup.style.display = 'block';
+            zoneSelectGroup.style.display = 'none';
+            usernameInput.required = true;
+        }
+    }
+
+    (function() {
+        var API = '/api'; 
+        var token = localStorage.getItem('token') || '';
+        var currentUser = null;
+        var userRole = '';
+
+        window.onload = function() {
+            toggleLoginInputs(); 
+            if (token) {
+                validateSession();
+            } else {
+                showLoginModal(true);
+            }
+        };
+
+        function showToast(msg) {
+            var toast = document.getElementById('toast');
+            if(!toast) return;
+            toast.innerText = msg;
+            toast.className = 'show';
+            setTimeout(function() { toast.className = toast.className.replace('show', ''); }, 3000);
+        }
+
+        function showLoginModal(show) {
+            var loginOverlay = document.getElementById('loginOverlay');
+            var dashboardWrapper = document.getElementById('dashboardWrapper');
+            if(loginOverlay) loginOverlay.style.display = show ? 'flex' : 'none';
+            if(dashboardWrapper) dashboardWrapper.style.display = show ? 'none' : 'flex';
+        }
+
+        window.handleLogin = function(e) {
+            e.preventDefault();
             var role = document.getElementById('loginRole').value;
-            var usernameGroup = document.getElementById('usernameGroup');
-            var zoneSelectGroup = document.getElementById('zoneSelectGroup');
-            var usernameInput = document.getElementById('loginUsername');
+            var usernameInput = '';
+            var passwordInput = document.getElementById('loginPassword').value.trim();
 
             if (role === 'user') {
-                usernameGroup.style.display = 'none';
-                zoneSelectGroup.style.display = 'block';
-                usernameInput.required = false;
+                usernameInput = document.getElementById('loginZoneSelect').value;
             } else {
-                usernameGroup.style.display = 'block';
-                zoneSelectGroup.style.display = 'none';
-                usernameInput.required = true;
+                usernameInput = document.getElementById('loginUsername').value.trim();
+            }
+
+            // የተስተካከለ የ Auth ፖርት ዱካ (API Path)
+            fetch(API + '/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: usernameInput, password: passwordInput, role: role })
+            })
+            .then(function(res) { 
+                return res.json().then(function(d) { return { ok: res.ok, status: res.status, data: d }; }); 
+            })
+            .then(function(result) {
+                if (result.ok) {
+                    token = result.data.token;
+                    localStorage.setItem('token', token);
+                    showToast('በተሳካ ሁኔታ ገብተዋል!');
+                    validateSession();
+                } else {
+                    showToast(result.data.error || 'የተጠቃሚ ስም ወይም የይለፍ ቃል ስህተት ነው!');
+                }
+            })
+            .catch(function() {
+                showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
+            });
+        };
+
+        window.handleLogout = function() {
+            localStorage.removeItem('token');
+            token = '';
+            currentUser = null;
+            userRole = '';
+            var userDisplay = document.getElementById('currentUserDisplay');
+            var adminPanel = document.getElementById('adminPanel');
+            if(userDisplay) userDisplay.innerText = 'እንግዳ';
+            if(adminPanel) adminPanel.style.display = 'none';
+            showLoginModal(true);
+            toggleLoginInputs();
+            showToast('ከሲስተሙ ወጥተዋል!');
+        };
+
+        function validateSession() {
+            fetch(API + '/me', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function(res) { 
+                if (res.status === 401) {
+                    handleLogout();
+                    throw new Error('Unauthorized');
+                }
+                return res.json(); 
+            })
+            .then(function(data) {
+                if (data && data.username) {
+                    currentUser = data.username;
+                    userRole = data.role;
+                    var userDisplay = document.getElementById('currentUserDisplay');
+                    if(userDisplay) userDisplay.innerText = currentUser;
+                    
+                    showLoginModal(false);
+                    setupRoleViews();
+                    loadReports();
+                } else {
+                    handleLogout();
+                }
+            })
+            .catch(function(err) {
+                if (err.message !== 'Unauthorized') {
+                    console.error('Session validation error:', err);
+                }
+            });
+        }
+
+        function setupRoleViews() {
+            var adminPanel = document.getElementById('adminPanel');
+            var reportFormCard = document.getElementById('reportFormCard');
+            var superAdminPassCard = document.getElementById('superAdminPassCard');
+            var createUserCard = document.getElementById('createUserCard');
+
+            if (userRole === 'superadmin') {
+                if(adminPanel) adminPanel.style.display = 'grid';
+                if(createUserCard) createUserCard.style.display = 'block';
+                if(superAdminPassCard) superAdminPassCard.style.display = 'block';
+                if(reportFormCard) reportFormCard.style.display = 'block';
+                setReportFormEditable(true);
+                fetchAdminUsersList();
+            } else if (userRole === 'admin') {
+                if(adminPanel) adminPanel.style.display = 'grid';
+                if(createUserCard) createUserCard.style.display = 'none';
+                if(superAdminPassCard) superAdminPassCard.style.display = 'none';
+                if(reportFormCard) reportFormCard.style.display = 'none'; 
+                fetchAdminUsersList();
+            } else {
+                if(adminPanel) adminPanel.style.display = 'none';
+                if(reportFormCard) reportFormCard.style.display = 'block';
+                setReportFormEditable(true);
+                var zoneInput = document.getElementById('zone');
+                if(zoneInput) {
+                    zoneInput.value = currentUser;
+                    zoneInput.readOnly = true; 
+                }
             }
         }
 
-        (function() {
-            var API = '/api'; 
-            var token = localStorage.getItem('token') || '';
-            var currentUser = null;
-            var userRole = '';
-
-            window.onload = function() {
-                toggleLoginInputs(); 
-                if (token) {
-                    validateSession();
-                } else {
-                    showLoginModal(true);
+        function setReportFormEditable(isEditable) {
+            var formElements = document.querySelectorAll('#reportForm input, #reportForm select');
+            formElements.forEach(function(el) {
+                if (el.id !== 'zone' || userRole !== 'user') { 
+                    el.disabled = !isEditable;
+                    el.style.backgroundColor = isEditable ? '#ffffff' : '#f1f5f9';
                 }
-            };
-
-            function showToast(msg) {
-                var toast = document.getElementById('toast');
-                toast.innerText = msg;
-                toast.className = 'show';
-                setTimeout(function() { toast.className = toast.className.replace('show', ''); }, 3000);
+            });
+            
+            var submitBtn = document.getElementById('submitReportBtn');
+            if (submitBtn) {
+                submitBtn.style.display = isEditable ? 'inline-block' : 'none';
             }
+        }
 
-            function showLoginModal(show) {
-                document.getElementById('loginOverlay').style.display = show ? 'flex' : 'none';
-                document.getElementById('dashboardWrapper').style.display = show ? 'none' : 'flex';
+        function fetchAdminUsersList() {
+            fetch(API + '/users', {
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function(res) { 
+                if (res.status === 401) { handleLogout(); return null; }
+                return res.json(); 
+            })
+            .then(function(users) {
+                if(users) loadAdminUsersList(users);
+            })
+            .catch(function(err) {
+                console.error('Users load failed', err);
+            });
+        }
+
+        function escapeHtml(text) {
+            if(!text) return '';
+            var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
+            return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+        }
+
+        function loadAdminUsersList(users) {
+            var userListUI = document.getElementById('userListUI');
+            if(!userListUI) return;
+            userListUI.innerHTML = '';
+            if (!users || users.length === 0) {
+                userListUI.innerHTML = '<li style="color:#64748b; text-align:center; padding:10px;">ምንም ተጠቃሚ የለም</li>';
+                return;
             }
+            users.forEach(function(u) {
+                var li = document.createElement('li');
+                li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:8px; background:#ffffff; border-radius:6px; border:1px solid #fde047;';
 
-            window.handleLogin = function(e) {
-                e.preventDefault();
-                var role = document.getElementById('loginRole').value;
-                var usernameInput = '';
-                var passwordInput = document.getElementById('loginPassword').value.trim();
+                var infoSpan = document.createElement('span');
+                infoSpan.innerHTML = '<b>' + escapeHtml(u.username) + '</b> <span style="font-size:0.8rem; color:#713f12;">(' + escapeHtml(u.role) + ')</span>';
+                li.appendChild(infoSpan);
 
-                if (role === 'user') {
-                    usernameInput = document.getElementById('loginZoneSelect').value;
-                } else {
-                    usernameInput = document.getElementById('loginUsername').value.trim();
+                var btnDiv = document.createElement('div');
+                if (userRole === 'superadmin' && u.username !== currentUser) {
+                    var resetBtn = document.createElement('button');
+                    resetBtn.className = 'action-reset';
+                    resetBtn.innerText = 'ይ/ቃል ቐይር';
+                    resetBtn.style.marginRight = '5px';
+                    resetBtn.onclick = function() { adminResetPassword(u.username); };
+                    btnDiv.appendChild(resetBtn);
+
+                    var delBtn = document.createElement('button');
+                    delBtn.className = 'action-del';
+                    delBtn.innerText = 'አጥፋ';
+                    delBtn.onclick = function() { deleteUser(u.username); };
+                    btnDiv.appendChild(delBtn);
                 }
+                li.appendChild(btnDiv);
+                userListUI.appendChild(li);
+            });
+        }
 
-                fetch(API + '/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username: usernameInput, password: passwordInput, role: role })
-                })
-                .then(function(res) { 
-                    return res.json().then(function(d) { return { ok: res.ok, status: res.status, data: d }; }); 
-                })
-                .then(function(result) {
-                    if (result.ok) {
-                        token = result.data.token;
-                        localStorage.setItem('token', token);
-                        showToast('በተሳካ ሁኔታ ገብተዋል!');
-                        validateSession();
-                    } else {
-                        showToast(result.data.error || 'የተጠቃሚ ስም ወይም የይለፍ ቃል ስህተት ነው!');
-                    }
-                })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
-            };
+        window.createUser = function() {
+            var username = document.getElementById('newUserName').value.trim();
+            var password = document.getElementById('newUserPassword').value.trim();
+            var role = document.getElementById('newUserRole').value;
 
-            window.handleLogout = function() {
-                localStorage.removeItem('token');
-                token = '';
-                currentUser = null;
-                userRole = '';
-                document.getElementById('currentUserDisplay').innerText = 'እንግዳ';
-                document.getElementById('adminPanel').style.display = 'none';
-                showLoginModal(true);
-                toggleLoginInputs();
-                showToast('ከሲስተሙ ወጥተዋል!');
-            };
-
-            function validateSession() {
-                fetch(API + '/me', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) { 
-                    if (res.status === 401) {
-                        handleLogout();
-                        throw new Error('Unauthorized');
-                    }
-                    return res.json(); 
-                })
-                .then(function(data) {
-                    if (data && data.username) {
-                        currentUser = data.username;
-                        userRole = data.role;
-                        document.getElementById('currentUserDisplay').innerText = currentUser;
-                        
-                        showLoginModal(false);
-                        setupRoleViews();
-                        loadReports();
-                    } else {
-                        handleLogout();
-                    }
-                })
-                .catch(function(err) {
-                    if (err.message !== 'Unauthorized') {
-                        console.error('Session validation error:', err);
-                    }
-                });
+            if (!username || !password) {
+                showToast('እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!');
+                return;
             }
 
-            function setupRoleViews() {
-                var adminPanel = document.getElementById('adminPanel');
-                var reportFormCard = document.getElementById('reportFormCard');
-                var superAdminPassCard = document.getElementById('superAdminPassCard');
-                var createUserCard = document.getElementById('createUserCard');
-
-                if (userRole === 'superadmin') {
-                    adminPanel.style.display = 'grid';
-                    createUserCard.style.display = 'block';
-                    superAdminPassCard.style.display = 'block';
-                    reportFormCard.style.display = 'block';
-                    setReportFormEditable(true);
-                    fetchAdminUsersList();
-                } else if (userRole === 'admin') {
-                    adminPanel.style.display = 'grid';
-                    createUserCard.style.display = 'none';
-                    superAdminPassCard.style.display = 'none';
-                    reportFormCard.style.display = 'none'; 
+            fetch(API + '/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ username: username, password: password, role: role })
+            })
+            .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+            .then(function(result) {
+                if (result.ok) {
+                    showToast('ተጠቃሚው በተሳካ ሁኔታ ተፈጥሯል!');
+                    document.getElementById('newUserName').value = '';
+                    document.getElementById('newUserPassword').value = '';
                     fetchAdminUsersList();
                 } else {
-                    adminPanel.style.display = 'none';
-                    reportFormCard.style.display = 'block';
-                    setReportFormEditable(true);
-                    var zoneInput = document.getElementById('zone');
-                    if(zoneInput) {
-                        zoneInput.value = currentUser;
-                        zoneInput.readOnly = true; // የዞን ተጠቃሚዎች የዞኑን ስም እንዳይቀይሩ መቆለፊያ
-                    }
+                    showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም!');
                 }
-            }
+            })
+            .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
+        };
 
-            function setReportFormEditable(isEditable) {
-                var formElements = document.querySelectorAll('#reportForm input, #reportForm select');
-                formElements.forEach(function(el) {
-                    if (el.id !== 'zone' || userRole !== 'user') { // የዞን ስም በዞን ተጠቃሚ እንዳይቀየር
-                        el.disabled = !isEditable;
-                        el.style.backgroundColor = isEditable ? '#ffffff' : '#f1f5f9';
-                    }
-                });
-                
-                var submitBtn = document.getElementById('submitReportBtn');
-                if (submitBtn) {
-                    submitBtn.style.display = isEditable ? 'inline-block' : 'none';
-                }
-            }
+        window.deleteUser = function(username) {
+            if (!confirm(username + ' የተባለውን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
+            fetch(API + '/users/' + encodeURIComponent(username), {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function(res) {
+                if (res.ok) {
+                    showToast('ተጠቃሚው ተሰርዟል!');
+                    fetchAdminUsersList();
+                } else { showToast('ተጠቃሚውን ማጥፋት አልተቻለም!'); }
+            })
+            .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
+        };
 
-            function fetchAdminUsersList() {
-                fetch(API + '/users', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) { 
-                    if (res.status === 401) { handleLogout(); return null; }
-                    return res.json(); 
-                })
-                .then(function(users) {
-                    if(users) loadAdminUsersList(users);
-                })
-                .catch(function(err) {
-                    console.error('Users load failed', err);
-                });
-            }
+        window.adminResetPassword = function(username) {
+            var newPwd = prompt(username + ' ለአዲሱ የይለፍ ቃል ያስገቡ:');
+            if (!newPwd) return;
+            fetch(API + '/users/' + encodeURIComponent(username) + '/password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ password: newPwd })
+            })
+            .then(function(res) {
+                if (res.ok) { showToast('የይለፍ ቃል ተቀይሯል!'); }
+                else { showToast('የይለፍ ቃል መቀየር አልተቻለም!'); }
+            })
+            .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
+        };
 
-            function escapeHtml(text) {
-                var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
-                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+        window.submitChangePassword = function() {
+            var oldPassword = document.getElementById('oldSuperPwd').value.trim();
+            var newPassword = document.getElementById('newSuperPwd').value.trim();
+            if (!oldPassword || !newPassword) {
+                showToast('እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ይሙሉ!');
+                return;
             }
+            fetch(API + '/change-password', {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+            })
+            .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+            .then(function(result) {
+                if (result.ok) {
+                    showToast('የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!');
+                    document.getElementById('oldSuperPwd').value = '';
+                    document.getElementById('newSuperPwd').value = '';
+                } else { showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!'); }
+            })
+            .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
+        };
 
-            function loadAdminUsersList(users) {
-                var userListUI = document.getElementById('userListUI');
-                userListUI.innerHTML = '';
-                if (!users || users.length === 0) {
-                    userListUI.innerHTML = '<li style="color:#64748b; text-align:center; padding:10px;">ምንም ተጠቃሚ የለም</li>';
+        window.handleReportSubmit = function(e) {
+            e.preventDefault();
+            var reportData = {
+                zone: document.getElementById('zone').value.trim(),
+                poly: document.getElementById('poly').value.trim(),
+                techName: document.getElementById('techName').value.trim(),
+                coordinator: document.getElementById('coordinator').value.trim(),
+                phone: document.getElementById('phone').value.trim(),
+                sector: document.getElementById('sector').value,
+                valueChain: document.getElementById('valueChain').value.trim(),
+                techType: document.getElementById('techType').value,
+                year: document.getElementById('year').value,
+                transferQty: document.getElementById('transferQty').value,
+                transferSector: document.getElementById('transferSector').value.trim(),
+                resource: document.getElementById('resource').value,
+                b_ent: document.getElementById('b_ent').value,
+                b_mobile: document.getElementById('b_mobile').value,
+                b_male: document.getElementById('b_male').value,
+                b_female: document.getElementById('b_female').value,
+                diagnosis: document.getElementById('diagnosis').value
+            };
+
+            fetch(API + '/reports', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                body: JSON.stringify(reportData)
+            })
+            .then(function(res) {
+                if (res.status === 401) { handleLogout(); return; }
+                if (res.ok) {
+                    showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
+                    document.getElementById('reportForm').reset();
+                    if (userRole === 'user') { document.getElementById('zone').value = currentUser; }
+                    loadReports();
+                } else { showToast('ሪፖርቱን መመዝገብ አልተቻለም!'); }
+            })
+            .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
+        };
+
+        function loadReports() {
+            fetch(API + '/reports', { headers: { 'Authorization': 'Bearer ' + token } })
+            .then(function(res) { 
+                if (res.status === 401) { handleLogout(); return null; }
+                return res.json(); 
+            })
+            .then(function(reports) {
+                if (!reports) return;
+                var tbody = document.getElementById('reportTableBody');
+                if(!tbody) return;
+                tbody.innerHTML = '';
+                if (reports.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም ሪፖርት አልተመዘገበም</td></tr>';
                     return;
                 }
-                users.forEach(function(u) {
-                    var li = document.createElement('li');
-                    li.style.cssText = 'display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; padding:8px; background:#ffffff; border-radius:6px; border:1px solid #fde047;';
-
-                    var infoSpan = document.createElement('span');
-                    infoSpan.innerHTML = '<b>' + escapeHtml(u.username) + '</b> <span style="font-size:0.8rem; color:#713f12;">(' + escapeHtml(u.role) + ')</span>';
-                    li.appendChild(infoSpan);
-
-                    var btnDiv = document.createElement('div');
-                    if (userRole === 'superadmin' && u.username !== currentUser) {
-                        var resetBtn = document.createElement('button');
-                        resetBtn.className = 'action-reset';
-                        resetBtn.innerText = 'ይ/ቃል ቐይር';
-                        resetBtn.style.marginRight = '5px';
-                        resetBtn.onclick = function() { adminResetPassword(u.username); };
-                        btnDiv.appendChild(resetBtn);
-
-                        var delBtn = document.createElement('button');
-                        delBtn.className = 'action-del';
-                        delBtn.innerText = 'አጥፋ';
-                        delBtn.onclick = function() { deleteUser(u.username); };
-                        btnDiv.appendChild(delBtn);
-                    }
-                    li.appendChild(btnDiv);
-                    userListUI.appendChild(li);
+                reports.forEach(function(r) {
+                    var tr = document.createElement('tr');
+                    tr.innerHTML = '<td>' + escapeHtml(r.zone || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.poly || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.techName || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.coordinator || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.phone || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.sector || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.valueChain || '') + '</td>' +
+                                   '<td>' + escapeHtml(r.techType || '') + '</td>' +
+                                   '<td>' + escapeHtml(String(r.year || '')) + '</td>' +
+                                   '<td>' + escapeHtml(String(r.transferQty || '')) + '</td>' +
+                                   '<td>' + escapeHtml(r.transferSector || '') + '</td>' +
+                                   '<td>' + escapeHtml(String(r.resource || '')) + '</td>' +
+                                   '<td>' + escapeHtml(String(r.b_ent || '')) + '</td>' +
+                                   '<td>' + escapeHtml(String(r.b_mobile || '')) + '</td>' +
+                                   '<td>' + escapeHtml(String(r.b_male || '')) + '</td>' +
+                                   '<td>' + escapeHtml(String(r.b_female || '')) + '</td>' +
+                                   '<td>' + escapeHtml(String(r.diagnosis || '')) + '</td>' +
+                                   '<td>' + escapeHtml(r.createdBy || '') + '</td>' +
+                                   '<td>' + (userRole === 'superadmin' ? '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')">ሰርዝ</button>' : '-') + '</td>';
+                    tbody.appendChild(tr);
                 });
-            }
+            })
+            .catch(function(err) { console.error('Failed to load reports', err); });
+        }
 
-            window.createUser = function() {
-                var username = document.getElementById('newUserName').value.trim();
-                var password = document.getElementById('newUserPassword').value.trim();
-                var role = document.getElementById('newUserRole').value;
+        window.deleteReport = function(id) {
+            if (!confirm('ይህንን ሪፖርት ማጥፋት ይፈልጋሉ?')) return;
+            fetch(API + '/reports/' + id, {
+                method: 'DELETE',
+                headers: { 'Authorization': 'Bearer ' + token }
+            })
+            .then(function(res) {
+                if (res.status === 401) { handleLogout(); return; }
+                if (res.ok) {
+                    showToast('ሪፖርቱ ተሰርዟል!');
+                    loadReports();
+                } else { showToast('ሪፖርቱን ማጥፋት አልተቻለም!'); }
+            })
+            .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
+        };
 
-                if (!username || !password) {
-                    showToast('እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!');
-                    return;
-                }
+        window.exportTableToExcel = function() {
+            var table = document.getElementById('reportTable');
+            if(!table) return;
+            var wb = XLSX.utils.table_to_book(table, { sheet: "የቴክኖሎጂ ሽግግር ሪፖርት" });
+            XLSX.writeFile(wb, 'Tech_Transfer_Report.xlsx');
+        };
 
-                fetch(API + '/users', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ username: username, password: password, role: role })
-                })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('ተጠቃሚው በተሳካ ሁኔታ ተፈጥሯል!');
-                        document.getElementById('newUserName').value = '';
-                        document.getElementById('newUserPassword').value = '';
-                        fetchAdminUsersList();
-                    } else {
-                        showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም!');
-                    }
-                })
-                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
-            };
-
-            window.deleteUser = function(username) {
-                if (!confirm(username + ' የተባለውን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
-                fetch(API + '/users/' + encodeURIComponent(username), {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) {
-                    if (res.ok) {
-                        showToast('ተጠቃሚው ተሰርዟል!');
-                        fetchAdminUsersList();
-                    } else { showToast('ተጠቃሚውን ማጥፋት አልተቻለም!'); }
-                })
-                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
-            };
-
-            window.adminResetPassword = function(username) {
-                var newPwd = prompt(username + ' ለአዲሱ የይለፍ ቃል ያስገቡ:');
-                if (!newPwd) return;
-                fetch(API + '/users/' + encodeURIComponent(username) + '/password', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ password: newPwd })
-                })
-                .then(function(res) {
-                    if (res.ok) { showToast('የይለፍ ቃል ተቀይሯል!'); }
-                    else { showToast('የይለፍ ቃል መቀየር አልተቻለም!'); }
-                })
-                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
-            };
-
-            window.submitChangePassword = function() {
-                var oldPassword = document.getElementById('oldSuperPwd').value.trim();
-                var newPassword = document.getElementById('newSuperPwd').value.trim();
-                if (!oldPassword || !newPassword) {
-                    showToast('እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ይሙሉ!');
-                    return;
-                }
-                fetch(API + '/change-password', {
-                    method: 'PUT',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
-                })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!');
-                        document.getElementById('oldSuperPwd').value = '';
-                        document.getElementById('newSuperPwd').value = '';
-                    } else { showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!'); }
-                })
-                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
-            };
-
-            window.handleReportSubmit = function(e) {
-                e.preventDefault();
-                var reportData = {
-                    zone: document.getElementById('zone').value.trim(),
-                    poly: document.getElementById('poly').value.trim(),
-                    techName: document.getElementById('techName').value.trim(),
-                    coordinator: document.getElementById('coordinator').value.trim(),
-                    phone: document.getElementById('phone').value.trim(),
-                    sector: document.getElementById('sector').value,
-                    valueChain: document.getElementById('valueChain').value.trim(),
-                    techType: document.getElementById('techType').value,
-                    year: document.getElementById('year').value,
-                    transferQty: document.getElementById('transferQty').value,
-                    transferSector: document.getElementById('transferSector').value.trim(),
-                    resource: document.getElementById('resource').value,
-                    b_ent: document.getElementById('b_ent').value,
-                    b_mobile: document.getElementById('b_mobile').value,
-                    b_male: document.getElementById('b_male').value,
-                    b_female: document.getElementById('b_female').value,
-                    diagnosis: document.getElementById('diagnosis').value
-                };
-
-                fetch(API + '/reports', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify(reportData)
-                })
-                .then(function(res) {
-                    if (res.status === 401) { handleLogout(); return; }
-                    if (res.ok) {
-                        showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
-                        document.getElementById('reportForm').reset();
-                        if (userRole === 'user') { document.getElementById('zone').value = currentUser; }
-                        loadReports();
-                    } else { showToast('ሪፖርቱን መመዝገብ አልተቻለም!'); }
-                })
-                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
-            };
-
-            function loadReports() {
-                fetch(API + '/reports', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(function(res) { 
-                    if (res.status === 401) { handleLogout(); return null; }
-                    return res.json(); 
-                })
-                .then(function(reports) {
-                    if (!reports) return;
-                    var tbody = document.getElementById('reportTableBody');
-                    tbody.innerHTML = '';
-                    if (reports.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም ሪፖርት አልተመዘገበም</td></tr>';
-                        return;
-                    }
-                    reports.forEach(function(r) {
-                        var tr = document.createElement('tr');
-                        tr.innerHTML = '<td>' + escapeHtml(r.zone || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.poly || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.techName || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.coordinator || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.phone || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.sector || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.valueChain || '') + '</td>' +
-                                       '<td>' + escapeHtml(r.techType || '') + '</td>' +
-                                       '<td>' + escapeHtml(String(r.year || '')) + '</td>' +
-                                       '<td>' + escapeHtml(String(r.transferQty || '')) + '</td>' +
-                                       '<td>' + escapeHtml(r.transferSector || '') + '</td>' +
-                                       '<td>' + escapeHtml(String(r.resource || '')) + '</td>' +
-                                       '<td>' + escapeHtml(String(r.b_ent || '')) + '</td>' +
-                                       '<td>' + escapeHtml(String(r.b_mobile || '')) + '</td>' +
-                                       '<td>' + escapeHtml(String(r.b_male || '')) + '</td>' +
-                                       '<td>' + escapeHtml(String(r.b_female || '')) + '</td>' +
-                                       '<td>' + escapeHtml(String(r.diagnosis || '')) + '</td>' +
-                                       '<td>' + escapeHtml(r.createdBy || '') + '</td>' +
-                                       '<td>' + (userRole === 'superadmin' ? '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')">ሰርዝ</button>' : '-') + '</td>';
-                        tbody.appendChild(tr);
-                    });
-                })
-                .catch(function(err) { console.error('Failed to load reports', err); });
-            }
-
-            window.deleteReport = function(id) {
-                if (!confirm('ይህንን ሪፖርት ማጥፋት ይፈልጋሉ?')) return;
-                fetch(API + '/reports/' + id, {
-                    method: 'DELETE',
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
-                .then(function(res) {
-                    if (res.status === 401) { handleLogout(); return; }
-                    if (res.ok) {
-                        showToast('ሪፖርቱ ተሰርዟል!');
-                        loadReports();
-                    } else { showToast('ሪፖርቱን ማጥፋት አልተቻለም!'); }
-                })
-                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
-            };
-
-            window.exportTableToExcel = function() {
-                var table = document.getElementById('reportTable');
-                var wb = XLSX.utils.table_to_book(table, { sheet: "የቴክኖሎጂ ሽግግር ሪፖርት" });
-                XLSX.writeFile(wb, 'Tech_Transfer_Report.xlsx');
-            };
-
-        })();
-    </script>
+    })();
+</script>
