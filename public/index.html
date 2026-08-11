@@ -63,6 +63,7 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
             text-align: center;
             border-top: 6px solid var(--accent-color);
+            position: relative; /* ለdeveloper tag ማስተካከያ */
         }
 
         .login-card h2 {
@@ -344,12 +345,16 @@
     <!-- Login Modal -->
     <div id="loginOverlay">
         <div class="login-card">
-            <div style="margin-bottom: 15px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 120px; width: 120px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
+            <!-- በAddisu Tsigie የተዘጋጀ (ከሎጎው በላይ በቀኝ ጠርዝ ላይ) -->
+            <div style="position: absolute; top: 12px; right: 15px; font-size: 0.75rem; font-weight: 600; color: #475569; background: #f1f5f9; padding: 4px 8px; border-radius: 6px; border: 1px solid #cbd5e1;">
+                በAddisu Tsigie ተዘጋጀ
             </div>
-            <h2>እንኳን ደህና መጡ!<br>
-                <span style="font-size: 0.85rem; font-weight: 400; color: var(--text-muted);">የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ እባክዎ ኃላፊነትዎን ይምረጡ</span>
-            </h2>
+
+            <div style="margin-top: 15px; margin-bottom: 15px;">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 200px; width: 200px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
+            </div>
+            <h2>እንኳን ደህና መጡ!
+                የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ እባክዎ ኃላፊነትዎን ይምረጡ  </h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label for="loginRole">ሚና (Role):</label>
@@ -389,7 +394,6 @@
                         <option value="አዊ ዞን">አዊ ዞን</option>
                         <option value="ኦሮሞ ብ/አ ዞን">ኦሮሞ ብ/አ ዞን</option>
                         <option value="ዋግህምራ ብ/አ ዞን">ዋግህምራ ብ/አ ዞን</option>
-                        <option value="ሰሜን ጎጃም ዞን">ሰሜን ጎጃም ዞን</option>
                     </select>
                 </div>
 
@@ -594,26 +598,6 @@
 
     <!-- Script Handling -->
     <script>
-        // Global function to ensure visibility control on role switch works correctly outside IIFE scope
-        function toggleLoginInputs() {
-            var roleSelect = document.getElementById('loginRole');
-            if (!roleSelect) return;
-            var role = roleSelect.value;
-            var usernameGroup = document.getElementById('usernameGroup');
-            var zoneSelectGroup = document.getElementById('zoneSelectGroup');
-            var usernameInput = document.getElementById('loginUsername');
-
-            if (role === 'user') {
-                if (usernameGroup) usernameGroup.style.display = 'none';
-                if (zoneSelectGroup) zoneSelectGroup.style.display = 'block';
-                if (usernameInput) usernameInput.required = false;
-            } else {
-                if (usernameGroup) usernameGroup.style.display = 'block';
-                if (zoneSelectGroup) zoneSelectGroup.style.display = 'none';
-                if (usernameInput) usernameInput.required = true;
-            }
-        }
-
         (function() {
             var API = '/api'; 
             var token = localStorage.getItem('token') || '';
@@ -621,11 +605,11 @@
             var userRole = '';
 
             window.onload = function() {
-                toggleLoginInputs();
                 if (token) {
                     validateSession();
                 } else {
                     showLoginModal(true);
+                    toggleLoginInputs();
                 }
             };
 
@@ -640,6 +624,23 @@
                 document.getElementById('loginOverlay').style.display = show ? 'flex' : 'none';
                 document.getElementById('dashboardWrapper').style.display = show ? 'none' : 'flex';
             }
+
+            window.toggleLoginInputs = function() {
+                var role = document.getElementById('loginRole').value;
+                var usernameGroup = document.getElementById('usernameGroup');
+                var zoneSelectGroup = document.getElementById('zoneSelectGroup');
+                var usernameInput = document.getElementById('loginUsername');
+
+                if (role === 'user') {
+                    usernameGroup.style.display = 'none';
+                    zoneSelectGroup.style.display = 'block';
+                    usernameInput.required = false;
+                } else {
+                    usernameGroup.style.display = 'block';
+                    zoneSelectGroup.style.display = 'none';
+                    usernameInput.required = true;
+                }
+            };
 
             window.handleLogin = function(e) {
                 e.preventDefault();
@@ -764,7 +765,6 @@
             }
 
             function escapeHtml(text) {
-                if (!text) return '';
                 var map = {
                     '&': '&amp;',
                     '<': '&lt;',
@@ -772,7 +772,7 @@
                     '"': '&quot;',
                     "'": '&#039;'
                 };
-                return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
+                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
             }
 
             function loadAdminUsersList(users) {
