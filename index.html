@@ -13,15 +13,15 @@
     
     <style>
         :root {
-            --brand-blue: #1b365d;     /* ማራኪ እና ጥልቅ የቢሮ ሰማያዊ */
-            --accent-color: #00b4d8;   /* ደማቅ የቱርክዋይዝ ቀለም ለትኩረት */
-            --bg-color: #f0f4f8;       /* ለዓይን ምቹ የሆነ ለስላሳ ብርሃናማ ዳራ */
-            --card-bg: #ffffff;        /* ንጹህ ነጭ ለካርዶች */
-            --text-main: #0f172a;      /* ጽሑፎች በግልጽ እንዲታዩ ጥቁር ቀለም */
-            --text-muted: #475569;     /* ሁለተኛ ደረጃ ግራጫ ጽሑፍ */
-            --border-color: #cbd5e1;   /* የክፈፍ መስመር */
-            --danger-red: #ef4444;     /* የማጥፊያ ቀይ ቀለም */
-            --warning-amber: #d97706;  /* የማስጠንቀቂያ/ሪሴት ብርቱካናማ ቀለም */
+            --brand-blue: #1b365d;
+            --accent-color: #00b4d8;
+            --bg-color: #f0f4f8;
+            --card-bg: #ffffff;
+            --text-main: #0f172a;
+            --text-muted: #475569;
+            --border-color: #cbd5e1;
+            --danger-red: #ef4444;
+            --warning-amber: #d97706;
         }
 
         * {
@@ -176,7 +176,6 @@
             gap: 25px;
         }
 
-        /* Admin & Control Panels Grid */
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
@@ -198,51 +197,34 @@
             font-weight: 600;
         }
 
-        /* 1. አዲስ ተጠቃሚ መፍጠር ካርድ */
         #createUserCard {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             border-top: 5px solid #22c55e;
             border-color: #bbf7d0;
         }
-        #createUserCard h3 {
-            color: #15803d;
-            border-bottom-color: #bbf7d0;
-        }
+        #createUserCard h3 { color: #15803d; border-bottom-color: #bbf7d0; }
 
-        /* 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር ካርድ */
         #userListCard {
             background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
             border-top: 5px solid #eab308;
             border-color: #fde047;
         }
-        #userListCard h3 {
-            color: #a16207;
-            border-bottom-color: #fde047;
-        }
+        #userListCard h3 { color: #a16207; border-bottom-color: #fde047; }
 
-        /* 3. የይለፍ ቃል መቀየሪያ ካርድ */
         #superAdminPassCard {
             background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
             border-top: 5px solid #a855f7;
             border-color: #e9d5ff;
         }
-        #superAdminPassCard h3 {
-            color: #7e22ce;
-            border-bottom-color: #e9d5ff;
-        }
+        #superAdminPassCard h3 { color: #7e22ce; border-bottom-color: #e9d5ff; }
 
-        /* 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ */
         #reportFormCard {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
             border-top: 5px solid var(--brand-blue);
             border-color: #bfdbfe;
         }
-        #reportFormCard h3 {
-            color: var(--brand-blue);
-            border-bottom-color: #bfdbfe;
-        }
+        #reportFormCard h3 { color: var(--brand-blue); border-bottom-color: #bfdbfe; }
 
-        /* Reports Table Section */
         .table-container {
             background: var(--card-bg);
             border-radius: 12px;
@@ -279,9 +261,7 @@
             border-bottom: 2px solid var(--accent-color);
         }
 
-        tr:hover {
-            background-color: #f8fafc;
-        }
+        tr:hover { background-color: #f8fafc; }
 
         .action-del {
             background: var(--danger-red);
@@ -303,7 +283,6 @@
             font-size: 0.75rem;
         }
 
-        /* Toast Notification */
         #toast {
             visibility: hidden;
             min-width: 260px;
@@ -328,15 +307,8 @@
             animation: fadein 0.4s, fadeout 0.4s 2.6s;
         }
 
-        @keyframes fadein {
-            from { bottom: 0; opacity: 0; }
-            to { bottom: 30px; opacity: 1; }
-        }
-
-        @keyframes fadeout {
-            from { bottom: 30px; opacity: 1; }
-            to { bottom: 0; opacity: 0; }
-        }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 30px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 30px; opacity: 1; } to { bottom: 0; opacity: 0; } }
     </style>
 </head>
 <body>
@@ -345,12 +317,14 @@
     <div id="loginOverlay">
         <div class="login-card">
             <div style="margin-bottom: 15px;">
-                <!-- ከሎጎው በላይ በቲንሹ የተጨመረው ጽሑፍ -->
                 <div style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; letter-spacing: 0.3px;">በአዲሱ ጽጌ ተዘጋጀ</div>
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 200px; width: 200px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
+                <!-- አስተማማኝ የሎጎ ቅርጸት (SVG ምልክት በመጠቀም ሎጎው ሳይጠፋ እንዲታይ ተደርጓል) -->
+                <div style="display: inline-flex; align-items: center; justify-content: center; width: 90px; height: 90px; border-radius: 50%; background: #ffffff; border: 3px solid var(--accent-color); box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+                    <i class="fa-solid fa-industry" style="font-size: 40px; color: var(--brand-blue);"></i>
+                </div>
             </div>
             <h2>እንኳን ደህና መጡ!<br>
-                <span style="font-size: 0.9rem; font-weight: 400; color: var(--text-muted);">የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ እባክዎ ኃላፊነትዎን ይምረጡ</span>
+                <span style="font-size: 0.85rem; font-weight: 400; color: var(--text-muted);">የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ</span>
             </h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
@@ -362,13 +336,15 @@
                     </select>
                 </div>
 
+                <!-- የተጠቃሚ ስም (ለ አድሚን እና ሱፐር አድሚን) -->
                 <div class="form-group" id="usernameGroup" style="display:none;">
                     <label for="loginUsername">የተጠቃሚ ስም (Username):</label>
                     <input type="text" id="loginUsername" class="form-control" placeholder="የተጠቃሚ ስም ያስገቡ">
                 </div>
 
+                <!-- የዞን ምርጫ (ለ ተጠቃሚዎች ብቻ) -->
                 <div class="form-group" id="zoneSelectGroup">
-                    <label for="loginZoneSelect">ዞን ይምረጡ:</label>
+                    <label for="loginZoneSelect">ዞን/ከተማ ይምረጡ:</label>
                     <select id="loginZoneSelect" class="form-control">
                         <option value="ባህር ዳር ከተማ">ባህር ዳር ከተማ</option>
                         <option value="ጎንደር ከተማ">ጎንደር ከተማ</option>
@@ -391,7 +367,6 @@
                         <option value="አዊ ዞን">አዊ ዞን</option>
                         <option value="ኦሮሞ ብ/አ ዞን">ኦሮሞ ብ/አ ዞን</option>
                         <option value="ዋግህምራ ብ/አ ዞን">ዋግህምራ ብ/አ ዞን</option>
-                        <option value="ሰሜን ጎጃም ዞን">ሰሜን ጎጃም ዞን</option>
                     </select>
                 </div>
 
@@ -409,7 +384,9 @@
     <div id="dashboardWrapper">
         <header>
             <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 48px; width: 48px; object-fit: contain; border-radius: 50%; background: white; padding: 2px; border: 2px solid var(--accent-color);">
+                <div style="display: flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 50%; background: white; border: 2px solid var(--accent-color);">
+                    <i class="fa-solid fa-industry" style="font-size: 20px; color: var(--brand-blue);"></i>
+                </div>
                 <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
             </div>
             <div class="user-info">
@@ -419,10 +396,7 @@
         </header>
 
         <main>
-            <!-- Admin / Super Admin Panel -->
             <div id="adminPanel" class="admin-grid" style="display:none;">
-                
-                <!-- 1. አዲስ ተጠቃሚ መፍጠር -->
                 <div class="card" id="createUserCard">
                     <h3>አዲስ ተጠቃሚ መፍጠር</h3>
                     <div class="form-group">
@@ -443,15 +417,11 @@
                     <button class="btn-primary" onclick="createUser()">ተጠቃሚ ፍጠር</button>
                 </div>
 
-                <!-- 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር -->
                 <div class="card" id="userListCard">
                     <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
-                    <ul id="userListUI" style="list-style:none; max-height:220px; overflow-y:auto; padding-right: 5px;">
-                        <!-- Dynamically populated -->
-                    </ul>
+                    <ul id="userListUI" style="list-style:none; max-height:220px; overflow-y:auto; padding-right: 5px;"></ul>
                 </div>
 
-                <!-- 3. የይለፍ ቃል መቀየሪያ (ለ Super Admin ብቻ የሚታይ) -->
                 <div class="card" id="superAdminPassCard" style="display:none;">
                     <h3>የይለፍ ቃል መቀየሪያ</h3>
                     <div class="form-group">
@@ -466,7 +436,6 @@
                 </div>
             </div>
 
-            <!-- 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ -->
             <div class="card" id="reportFormCard">
                 <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል እባክዎ በጥንቃቄ ይሙሉ</h3>
                 <form id="reportForm" onsubmit="handleReportSubmit(event)">
@@ -553,7 +522,6 @@
                 </form>
             </div>
 
-            <!-- Reports Table Display -->
             <div class="table-container">
                 <div class="table-header">
                     <h3>የተመዘገቡ ሪፖርቶች ዝርዝር</h3>
@@ -583,18 +551,14 @@
                             <th>እርምጃ</th>
                         </tr>
                     </thead>
-                    <tbody id="reportTableBody">
-                        <!-- Dynamically populated -->
-                    </tbody>
+                    <tbody id="reportTableBody"></tbody>
                 </table>
             </div>
         </main>
     </div>
 
-    <!-- Toast Notification Element -->
     <div id="toast">ማሳሰቢያ</div>
 
-    <!-- Script Handling -->
     <script>
         (function() {
             var API = '/api'; 
@@ -603,11 +567,11 @@
             var userRole = '';
 
             window.onload = function() {
+                toggleLoginInputs();
                 if (token) {
                     validateSession();
                 } else {
                     showLoginModal(true);
-                    toggleLoginInputs();
                 }
             };
 
@@ -695,7 +659,6 @@
                         currentUser = data.username;
                         userRole = data.role;
                         document.getElementById('currentUserDisplay').innerText = currentUser;
-                        
                         showLoginModal(false);
                         setupRoleViews();
                         loadReports();
@@ -742,7 +705,6 @@
                     el.disabled = !isEditable;
                     el.style.backgroundColor = isEditable ? '#ffffff' : '#f1f5f9';
                 });
-                
                 var submitBtn = document.getElementById('submitReportBtn');
                 if (submitBtn) {
                     submitBtn.style.display = isEditable ? 'inline-block' : 'none';
@@ -754,23 +716,13 @@
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
                 .then(function(res) { return res.json(); })
-                .then(function(users) {
-                    loadAdminUsersList(users);
-                })
-                .catch(function(err) {
-                    console.error('Users load failed', err);
-                });
+                .then(function(users) { loadAdminUsersList(users); })
+                .catch(function(err) { console.error('Users load failed', err); });
             }
 
             function escapeHtml(text) {
                 if (!text) return '';
-                var map = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                };
+                var map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
                 return text.toString().replace(/[&<>"']/g, function(m) { return map[m]; });
             }
 
@@ -831,10 +783,7 @@
 
                 fetch(API + '/users', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify({ username: username, password: password, role: role })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
@@ -848,9 +797,7 @@
                         showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.deleteUser = function(username) {
@@ -869,9 +816,7 @@
                         showToast(result.data.error || 'ማጥፋት አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.resetUserPassword = function(username) {
@@ -880,10 +825,7 @@
 
                 fetch(API + '/users/' + encodeURIComponent(username) + '/reset-password', {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify({ newPassword: newPwd })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
@@ -894,9 +836,7 @@
                         showToast(result.data.error || 'መቀየር አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.submitChangePassword = function() {
@@ -910,10 +850,7 @@
 
                 fetch(API + '/change-password', {
                     method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
@@ -926,14 +863,11 @@
                         showToast(result.data.error || 'የይለፍ ቃል መቀየር አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.handleReportSubmit = function(e) {
                 e.preventDefault();
-
                 var payload = {
                     zone: document.getElementById('zone').value.trim(),
                     poly: document.getElementById('poly').value.trim(),
@@ -956,10 +890,7 @@
 
                 fetch(API + '/reports', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
                     body: JSON.stringify(payload)
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
@@ -967,17 +898,13 @@
                     if (result.ok) {
                         showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
                         document.getElementById('reportForm').reset();
-                        if (userRole === 'user') {
-                            document.getElementById('zone').value = currentUser;
-                        }
+                        if (userRole === 'user') { document.getElementById('zone').value = currentUser; }
                         loadReports();
                     } else {
                         showToast(result.data.error || 'ሪፖርት መመዝገብ አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             function loadReports() {
@@ -988,12 +915,10 @@
                 .then(function(reports) {
                     var tbody = document.getElementById('reportTableBody');
                     tbody.innerHTML = '';
-
                     if (!reports || reports.length === 0) {
                         tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም የተመዘገበ ሪፖርት የለም</td></tr>';
                         return;
                     }
-
                     reports.forEach(function(r) {
                         var tr = document.createElement('tr');
                         tr.innerHTML = 
@@ -1019,9 +944,7 @@
                         tbody.appendChild(tr);
                     });
                 })
-                .catch(function(err) {
-                    console.error('Reports load failed', err);
-                });
+                .catch(function(err) { console.error('Reports load failed', err); });
             }
 
             window.deleteReport = function(id) {
@@ -1040,9 +963,7 @@
                         showToast(result.data.error || 'ማጥፋት አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!');
-                });
+                .catch(function() { showToast('ከሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.exportTableToExcel = function() {
