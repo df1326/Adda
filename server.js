@@ -131,7 +131,7 @@ app.post('/api/init-superadmin', async (req, res) => {
     res.json({ message: 'Superadmin check/initialization completed!' });
 });
 
-// 4. Login Endpoint (ግቤቶችን በማጣራት ላይ የተመሰረተ)
+// 4. Login Endpoint
 app.post('/api/login', [
     body('username').notEmpty().withMessage('የተጠቃሚ ስም ባዶ መሆን አይችልም!'),
     body('password').notEmpty().withMessage('የይለፍ ቃል ባዶ መሆን አይችልም!')
@@ -173,40 +173,15 @@ app.post('/api/login', [
     }
 });
 
-// 5. Change Password
-app.post('/api/change-password', authenticateToken, [
-    body('oldPassword').notEmpty(),
-    body('newPassword').isLength({ min: 6 }).withMessage('አዲሱ የይለፍ ቃል ቢያንስ 6 ሆሄያት ሊኖሩት ይገባል!')
-], async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        return res.status(400).json({ error: errors.array()[0].msg });
-    }
-
-    const { oldPassword, newPassword } = req.body;
-
-    try {
-        const user = await User.findById(req.user.id);
-        if (!user) return res.status(404).json({ error: 'ተጠቃሚው አልተገኘም!' });
-
-        const validPassword = await bcrypt.compare(oldPassword, user.password);
-        if (!validPassword) {
-            return res.status(400).json({ error: 'የድሮው የይለፍ ቃል የተሳሳተ ነው!' });
-        }
-
-        user.password = await bcrypt.hash(newPassword, 10);
-        await user.save();
-
-        res.json({ message: 'የይለፍ ቃልዎ በተሳካ ሁኔታ ተቀይሯል!' });
-    } catch (err) {
-        res.status(500).json({ error: 'የይለፍ ቃል መቀየር አልተቻለም!' });
-    }
+// 5. Change Password (ተጠቃሚዎች የራሳቸውን ፓስዋርድ እንዳይቀይሩ ሙሉ በሙሉ ተዘግቷል - Superadmin ብቻ ነው የሚቀይረው)
+app.post('/api/change-password', authenticateToken, (req, res) => {
+    return res.status(403).json({ error: 'ይህንን ተግባር ማከናወን የሚችለው ሱፐር አድሚን (Super Admin) ብቻ ነው!' });
 });
 
-// 6. Admin Reset Password
+// 6. Admin / Superadmin Reset Password (አሁን አድሚን ተብዬው ተሰርዞ Superadmin ብቻ እንዲሆን ተገድቧል)
 app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'ፈቃድ የለዎትም!' });
+    if (req.user.role !== 'superadmin') {
+        return res.status(403).json({ error: 'የተጠቃሚዎችን የይለፍ ቃል መቀየር የሚችለው ሱፐር አድሚን (Super Admin) ብቻ ነው!' });
     }
 
     const { username, newPassword } = req.body;
@@ -226,7 +201,7 @@ app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
             return res.status(404).json({ error: 'ተጠቃሚው በዳታቤዝ ውስጥ አልተገኘም!' });
         }
 
-        res.json({ message: 'የተጠቃሚው ፓስዋርድ በተሳካ ሁኔታ ተቀይሯል!' });
+        res.json({ message: 'የተጠቃሚው ፓስዋርድ በተሳካ ሁኔታ በሱፐር አድሚኑ ተቀይሯል!' });
     } catch (err) {
         res.status(500).json({ error: 'ሰርቨር ላይ ስህተት ተፈጥሯል!' });
     }
@@ -281,12 +256,11 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 8. Reports API (የዞን ተጠቃሚዎች የራሳቸውን ብቻ እንዲያዩ እና እንዲመዘግቡ የተስተካከለ)
+// 8. Reports API
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
         let reportData = req.body;
         
-        // የዞን/ከተማ ተጠቃሚ ከሆነ ዞኑ ከራሱ ስም ውጪ ሌላ እንዳይጽፍ መቆጣጠር
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             reportData.zone = req.user.username;
         }
@@ -302,8 +276,6 @@ app.get('/api/report', authenticateToken, async (req, res) => {
     try {
         let query = {};
         
-        // ተጠቃሚው አድሚን ወይም ሱፐር አድሚን ካልሆነ (ማለትም የዞን ተጠቃሚ ከሆነ)
-        // በዳታቤዝ ውስጥ ከእሱ ስም/ዞን ጋር የሚዛመዱትን ሪፖርቶች ብቻ እናጣራለን
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             query.zone = req.user.username;
         }
@@ -329,17 +301,14 @@ app.delete('/api/report/:id', authenticateToken, async (req, res) => {
 
 // ==================== ERROR HANDLING & 404 MIDDLEWARES ====================
 
-// 9. ለሁሉም የማይታወቁ የ API ጥያቄዎች (API Routes) የ JSON 404 መልዕክት መመለስ
 app.use('/api/*', (req, res) => {
     res.status(404).json({ success: false, error: 'የጠየቁት የ API አድራሻ (Route) አልተገኘም!' });
 });
 
-// 10. ለድር አሳሽ ጥያቄዎች (SPA) የ index.html ፋይልን መመለስ
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// 11. አጠቃላይ የስህተት መቆጣጠሪያ (Global Error Handler) - የሲስተሙን ውስጣዊ አወቃቀር ከጠላፊዎች መደበቅ
 app.use((err, req, res, next) => {
     console.error('❌ Internal Server Error:', err.stack);
     res.status(500).json({ success: false, error: 'በሰርቨር ላይ ያልተጠበቀ ስህተት አጋጥሟል!' });
