@@ -43,15 +43,25 @@ const userSchema = new mongoose.Schema({
     created_at: { type: Date, default: Date.now }
 });
 
+// የተሻሻለው የሪፖርት እና የቴክኖሎጂ ልየታ (2019 ዓ.ም) Schema
 const reportSchema = new mongoose.Schema({
-    zone: String,
+    // የቴክኖሎጂ ልየታ 2019 ዓ.ም መስኮች
+    zone: String,                 // ዞን/ ከተማ አስተዳደር መምሪያ
+    plan: String,                 // ዓመታዊ የቴክኖሎጂ ዕቅድ
+    polyCount: Number,            // የፓሊ ብዛት
+    collegeCount: Number,         // የኮሌጅ ብዛት
+    polyName: String,             // ቴክኖሎጂዉ የተሰራበት (ፖሊ ወይም ኮሌጅ) ስም
+    techName: String,             // የቴክኖሎጂዉ ስም
+    problem: String,              // ቴክኖሎጂው የሚፈታው ችግር
+    coordinator: String,          // የኢንኩቤሽን ማዕከሉ አስተባባሪ (የቴክኖሎጂ ዘርፍ አስተባባሪ)
+    phone: String,                // ስልክ ቁጥር
+    sector: String,               // ዘርፍ
+    valueChainDoc: String,        // እሴት ሰንሰለት ትንተና ሰነድ (አለ / የለም)
+    techType: String,             // የቴክኖሎጂው ዓይነት (ማምረቻ / ምርት)
+
+    // የነባር የሽግግር ክትትል እና ተጨማሪ መለኪያዎች
     poly: String,
-    techName: String,
-    coordinator: String,
-    phone: String,
-    sector: String,
     valueChain: String,
-    techType: String,
     year: String,
     transferQty: Number,
     transferSector: String,
@@ -61,6 +71,7 @@ const reportSchema = new mongoose.Schema({
     b_male: Number,
     b_female: Number,
     diagnosis: Number,
+
     createdBy: String,
     created_at: { type: Date, default: Date.now }
 });
@@ -173,7 +184,7 @@ app.post('/api/login', [
     }
 });
 
-// 5. Change Password (ተጠቃሚዎች የራሳቸውን ፓስዋርድ እንዳይቀይሩ ሙሉ በሙሉ ተዘግቷል)
+// 5. Change Password
 app.post('/api/change-password', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'ይህንን ተግባር ማከናወን የሚችለው ሱፐር አድሚን (Super Admin) ብቻ ነው!' });
 });
@@ -256,7 +267,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 8. Reports API (መመዝገብ፣ ማንበብ፣ ማስተካከል እና መሰረዝ)
+// 8. Reports & Technology Identification API (መመዝገብ፣ ማንበብ፣ ማስተካከል እና መሰረዝ)
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
         let reportData = req.body;
@@ -266,9 +277,9 @@ app.post('/api/report', authenticateToken, async (req, res) => {
         }
 
         const newReport = await Report.create({ ...reportData, createdBy: req.user.username });
-        res.json({ message: 'ሪፖርቱ ተመዝግቧል!', id: newReport._id });
+        res.json({ message: 'መረጃው በተሳካ ሁኔታ ተመዝግቧል!', id: newReport._id });
     } catch (err) {
-        res.status(500).json({ error: 'ሪፖርት መመዝገብ አልተቻለም!' });
+        res.status(500).json({ error: 'መረጃ መመዝገብ አልተቻለም!' });
     }
 });
 
@@ -283,24 +294,23 @@ app.get('/api/report', authenticateToken, async (req, res) => {
         const reports = await Report.find(query).sort({ created_at: -1 });
         res.json(reports);
     } catch (err) {
-        res.status(500).json({ error: 'ሪፖርቶችን ማምጣት አልተቻለም!' });
+        res.status(500).json({ error: 'መረጃዎችን ማምጣት አልተቻለም!' });
     }
 });
 
-// ሪፖርት ማስተካከል (Edit / Update Report) - ተጠቃሚዎች የራሳቸውን፣ አድሚኖች ማንኛውንም ማስተካከል ይችላሉ
+// መረጃ ማስተካከል (Edit / Update Report)
 app.put('/api/report/:id', authenticateToken, async (req, res) => {
     try {
         const reportId = req.params.id;
         const existingReport = await Report.findById(reportId);
 
         if (!existingReport) {
-            return res.status(404).json({ error: 'የጠየቁት ሪፖርት አልተገኘም!' });
+            return res.status(404).json({ error: 'የጠየቁት መረጃ አልተገኘም!' });
         }
 
-        // ተጠቃሚው አድሚን ወይም ሱፐር አድሚን ካልሆነ የራሱ መሆኑን ማረጋገጥ
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             if (existingReport.createdBy !== req.user.username && existingReport.zone !== req.user.username) {
-                return res.status(403).json({ error: 'ይህንን ሪፖርት ማስተካከል የሚችሉት እርስዎ ያስገቡት ከሆነ ብቻ ነው!' });
+                return res.status(403).json({ error: 'ይህንን መረጃ ማስተካከል የሚችሉት እርስዎ ያስገቡት ከሆነ ብቻ ነው!' });
             }
         }
 
@@ -311,33 +321,32 @@ app.put('/api/report/:id', authenticateToken, async (req, res) => {
         }
 
         const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, { new: true });
-        res.json({ message: 'ሪፖርቱ በተሳካ ሁኔታ ተሻሽሏል!', report: updatedReport });
+        res.json({ message: 'መረጃው በተሳካ ሁኔታ ተሻሽሏል!', report: updatedReport });
     } catch (err) {
-        res.status(500).json({ error: 'ሪፖርቱን ማስተካከል አልተቻለም!' });
+        res.status(500).json({ error: 'መረጃውን ማስተካከል አልተቻለም!' });
     }
 });
 
-// ሪፖርት መሰረዝ (Delete Report) - ተጠቃሚዎች የራሳቸውን፣ አድሚኖች ማንኛውንም መሰረዝ ይችላሉ
+// መረጃ መሰረዝ (Delete Report)
 app.delete('/api/report/:id', authenticateToken, async (req, res) => {
     try {
         const reportId = req.params.id;
         const existingReport = await Report.findById(reportId);
 
         if (!existingReport) {
-            return res.status(404).json({ error: 'የጠየቁት ሪፖርት አልተገኘም!' });
+            return res.status(404).json({ error: 'የጠየቁት መረጃ አልተገኘም!' });
         }
 
-        // ተጠቃሚው አድሚን ወይም ሱፐር አድሚን ካልሆነ የራሱ መሆኑን ማረጋገጥ
         if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
             if (existingReport.createdBy !== req.user.username && existingReport.zone !== req.user.username) {
-                return res.status(403).json({ error: 'ይህንን ሪፖርት መሰረዝ የሚችሉት እርስዎ ያስገቡት ከሆነ ብቻ ነው!' });
+                return res.status(403).json({ error: 'ይህንን መረጃ መሰረዝ የሚችሉት እርስዎ ያስገቡት ከሆነ ብቻ ነው!' });
             }
         }
 
         await Report.findByIdAndDelete(reportId);
-        res.json({ message: 'ሪፖርቱ በተሳካ ሁኔታ ተሰርዟል!' });
+        res.json({ message: 'መረጃው በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
-        res.status(500).json({ error: 'ሪፖርቱን መሰረዝ አልተቻለም!' });
+        res.status(500).json({ error: 'መረጃውን መሰረዝ አልተቻለም!' });
     }
 });
 
