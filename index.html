@@ -14,7 +14,7 @@
     <style>
         :root {
             --brand-blue: #1b365d;     
-            --accent-color: #00b4d8;   
+            --accent-color: #00b4d8;    
             --bg-color: #f0f4f8;       
             --card-bg: #ffffff;        
             --text-main: #0f172a;      
@@ -342,7 +342,7 @@
     <div id="loginOverlay">
         <div class="login-card">
             <div class="support-notice">
-                  ማንኛውም ችግር ሲገጥማችሁ Addisu Tsigie 0918267143 ላይ ደውሉ
+                ለማንኛውም ችግር Addisu Tsigie 0918267143 ደውሉ
             </div>
 
             <div style="margin-top: 25px; margin-bottom: 12px;">
@@ -464,8 +464,9 @@
 
             <!-- 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ -->
             <div class="card" id="reportFormCard">
-                <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ</h3>
+                <h3 id="formCardTitle">የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ</h3>
                 <form id="reportForm" onsubmit="handleReportSubmit(event)">
+                    <input type="hidden" id="editingReportId" value="">
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                         <div class="form-group">
                             <label>ዞን/ከተማ አስተዳደር:</label>
@@ -545,7 +546,10 @@
                             <input type="number" id="diagnosis" class="form-control" value="0">
                         </div>
                     </div>
-                    <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 15px; width: auto; padding: 10px 20px;">ሪፖርት መዝግብ</button>
+                    <div style="display: flex; gap: 10px; margin-top: 15px;">
+                        <button type="submit" id="submitReportBtn" class="btn-primary" style="width: auto; padding: 10px 20px; margin: 0;">ሪፖርት መዝግብ</button>
+                        <button type="button" id="cancelEditBtn" class="btn-logout" style="display: none; padding: 10px 20px;" onclick="cancelEditMode()">ሰርዝ (Cancel)</button>
+                    </div>
                 </form>
             </div>
 
@@ -599,6 +603,7 @@
             var token = localStorage.getItem('token') || '';
             var currentUser = null;
             var userRole = '';
+            var allReports = [];
 
             window.onload = function() {
                 if (token) {
@@ -705,14 +710,14 @@
 
                 if (userRole === 'superadmin') {
                     adminPanel.style.display = 'grid';
-                    passwordManagerCard.style.display = 'block'; // ሱፐር አድሚን ብቻ ፓስዋርድ መቀየሪያ ይታየዋል
+                    passwordManagerCard.style.display = 'block';
                     createUserCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
                     setReportFormEditable(true);
                     fetchAdminUsersList();
                 } else if (userRole === 'admin') {
                     adminPanel.style.display = 'grid';
-                    passwordManagerCard.style.display = 'none'; // አድሚን ፓስዋርድ መቀየር አይችልም
+                    passwordManagerCard.style.display = 'none';
                     createUserCard.style.display = 'none';
                     reportFormCard.style.display = 'block';
                     setReportFormEditable(false);
@@ -763,34 +768,58 @@
                     li.style.borderBottom = '1px solid #fef08a';
                     
                     var actionsHtml = '<div style="display:flex; gap:4px;">';
-                    
-                    // ሱፐር አድሚን ብቻ የተጠቃሚዎችን ፓስዋርድ ለመምረጥ የሚያስችል ቁልፍ ይታየዋል
                     if (userRole === 'superadmin') {
                         actionsHtml += '<button class="action-btn" onclick="fillTargetUser(\'' + u.username + '\')">ፓስዋርድ ቀይር</button>';
                     }
                     if (userRole === 'superadmin' && u.username !== 'superadmin') {
-                        actionsHtml += '<button class="action-del" onclick="deleteUser(\'' + u.id + '\')">ሰርዝ</button>';
+                        actionsHtml += '<button class="action-del" onclick="deleteUser(\'' + u._id + '\')">ሰርዝ</button>';
                     }
                     actionsHtml += '</div>';
 
-                    li.innerHTML = '<span style="font-size:0.82rem;"><b>' + u.username + '</b> (' + u.role + ')</span>' + actionsHtml;
+                    li.innerHTML = '<span style="font-size:0.85rem; font-weight:500;">' + u.username + ' <small style="color:#64748b;">(' + u.role + ')</small></span>' + actionsHtml;
                     userListUI.appendChild(li);
                 });
             }
 
             window.fillTargetUser = function(username) {
                 document.getElementById('targetUsername').value = username;
-                document.getElementById('newPwdInput').focus();
-                showToast(username + ' ተመርጧል፤ አዲስ ፓስዋርድ ያስገቡ።');
+                showToast(username + ' ተመርጧል');
+            };
+
+            window.submitSuperAdminPasswordReset = function() {
+                var username = document.getElementById('targetUsername').value;
+                var newPassword = document.getElementById('newPwdInput').value;
+
+                if (!username || !newPassword) {
+                    showToast('እባክዎ ተጠቃሚ ይምረጡ እና አዲስ ፓስዋርድ ያስገቡ!');
+                    return;
+                }
+
+                fetch(API + '/admin/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ username: username, newPassword: newPassword })
+                })
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast(result.data.message || 'ፓስዋርዱ ተቀይሯል!');
+                        document.getElementById('newPwdInput').value = '';
+                        document.getElementById('targetUsername').value = '';
+                    } else {
+                        showToast(result.data.error || 'መቀየር አልተቻለም!');
+                    }
+                })
+                .catch(function() { showToast('ሰርቨር ስህተት አጋጥሟል!'); });
             };
 
             window.createUser = function() {
                 var username = document.getElementById('newUserName').value.trim();
-                var password = document.getElementById('newUserPassword').value;
+                var password = document.getElementById('newUserPassword').value.trim();
                 var role = document.getElementById('newUserRole').value;
 
                 if (!username || !password) {
-                    showToast('እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!');
+                    showToast('እባክዎ የተጠቃሚ ስም እና ፓስዋርድ ያስገቡ!');
                     return;
                 }
 
@@ -807,68 +836,88 @@
                         document.getElementById('newUserPassword').value = '';
                         fetchAdminUsersList();
                     } else {
-                        showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም!');
+                        showToast(result.data.error || 'መፍጠር አልተቻለም!');
                     }
                 })
-                .catch(function() { showToast('ሰርቨር ጋር መገናኘት አልተቻለም!'); });
+                .catch(function() { showToast('ሰርቨር ስህተት አጋጥሟል!'); });
             };
 
             window.deleteUser = function(id) {
-                if (!confirm('ይህን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
+                if (!confirm('ይህንን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
                 fetch(API + '/users/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    showToast(data.message || data.error);
-                    fetchAdminUsersList();
-                })
-                .catch(function() { showToast('ሰርቨር ስህተት ተፈጥሯል!'); });
-            };
-
-            window.submitSuperAdminPasswordReset = function() {
-                var targetUsername = document.getElementById('targetUsername').value.trim();
-                var newPassword = document.getElementById('newPwdInput').value;
-
-                if (!targetUsername) {
-                    showToast('እባክዎ ከላይ ካለው ዝርዝር ውስጥ ተጠቃሚ ይምረጡ!');
-                    return;
-                }
-                if (!newPassword || newPassword.length < 6) {
-                    showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ሆሄያት ሊኖሩት ይገባል!');
-                    return;
-                }
-
-                fetch(API + '/admin/reset-password', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify({ username: targetUsername, newPassword: newPassword })
-                })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
-                    showToast(result.data.message || result.data.error);
-                    if(result.ok) {
-                        document.getElementById('newPwdInput').value = '';
-                        document.getElementById('targetUsername').value = '';
+                    if (result.ok) {
+                        showToast('ተጠቃሚው ተሰርዟል!');
+                        fetchAdminUsersList();
+                    } else {
+                        showToast(result.data.error || 'መሰረዝ አልተቻለም!');
                     }
-                });
+                })
+                .catch(function() { showToast('ሰርቨር ስህተት አጋጥሟል!'); });
             };
+
+            function loadReports() {
+                fetch(API + '/report', {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                })
+                .then(function(res) { return res.json(); })
+                .then(function(reports) {
+                    allReports = reports;
+                    var tbody = document.getElementById('reportTableBody');
+                    tbody.innerHTML = '';
+                    if (!reports || reports.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም የተመዘገበ ሪፖርት የለም</td></tr>';
+                        return;
+                    }
+                    reports.forEach(function(r) {
+                        var tr = document.createElement('tr');
+                        tr.innerHTML = '<td>' + (r.zone || '') + '</td>' +
+                            '<td>' + (r.poly || '') + '</td>' +
+                            '<td>' + (r.techName || '') + '</td>' +
+                            '<td>' + (r.coordinator || '') + '</td>' +
+                            '<td>' + (r.phone || '') + '</td>' +
+                            '<td>' + (r.sector || '') + '</td>' +
+                            '<td>' + (r.valueChain || '') + '</td>' +
+                            '<td>' + (r.techType || '') + '</td>' +
+                            '<td>' + (r.year || '') + '</td>' +
+                            '<td>' + (r.transferQty || 0) + '</td>' +
+                            '<td>' + (r.transferSector || '') + '</td>' +
+                            '<td>' + (r.resource || 0) + '</td>' +
+                            '<td>' + (r.b_ent || 0) + '</td>' +
+                            '<td>' + (r.b_mobile || 0) + '</td>' +
+                            '<td>' + (r.b_male || 0) + '</td>' +
+                            '<td>' + (r.b_female || 0) + '</td>' +
+                            '<td>' + (r.diagnosis || 0) + '</td>' +
+                            '<td>' + (r.createdBy || '') + '</td>' +
+                            '<td>' +
+                                '<button class="action-btn" onclick="editReport(\'' + r._id + '\')">አስተካክል</button>' +
+                                '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')">ሰርዝ</button>' +
+                            '</td>';
+                        tbody.appendChild(tr);
+                    });
+                })
+                .catch(function(err) { console.error('Reports load error', err); });
+            }
 
             window.handleReportSubmit = function(e) {
                 e.preventDefault();
-                var reportData = {
-                    zone: document.getElementById('zone').value.trim(),
-                    poly: document.getElementById('poly').value.trim(),
-                    techName: document.getElementById('techName').value.trim(),
-                    coordinator: document.getElementById('coordinator').value.trim(),
-                    phone: document.getElementById('phone').value.trim(),
+                var editingId = document.getElementById('editingReportId').value;
+                var data = {
+                    zone: document.getElementById('zone').value,
+                    poly: document.getElementById('poly').value,
+                    techName: document.getElementById('techName').value,
+                    coordinator: document.getElementById('coordinator').value,
+                    phone: document.getElementById('phone').value,
                     sector: document.getElementById('sector').value,
-                    valueChain: document.getElementById('valueChain').value.trim(),
+                    valueChain: document.getElementById('valueChain').value,
                     techType: document.getElementById('techType').value,
                     year: document.getElementById('year').value,
                     transferQty: Number(document.getElementById('transferQty').value),
-                    transferSector: document.getElementById('transferSector').value.trim(),
+                    transferSector: document.getElementById('transferSector').value,
                     resource: Number(document.getElementById('resource').value),
                     b_ent: Number(document.getElementById('b_ent').value),
                     b_mobile: Number(document.getElementById('b_mobile').value),
@@ -877,78 +926,94 @@
                     diagnosis: Number(document.getElementById('diagnosis').value)
                 };
 
-                fetch(API + '/report', {
-                    method: 'POST',
+                var url = API + '/report' + (editingId ? '/' + editingId : '');
+                var method = editingId ? 'PUT' : 'POST';
+
+                fetch(url, {
+                    method: method,
                     headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                    body: JSON.stringify(reportData)
+                    body: JSON.stringify(data)
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
                     if (result.ok) {
-                        showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
+                        showToast(result.data.message || 'ተከናውኗል!');
+                        cancelEditMode();
                         loadReports();
                     } else {
-                        showToast(result.data.error || 'ሪፖርት መመዝገብ አልተቻለም!');
+                        showToast(result.data.error || 'ስህተት አጋጥሟል!');
                     }
                 })
                 .catch(function() { showToast('ሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
-            function loadReports() {
-                fetch(API + '/report', { headers: { 'Authorization': 'Bearer ' + token } })
-                .then(function(res) { return res.json(); })
-                .then(function(reports) {
-                    var tbody = document.getElementById('reportTableBody');
-                    tbody.innerHTML = '';
-                    if (!reports || reports.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b; padding:20px;">ምንም የተመዘገበ ሪፖርት የለም</td></tr>';
-                        return;
+            window.editReport = function(id) {
+                var r = allReports.find(function(item) { return item._id === id; });
+                if (!r) return;
+
+                document.getElementById('editingReportId').value = r._id;
+                document.getElementById('zone').value = r.zone || '';
+                document.getElementById('poly').value = r.poly || '';
+                document.getElementById('techName').value = r.techName || '';
+                document.getElementById('coordinator').value = r.coordinator || '';
+                document.getElementById('phone').value = r.phone || '';
+                document.getElementById('sector').value = r.sector || 'ግብርና';
+                document.getElementById('valueChain').value = r.valueChain || '';
+                document.getElementById('techType').value = r.techType || 'አዲስ';
+                document.getElementById('year').value = r.year || '2018';
+                document.getElementById('transferQty').value = r.transferQty || 0;
+                document.getElementById('transferSector').value = r.transferSector || '';
+                document.getElementById('resource').value = r.resource || 0;
+                document.getElementById('b_ent').value = r.b_ent || 0;
+                document.getElementById('b_mobile').value = r.b_mobile || 0;
+                document.getElementById('b_male').value = r.b_male || 0;
+                document.getElementById('b_female').value = r.b_female || 0;
+                document.getElementById('diagnosis').value = r.diagnosis || 0;
+
+                document.getElementById('formCardTitle').innerText = 'ሪፖርት ማስተካከያ (Edit)';
+                document.getElementById('submitReportBtn').innerText = 'ለውጥ አዘምን';
+                document.getElementById('cancelEditBtn').style.display = 'inline-block';
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            };
+
+            window.cancelEditMode = function() {
+                document.getElementById('editingReportId').value = '';
+                document.getElementById('reportForm').reset();
+                if (userRole === 'user') {
+                    var zoneInput = document.getElementById('zone');
+                    if (zoneInput) {
+                        zoneInput.value = currentUser;
+                        zoneInput.readOnly = true;
                     }
-                    reports.forEach(function(r) {
-                        var tr = document.createElement('tr');
-                        tr.innerHTML = '<td>' + (r.zone || '') + '</td>' +
-                                       '<td>' + (r.poly || '') + '</td>' +
-                                       '<td>' + (r.techName || '') + '</td>' +
-                                       '<td>' + (r.coordinator || '') + '</td>' +
-                                       '<td>' + (r.phone || '') + '</td>' +
-                                       '<td>' + (r.sector || '') + '</td>' +
-                                       '<td>' + (r.valueChain || '') + '</td>' +
-                                       '<td>' + (r.techType || '') + '</td>' +
-                                       '<td>' + (r.year || '') + '</td>' +
-                                       '<td>' + (r.transferQty || 0) + '</td>' +
-                                       '<td>' + (r.transferSector || '') + '</td>' +
-                                       '<td>' + (r.resource || 0) + '</td>' +
-                                       '<td>' + (r.b_ent || 0) + '</td>' +
-                                       '<td>' + (r.b_mobile || 0) + '</td>' +
-                                       '<td>' + (r.b_male || 0) + '</td>' +
-                                       '<td>' + (r.b_female || 0) + '</td>' +
-                                       '<td>' + (r.diagnosis || 0) + '</td>' +
-                                       '<td>' + (r.createdBy || '') + '</td>' +
-                                       '<td>' + ((userRole === 'superadmin' || userRole === 'admin') ? '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')">ሰርዝ</button>' : '-') + '</td>';
-                        tbody.appendChild(tr);
-                    });
-                })
-                .catch(function(err) { console.error('Reports load error', err); });
-            }
+                }
+                document.getElementById('formCardTitle').innerText = 'የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ';
+                document.getElementById('submitReportBtn').innerText = 'ሪፖርት መዝግብ';
+                document.getElementById('cancelEditBtn').style.display = 'none';
+            };
 
             window.deleteReport = function(id) {
-                if (!confirm('ይህን ሪፖርት ማጥፋት ይፈልጋሉ?')) return;
+                if (!confirm('ይህንን ሪፖርት ማጥፋት ይፈልጋሉ?')) return;
                 fetch(API + '/report/' + id, {
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) { return res.json(); })
-                .then(function(data) {
-                    showToast(data.message || data.error);
-                    loadReports();
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    if (result.ok) {
+                        showToast('ሪፖርቱ ተሰርዟል!');
+                        loadReports();
+                    } else {
+                        showToast(result.data.error || 'መሰረዝ አልተቻለም!');
+                    }
                 })
-                .catch(function() { showToast('ሰርቨር ስህተት ተፈጠረ!'); });
+                .catch(function() { showToast('ሰርቨር ስህተት አጋጥሟል!'); });
             };
 
             window.exportTableToExcel = function() {
                 var table = document.getElementById('reportTable');
                 var wb = XLSX.utils.table_to_book(table, { sheet: "የቴክኖሎጂ ሽግግር ሪፖርት" });
                 XLSX.writeFile(wb, "Tech_Transfer_Report.xlsx");
+                showToast('ፋይሉ ወደ ኤክሴል ወርዷል!');
             };
         })();
     </script>
