@@ -342,8 +342,7 @@
     <div id="loginOverlay">
         <div class="login-card">
             <div class="support-notice">
-                ለማንኛውም ችግር ሲገጥማችሁ 
-                Addisu Tsigie 0918267143 ብላችሁ ደውሉ።
+                ለማንኛውም ችግር Addisu Tsigie 0918267143 ደውሉ
             </div>
 
             <div style="margin-top: 25px; margin-bottom: 12px;">
@@ -419,8 +418,8 @@
             <!-- Admin / Super Admin Panel -->
             <div id="adminPanel" class="admin-grid" style="display:none;">
                 
-                <!-- 1. አዲስ ተጠቃሚ መፍጠር -->
-                <div class="card" id="createUserCard">
+                <!-- 1. አዲስ ተጠቃሚ መፍጠር (ለ Super Admin ብቻ) -->
+                <div class="card" id="createUserCard" style="display:none;">
                     <h3>አዲስ ተጠቃሚ መፍጠር</h3>
                     <div class="form-group">
                         <label>የተጠቃሚ ስም / ዞን:</label>
@@ -440,7 +439,7 @@
                     <button class="btn-primary" onclick="createUser()">ተጠቃሚ ፍጠር</button>
                 </div>
 
-                <!-- 2. የተጠቃሚዎች ዝርዝር እና የፓስዋርድ አስተዳደር -->
+                <!-- 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር -->
                 <div class="card" id="userListCard">
                     <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
                     <ul id="userListUI" style="list-style:none; max-height:220px; overflow-y:auto; padding-right: 5px;">
@@ -448,22 +447,18 @@
                     </ul>
                 </div>
 
-                <!-- 3. የይለፍ ቃል መቀየሪያ ማዕከል (ለራሱ ወይም ለሌላ አድሚን/ተጠቃሚ) -->
-                <div class="card" id="passwordManagerCard">
-                    <h3>የይለፍ ቃል አስተዳደር እና መቀየሪያ</h3>
+                <!-- 3. የይለፍ ቃል መቀየሪያ ማዕከል (ለ Super Admin ብቻ የሚታይ) -->
+                <div class="card" id="passwordManagerCard" style="display:none;">
+                    <h3>የይለፍ ቃል ሪሴት ማዕከል</h3>
                     <div class="form-group">
-                        <label>የታለመለት ተጠቃሚ ስም (ለሌላ ከሆነ):</label>
-                        <input type="text" id="targetUsername" class="form-control" placeholder="ባዶ ከተው የራስዎን ይቀይራሉ" style="background:#ffffff;">
-                    </div>
-                    <div class="form-group" id="oldPwdGroup">
-                        <label>የድሮ የይለፍ ቃል (የራስዎን ሲቀይሩ ግዴታ ነው):</label>
-                        <input type="password" id="oldPwdInput" class="form-control" placeholder="የድሮ ፓስዋርድ" style="background:#ffffff;">
+                        <label>የታለመለት ተጠቃሚ ስም:</label>
+                        <input type="text" id="targetUsername" class="form-control" placeholder="ተጠቃሚ ከዝርዝር ይምረጡ" style="background:#ffffff;" readonly>
                     </div>
                     <div class="form-group">
                         <label>አዲስ የይለፍ ቃል:</label>
                         <input type="password" id="newPwdInput" class="form-control" placeholder="ቢያንስ 6 ሆሄያት" style="background:#ffffff;">
                     </div>
-                    <button class="btn-primary" onclick="submitUniversalPasswordChange()" style="background:#7e22ce;">የይለፍ ቃል ቀይር / ሪሴት አድርግ</button>
+                    <button class="btn-primary" onclick="submitSuperAdminPasswordReset()" style="background:#7e22ce;">የተጠቃሚ ፓስዋርድ ሪሴት አድርግ</button>
                 </div>
             </div>
 
@@ -547,7 +542,7 @@
                         </div>
                         <div class="form-group">
                             <label>ምርመራ:</label>
-                            <input type="text" id="diagnosis" class="form-control" value="0">
+                            <input type="number" id="diagnosis" class="form-control" value="0">
                         </div>
                     </div>
                     <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 15px; width: auto; padding: 10px 20px;">ሪፖርት መዝግብ</button>
@@ -708,12 +703,19 @@
                 var passwordManagerCard = document.getElementById('passwordManagerCard');
                 var createUserCard = document.getElementById('createUserCard');
 
-                if (userRole === 'superadmin' || userRole === 'admin') {
+                if (userRole === 'superadmin') {
                     adminPanel.style.display = 'grid';
-                    passwordManagerCard.style.display = 'block';
+                    passwordManagerCard.style.display = 'block'; // ሱፐር አድሚን ብቻ ፓስዋርድ መቀየሪያ ይታየዋል
+                    createUserCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
-                    createUserCard.style.display = userRole === 'superadmin' ? 'block' : 'none';
-                    setReportFormEditable(userRole === 'superadmin');
+                    setReportFormEditable(true);
+                    fetchAdminUsersList();
+                } else if (userRole === 'admin') {
+                    adminPanel.style.display = 'grid';
+                    passwordManagerCard.style.display = 'none'; // አድሚን ፓስዋርድ መቀየር አይችልም
+                    createUserCard.style.display = 'none';
+                    reportFormCard.style.display = 'block';
+                    setReportFormEditable(false);
                     fetchAdminUsersList();
                 } else {
                     adminPanel.style.display = 'none';
@@ -760,10 +762,16 @@
                     li.style.padding = '6px 0';
                     li.style.borderBottom = '1px solid #fef08a';
                     
-                    var actionsHtml = '<div style="display:flex; gap:4px;">' +
-                                      '<button class="action-btn" onclick="fillTargetUser(\'' + u.username + '\')">ቀይር</button>' +
-                                      (userRole === 'superadmin' && u.username !== 'superadmin' ? '<button class="action-del" onclick="deleteUser(\'' + u.id + '\')">ሰርዝ</button>' : '') +
-                                      '</div>';
+                    var actionsHtml = '<div style="display:flex; gap:4px;">';
+                    
+                    // ሱፐር አድሚን ብቻ የተጠቃሚዎችን ፓስዋርድ ለመምረጥ የሚያስችል ቁልፍ ይታየዋል
+                    if (userRole === 'superadmin') {
+                        actionsHtml += '<button class="action-btn" onclick="fillTargetUser(\'' + u.username + '\')">ፓስዋርድ ቀይር</button>';
+                    }
+                    if (userRole === 'superadmin' && u.username !== 'superadmin') {
+                        actionsHtml += '<button class="action-del" onclick="deleteUser(\'' + u.id + '\')">ሰርዝ</button>';
+                    }
+                    actionsHtml += '</div>';
 
                     li.innerHTML = '<span style="font-size:0.82rem;"><b>' + u.username + '</b> (' + u.role + ')</span>' + actionsHtml;
                     userListUI.appendChild(li);
@@ -772,7 +780,6 @@
 
             window.fillTargetUser = function(username) {
                 document.getElementById('targetUsername').value = username;
-                document.getElementById('oldPwdGroup').style.display = 'none'; // ከተጠቃሚዎች ዝርዝር ውስጥ ሲመረጥ የድሮ ፓስዋርድ አያስፈልግም
                 document.getElementById('newPwdInput').focus();
                 showToast(username + ' ተመርጧል፤ አዲስ ፓስዋርድ ያስገቡ።');
             };
@@ -820,52 +827,32 @@
                 .catch(function() { showToast('ሰርቨር ስህተት ተፈጥሯል!'); });
             };
 
-            window.submitUniversalPasswordChange = function() {
+            window.submitSuperAdminPasswordReset = function() {
                 var targetUsername = document.getElementById('targetUsername').value.trim();
                 var newPassword = document.getElementById('newPwdInput').value;
 
+                if (!targetUsername) {
+                    showToast('እባክዎ ከላይ ካለው ዝርዝር ውስጥ ተጠቃሚ ይምረጡ!');
+                    return;
+                }
                 if (!newPassword || newPassword.length < 6) {
                     showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ሆሄያት ሊኖሩት ይገባል!');
                     return;
                 }
 
-                // ሌላ ተጠቃሚን ለመቀየር የታለመ ከሆነ ወይም ሱፐር አድሚን የሌላውን ፓስዋርድ ሲቀይር
-                if (targetUsername) {
-                    fetch(API + '/admin/reset-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                        body: JSON.stringify({ username: targetUsername, newPassword: newPassword })
-                    })
-                    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                    .then(function(result) {
-                        showToast(result.data.message || result.data.error);
-                        if(result.ok) {
-                            document.getElementById('newPwdInput').value = '';
-                            document.getElementById('targetUsername').value = '';
-                            document.getElementById('oldPwdGroup').style.display = 'block';
-                        }
-                    });
-                } else {
-                    // የራሱን ፓስዋርድ ሲቀይር (የድሮው ፓስዋርድ ግዴታ ያስፈልጋል)
-                    var oldPassword = document.getElementById('oldPwdInput').value;
-                    if (!oldPassword) {
-                        showToast('እባክዎ የድሮውን የይለፍ ቃል ያስገቡ!');
-                        return;
+                fetch(API + '/admin/reset-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ username: targetUsername, newPassword: newPassword })
+                })
+                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                .then(function(result) {
+                    showToast(result.data.message || result.data.error);
+                    if(result.ok) {
+                        document.getElementById('newPwdInput').value = '';
+                        document.getElementById('targetUsername').value = '';
                     }
-                    fetch(API + '/change-password', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
-                        body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
-                    })
-                    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                    .then(function(result) {
-                        showToast(result.data.message || result.data.error);
-                        if(result.ok) {
-                            document.getElementById('oldPwdInput').value = '';
-                            document.getElementById('newPwdInput').value = '';
-                        }
-                    });
-                }
+                });
             };
 
             window.handleReportSubmit = function(e) {
