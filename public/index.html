@@ -768,11 +768,15 @@
                     li.style.borderBottom = '1px solid #fef08a';
                     
                     var actionsHtml = '<div style="display:flex; gap:4px;">';
+                    // ሱፐር አድሚን ብቻ የፓስዋርድ መቀየሪያ እና የማጥፋት ቁልፍ ይኖረዋል
                     if (userRole === 'superadmin') {
                         actionsHtml += '<button class="action-btn" onclick="fillTargetUser(\'' + u.username + '\')">ፓስዋርድ ቀይር</button>';
-                    }
-                    if (userRole === 'superadmin' && u.username !== 'superadmin') {
-                        actionsHtml += '<button class="action-del" onclick="deleteUser(\'' + u._id + '\')">ሰርዝ</button>';
+                        if (u.username !== 'superadmin') {
+                            actionsHtml += '<button class="action-del" onclick="deleteUser(\'' + u._id + '\')">ሰርዝ</button>';
+                        }
+                    } else {
+                        // ለተለመደው አድሚን የማጥፋትም ሆነ የፓስዋርድ መቀየር መብት አልተሰጠውም (ዝርዝሩን ማየት ብቻ ይችላል)
+                        actionsHtml += '<span style="font-size:0.75rem; color:#64748b;">እይታ ብቻ</span>';
                     }
                     actionsHtml += '</div>';
 
@@ -843,6 +847,10 @@
             };
 
             window.deleteUser = function(id) {
+                if (userRole !== 'superadmin') {
+                    showToast('ይህንን ድርጊት ለመፈጸም ፈቃድ አልለዎትም!');
+                    return;
+                }
                 if (!confirm('ይህንን ተጠቃሚ ማጥፋት ይፈልጋሉ?')) return;
                 fetch(API + '/users/' + id, {
                     method: 'DELETE',
