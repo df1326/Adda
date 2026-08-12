@@ -13,14 +13,14 @@
     
     <style>
         :root {
-            --brand-blue: #1b365d;     /* ማራኪ እና ጥልቅ የቢሮ ሰማያዊ */
-            --accent-color: #00b4d8;   /* ደማቅ የቱርክዋይዝ ቀለም ለትኩረት */
-            --bg-color: #f0f4f8;       /* ለዓይን ምቹ የሆነ ለስላሳ ብርሃናማ ዳራ */
-            --card-bg: #ffffff;        /* ንጹህ ነጭ ለካርዶች */
-            --text-main: #0f172a;      /* ጽሑፎች በግልጽ እንዲታዩ ጥቁር ቀለም */
-            --text-muted: #475569;     /* ሁለተኛ ደረጃ ግራጫ ጽሑፍ */
-            --border-color: #cbd5e1;   /* የክፈፍ መስመር */
-            --danger-red: #ef4444;     /* የማጥፊያ ቀይ ቀለም */
+            --brand-blue: #1b365d;     
+            --accent-color: #00b4d8;   
+            --bg-color: #f0f4f8;       
+            --card-bg: #ffffff;        
+            --text-main: #0f172a;      
+            --text-muted: #475569;     
+            --border-color: #cbd5e1;   
+            --danger-red: #ef4444;     
         }
 
         * {
@@ -51,11 +51,12 @@
             align-items: center;
             z-index: 1000;
             backdrop-filter: blur(8px);
+            padding: 15px;
         }
 
         .login-card {
             background: var(--card-bg);
-            padding: 40px;
+            padding: 30px 20px;
             border-radius: 16px;
             width: 100%;
             max-width: 440px;
@@ -68,37 +69,36 @@
         /* Support Notice Styling */
         .support-notice {
             position: absolute;
-            top: 15px;
-            left: 15px;
+            top: 10px;
+            left: 10px;
             background: #e0f2fe;
             color: #0369a1;
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 6px;
-            font-size: 0.75rem;
+            font-size: 0.7rem;
             font-weight: 600;
             text-align: left;
             border: 1px solid #bae6fd;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            max-width: 60%;
+            max-width: 55%;
             line-height: 1.2;
         }
 
         .login-card h2 {
             color: var(--brand-blue);
-            margin-bottom: 24px;
-            font-size: 1.35rem;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
             font-weight: 600;
         }
 
         .form-group {
-            margin-bottom: 18px;
+            margin-bottom: 15px;
             text-align: left;
         }
 
         .form-group label {
             display: block;
             margin-bottom: 6px;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: var(--text-main);
         }
@@ -148,146 +148,131 @@
         header {
             background: var(--brand-blue);
             color: white;
-            padding: 18px 30px;
+            padding: 15px 20px;
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
+            gap: 10px;
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
             border-bottom: 4px solid var(--accent-color);
         }
 
         header h1 {
-            font-size: 1.25rem;
+            font-size: 1.1rem;
             font-weight: 600;
         }
 
         .user-info {
             display: flex;
             align-items: center;
-            gap: 15px;
+            gap: 10px;
         }
 
         .btn-logout {
             background: var(--danger-red);
             color: white;
             border: none;
-            padding: 7px 14px;
+            padding: 6px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.8rem;
             font-weight: 500;
-            transition: opacity 0.2s;
-        }
-
-        .btn-logout:hover {
-            opacity: 0.9;
         }
 
         main {
-            padding: 30px;
+            padding: 15px;
             max-width: 1400px;
             margin: 0 auto;
             width: 100%;
             flex: 1;
             display: flex;
             flex-direction: column;
-            gap: 25px;
+            gap: 20px;
         }
 
         /* Admin & Control Panels Grid */
         .admin-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 15px;
         }
 
         .card {
             border-radius: 12px;
-            padding: 24px;
-            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05);
+            padding: 20px;
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
         }
 
         .card h3 {
-            font-size: 1.15rem;
-            margin-bottom: 18px;
+            font-size: 1.05rem;
+            margin-bottom: 15px;
             border-bottom: 2px solid rgba(255,255,255,0.3);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             font-weight: 600;
         }
 
-        /* 1. አዲስ ተጠቃሚ መፍጠር ካርድ */
         #createUserCard {
             background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
             border-top: 5px solid #22c55e;
             border-color: #bbf7d0;
         }
-        #createUserCard h3 {
-            color: #15803d;
-            border-bottom-color: #bbf7d0;
-        }
+        #createUserCard h3 { color: #15803d; border-bottom-color: #bbf7d0; }
 
-        /* 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር ካርድ */
         #userListCard {
             background: linear-gradient(135deg, #fefce8 0%, #fef9c3 100%);
             border-top: 5px solid #eab308;
             border-color: #fde047;
         }
-        #userListCard h3 {
-            color: #a16207;
-            border-bottom-color: #fde047;
-        }
+        #userListCard h3 { color: #a16207; border-bottom-color: #fde047; }
 
-        /* 3. የይለፍ ቃል መቀየሪያ ካርድ (ለ Super Admin እና Admin) */
         #superAdminPassCard {
             background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
             border-top: 5px solid #a855f7;
             border-color: #e9d5ff;
         }
-        #superAdminPassCard h3 {
-            color: #7e22ce;
-            border-bottom-color: #e9d5ff;
-        }
+        #superAdminPassCard h3 { color: #7e22ce; border-bottom-color: #e9d5ff; }
 
-        /* 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ */
         #reportFormCard {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
             border-top: 5px solid var(--brand-blue);
             border-color: #bfdbfe;
         }
-        #reportFormCard h3 {
-            color: var(--brand-blue);
-            border-bottom-color: #bfdbfe;
-        }
+        #reportFormCard h3 { color: var(--brand-blue); border-bottom-color: #bfdbfe; }
 
         /* Reports Table Section */
         .table-container {
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 24px;
+            padding: 15px;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
             border-top: 5px solid var(--brand-blue);
-            overflow-x: auto;
+            overflow-x: auto; /* ስክሪኑ ሲያጥር በጎን እንዲንሸራተት */
         }
 
         .table-header {
             display: flex;
+            flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 20px;
+            gap: 10px;
+            margin-bottom: 15px;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
             text-align: left;
-            font-size: 0.88rem;
+            font-size: 0.85rem;
+            min-width: 900px; /* በሞባይል ሰንጠረዡ ሳይበላሽ በጎን እንዲሸብለል */
         }
 
         th, td {
-            padding: 12px 14px;
+            padding: 10px 12px;
             border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
         }
 
         th {
@@ -297,48 +282,34 @@
             border-bottom: 2px solid var(--accent-color);
         }
 
-        tr:hover {
-            background-color: #f8fafc;
-        }
+        tr:hover { background-color: #f8fafc; }
 
         .action-del {
             background: var(--danger-red);
             color: white;
             border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
+            padding: 5px 8px;
+            border-radius: 4px;
             cursor: pointer;
-            font-size: 0.75rem;
-        }
-
-        .action-edit {
-            background: #2563eb;
-            color: white;
-            border: none;
-            padding: 6px 10px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 0.75rem;
-            margin-right: 4px;
+            font-size: 0.7rem;
         }
 
         /* Toast Notification */
         #toast {
             visibility: hidden;
-            min-width: 260px;
+            min-width: 240px;
             background-color: var(--brand-blue);
             color: #ffffff;
             text-align: center;
             border-radius: 8px;
-            padding: 14px;
+            padding: 12px;
             position: fixed;
             z-index: 2000;
             left: 50%;
-            bottom: 30px;
+            bottom: 20px;
             transform: translateX(-50%);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             border-left: 5px solid var(--accent-color);
-            font-weight: 500;
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.2);
         }
 
@@ -347,14 +318,15 @@
             animation: fadein 0.4s, fadeout 0.4s 2.6s;
         }
 
-        @keyframes fadein {
-            from { bottom: 0; opacity: 0; }
-            to { bottom: 30px; opacity: 1; }
-        }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 20px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
-        @keyframes fadeout {
-            from { bottom: 30px; opacity: 1; }
-            to { bottom: 0; opacity: 0; }
+        /* ለተንቀሳቃሽ ስልኮች ተጨማሪ ማስተካከያ */
+        @media (max-width: 768px) {
+            main { padding: 10px; }
+            .login-card { padding: 25px 15px; }
+            header { padding: 12px 15px; }
+            header h1 { font-size: 0.95rem; }
         }
     </style>
 </head>
@@ -363,15 +335,14 @@
     <!-- Login Modal -->
     <div id="loginOverlay">
         <div class="login-card">
-            <!-- Support Notice added on top left -->
             <div class="support-notice">
-                ለማንኛውም ችግር ሲገጥማችሁ Addisu Tsigie 0918267143 ደውሉ
+                ለማንኛውም ችግር Addisu Tsigie 0918267143 ደውሉ
             </div>
 
-            <div style="margin-top: 25px; margin-bottom: 15px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 180px; width: 180px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
+            <div style="margin-top: 25px; margin-bottom: 12px;">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 120px; width: 120px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
             </div>
-            <h2>እንኳን ደህና መጡ!<br>የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ</h2>
+            <h2>እንኳን ደህና መጡ!<br>የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ</h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label for="loginRole">ሚና (Role):</label>
@@ -411,7 +382,6 @@
                         <option value="አዊ ዞን">አዊ ዞን</option>
                         <option value="ኦሮሞ ብ/አ ዞን">ኦሮሞ ብ/አ ዞን</option>
                         <option value="ዋግህምራ ብ/አ ዞን">ዋግህምራ ብ/አ ዞን</option>
-                        <option value="ሰሜን ጎጃም ዞን">ሰሜን ጎጃም ዞን</option>
                     </select>
                 </div>
 
@@ -428,12 +398,12 @@
     <!-- Main Dashboard Wrapper -->
     <div id="dashboardWrapper">
         <header>
-            <div style="display: flex; align-items: center; gap: 12px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 48px; width: 48px; object-fit: contain; border-radius: 50%; background: white; padding: 2px; border: 2px solid var(--accent-color);">
-                <h1>የቴክኖሎጂ ሽግግር ክትትል ዳሽቦርድ</h1>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 38px; width: 38px; object-fit: contain; border-radius: 50%; background: white; padding: 2px; border: 2px solid var(--accent-color);">
+                <h1>የቴክኖሎጂ ሽግግር ዳሽቦርድ</h1>
             </div>
             <div class="user-info">
-                <span id="currentUserDisplay" style="font-weight: 500;">እንግዳ</span>
+                <span id="currentUserDisplay" style="font-weight: 500; font-size: 0.9rem;">እንግዳ</span>
                 <button class="btn-logout" onclick="handleLogout()">ውጣ</button>
             </div>
         </header>
@@ -465,32 +435,32 @@
 
                 <!-- 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር -->
                 <div class="card" id="userListCard">
-                    <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
-                    <ul id="userListUI" style="list-style:none; max-height:200px; overflow-y:auto; padding-right: 5px;">
+                    <h3>የተጠቃሚዎች ዝርዝር</h3>
+                    <ul id="userListUI" style="list-style:none; max-height:180px; overflow-y:auto; padding-right: 5px;">
                         <!-- Dynamically populated -->
                     </ul>
                 </div>
 
-                <!-- 3. የይለፍ ቃል መቀየሪያ (ለ Admin እና Super Admin) -->
+                <!-- 3. የይለፍ ቃል መቀየሪያ -->
                 <div class="card" id="superAdminPassCard">
-                    <h3>የተጠቃሚ ወይም የራስ የይለፍ ቃል መቀየሪያ</h3>
+                    <h3>የይለፍ ቃል መቀየሪያ</h3>
                     <div class="form-group">
-                        <label>የተጠቃሚ ስም (ለሌላ ዞን/አድሚን ሲቀየር):</label>
-                        <input type="text" id="targetUsername" class="form-control" placeholder="ባዶ ከተው የራስዎን ይቀይራል" style="background:#ffffff;">
+                        <label>የተጠቃሚ ስም (ባዶ ከተው የራስዎን):</label>
+                        <input type="text" id="targetUsername" class="form-control" placeholder="የተጠቃሚ ስም" style="background:#ffffff;">
                     </div>
                     <div class="form-group">
                         <label>አዲስ የይለፍ ቃል:</label>
                         <input type="password" id="newPwdInput" class="form-control" style="background:#ffffff;">
                     </div>
-                    <button class="btn-primary" onclick="submitChangePassword()" style="background:#7e22ce;">የይለፍ ቃል ቀይር</button>
+                    <button class="btn-primary" onclick="submitChangePassword()" style="background:#7e22ce;">ቀይር</button>
                 </div>
             </div>
 
             <!-- 4. የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ ካርድ -->
             <div class="card" id="reportFormCard">
-                <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል እባክዎ በጥንቃቄ ይሙሉ</h3>
+                <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ</h3>
                 <form id="reportForm" onsubmit="handleReportSubmit(event)">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px;">
                         <div class="form-group">
                             <label>ዞን/ከተማ አስተዳደር:</label>
                             <input type="text" id="zone" class="form-control" required>
@@ -569,7 +539,7 @@
                             <input type="text" id="diagnosis" class="form-control" value="0">
                         </div>
                     </div>
-                    <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 20px; width: auto; padding: 10px 24px;">ሪፖርት መዝግብ</button>
+                    <button type="submit" id="submitReportBtn" class="btn-primary" style="margin-top: 15px; width: auto; padding: 10px 20px;">ሪፖርት መዝግብ</button>
                 </form>
             </div>
 
@@ -577,36 +547,38 @@
             <div class="table-container">
                 <div class="table-header">
                     <h3>የተመዘገቡ ሪፖርቶች ዝርዝር</h3>
-                    <button class="btn-primary" style="width: auto; padding: 8px 16px; margin:0; background: #16a34a;" onclick="exportTableToExcel()">ወደ Excel 📥 አውርድ</button>
+                    <button class="btn-primary" style="width: auto; padding: 8px 14px; margin:0; background: #16a34a;" onclick="exportTableToExcel()">ወደ Excel 📥 አውርድ</button>
                 </div>
-                <table id="reportTable">
-                    <thead>
-                        <tr>
-                            <th>ዞን/ከተማ መምሪያ</th>
-                            <th>ፖሊ/ኮሌጅ</th>
-                            <th>የቴክኖሎጂው ስም</th>
-                            <th>አስተባባሪ</th>
-                            <th>ስልክ</th>
-                            <th>ዘርፍ</th>
-                            <th>እሴት ሰንሰለት</th>
-                            <th>ዓይነት</th>
-                            <th>ዓመት</th>
-                            <th>የተሸጋገረ በብዛት</th>
-                            <th>የተሸጋገረበት ዘርፍ</th>
-                            <th>የተፈራ ሀብት (ብር)</th>
-                            <th>ተጠቃሚ ኢንተርፕራይዝ</th>
-                            <th>ተጠቃሚ አንቀሳቃሽ</th>
-                            <th>ወንድ</th>
-                            <th>ሴት</th>
-                            <th>ምርመራ</th>
-                            <th>መዝጋቢ</th>
-                            <th>እርምጃ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reportTableBody">
-                        <!-- Dynamically populated -->
-                    </tbody>
-                </table>
+                <div style="overflow-x: auto;">
+                    <table id="reportTable">
+                        <thead>
+                            <tr>
+                                <th>ዞን/ከተማ መምሪያ</th>
+                                <th>ፖሊ/ኮሌጅ</th>
+                                <th>የቴክኖሎጂው ስም</th>
+                                <th>አስተባባሪ</th>
+                                <th>ስልክ</th>
+                                <th>ዘርፍ</th>
+                                <th>እሴት ሰንሰለት</th>
+                                <th>ዓይነት</th>
+                                <th>ዓመት</th>
+                                <th>የተሸጋገረ በብዛት</th>
+                                <th>የተሸጋገረበት ዘርፍ</th>
+                                <th>የተፈራ ሀብት (ብር)</th>
+                                <th>ተጠቃሚ ኢንተርፕራይዝ</th>
+                                <th>ተጠቃሚ አንቀሳቃሽ</th>
+                                <th>ወንድ</th>
+                                <th>ሴት</th>
+                                <th>ምርመራ</th>
+                                <th>መዝጋቢ</th>
+                                <th>እርምጃ</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reportTableBody">
+                            <!-- Dynamically populated -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </main>
     </div>
@@ -663,14 +635,8 @@
             window.handleLogin = function(e) {
                 e.preventDefault();
                 var role = document.getElementById('loginRole').value;
-                var usernameInput = '';
+                var usernameInput = role === 'user' ? document.getElementById('loginZoneSelect').value : document.getElementById('loginUsername').value.trim();
                 var passwordInput = document.getElementById('loginPassword').value.trim();
-
-                if (role === 'user') {
-                    usernameInput = document.getElementById('loginZoneSelect').value;
-                } else {
-                    usernameInput = document.getElementById('loginUsername').value.trim();
-                }
 
                 fetch(API + '/login', {
                     method: 'POST',
@@ -715,7 +681,6 @@
                         currentUser = data.username;
                         userRole = data.role;
                         document.getElementById('currentUserDisplay').innerText = currentUser;
-                        
                         showLoginModal(false);
                         setupRoleViews();
                         loadReports();
@@ -723,9 +688,7 @@
                         handleLogout();
                     }
                 })
-                .catch(function() {
-                    handleLogout();
-                });
+                .catch(function() { handleLogout(); });
             }
 
             function setupRoleViews() {
@@ -738,60 +701,37 @@
                     adminPanel.style.display = 'grid';
                     superAdminPassCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
-                    
-                    if (userRole === 'superadmin') {
-                        createUserCard.style.display = 'block';
-                        setReportFormEditable(true);
-                    } else {
-                        createUserCard.style.display = 'none';
-                        setReportFormEditable(false);
-                    }
+                    createUserCard.style.display = userRole === 'superadmin' ? 'block' : 'none';
+                    setReportFormEditable(userRole === 'superadmin');
                     fetchAdminUsersList();
                 } else {
                     adminPanel.style.display = 'none';
                     reportFormCard.style.display = 'block';
                     setReportFormEditable(true);
                     var zoneInput = document.getElementById('zone');
-                    if(zoneInput) zoneInput.value = currentUser;
+                    if(zoneInput) {
+                        zoneInput.value = currentUser;
+                        zoneInput.readOnly = true; // የዞን ተጠቃሚ የዞኑን ስም መቀየር እንዳይችል
+                    }
                 }
             }
 
             function setReportFormEditable(isEditable) {
                 var formElements = document.querySelectorAll('#reportForm input, #reportForm select');
                 formElements.forEach(function(el) {
-                    el.disabled = !isEditable;
-                    el.style.backgroundColor = isEditable ? '#ffffff' : '#f1f5f9';
+                    if (el.id !== 'zone' || userRole === 'superadmin') {
+                        el.disabled = !isEditable;
+                    }
                 });
-                
                 var submitBtn = document.getElementById('submitReportBtn');
-                if (submitBtn) {
-                    submitBtn.style.display = isEditable ? 'inline-block' : 'none';
-                }
+                if (submitBtn) submitBtn.style.display = isEditable ? 'inline-block' : 'none';
             }
 
             function fetchAdminUsersList() {
-                fetch(API + '/users', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
+                fetch(API + '/users', { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(function(res) { return res.json(); })
-                .then(function(users) {
-                    loadAdminUsersList(users);
-                })
-                .catch(function(err) {
-                    console.error('Users load failed', err);
-                });
-            }
-
-            function escapeHtml(text) {
-                if (!text) return '';
-                var map = {
-                    '&': '&amp;',
-                    '<': '&lt;',
-                    '>': '&gt;',
-                    '"': '&quot;',
-                    "'": '&#039;'
-                };
-                return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
+                .then(function(users) { loadAdminUsersList(users); })
+                .catch(function(err) { console.error('Users load failed', err); });
             }
 
             function loadAdminUsersList(users) {
@@ -806,65 +746,28 @@
                     li.style.display = 'flex';
                     li.style.justifyContent = 'space-between';
                     li.style.alignItems = 'center';
-                    li.style.marginBottom = '10px';
-                    li.style.padding = '8px';
-                    li.style.background = '#ffffff';
-                    li.style.borderRadius = '6px';
-                    li.style.border = '1px solid #fde047';
-
-                    var infoSpan = document.createElement('span');
-                    infoSpan.innerHTML = '<b>' + escapeHtml(u.username) + '</b> <span style="font-size:0.8rem; color:#713f12;">(' + escapeHtml(u.role) + ')</span>';
-                    li.appendChild(infoSpan);
-
-                    var btnDiv = document.createElement('div');
-                    btnDiv.style.display = 'flex';
-                    btnDiv.style.gap = '6px';
-
-                    // ዞኖችን ወይም ተጠቃሚዎችን በቀጥታ ከዝርዝሩ ላይ ለመቀየር ቁልፍ
-                    var pwdBtn = document.createElement('button');
-                    pwdBtn.innerHTML = 'ይለፍ ቃል ቀይር';
-                    pwdBtn.className = 'action-edit';
-                    pwdBtn.onclick = (function(uname) {
-                        return function() {
-                            document.getElementById('targetUsername').value = uname;
-                            document.getElementById('newPwdInput').focus();
-                            window.scrollTo({ top: 0, behavior: 'smooth' });
-                        };
-                    })(u.username);
-                    btnDiv.appendChild(pwdBtn);
-
-                    if (userRole === 'superadmin') {
-                        var delBtn = document.createElement('button');
-                        delBtn.innerHTML = 'አጥፋ';
-                        delBtn.className = 'action-del';
-                        delBtn.onclick = (function(userId) {
-                            return function() { deleteUser(userId); };
-                        })(u._id);
-                        btnDiv.appendChild(delBtn);
-                    }
-
-                    li.appendChild(btnDiv);
+                    li.style.padding = '6px 0';
+                    li.style.borderBottom = '1px solid #fef08a';
+                    li.innerHTML = '<span style="font-size:0.85rem;"><b>' + u.username + '</b> (' + u.role + ')</span>' +
+                                   (userRole === 'superadmin' && u.username !== 'superadmin' ? '<button class="action-del" onclick="deleteUser(\'' + u.id + '\')">ሰርዝ</button>' : '');
                     userListUI.appendChild(li);
                 });
             }
 
             window.createUser = function() {
-                var uname = document.getElementById('newUserName').value.trim();
-                var upass = document.getElementById('newUserPassword').value.trim();
-                var urole = document.getElementById('newUserRole').value;
+                var username = document.getElementById('newUserName').value.trim();
+                var password = document.getElementById('newUserPassword').value;
+                var role = document.getElementById('newUserRole').value;
 
-                if (!uname || !upass) {
+                if (!username || !password) {
                     showToast('እባክዎ የተጠቃሚ ስም እና የይለፍ ቃል ያስገቡ!');
                     return;
                 }
 
                 fetch(API + '/users', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify({ username: uname, password: upass, role: urole })
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ username: username, password: password, role: role })
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
@@ -877,9 +780,7 @@
                         showToast(result.data.error || 'ተጠቃሚ መፍጠር አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('የሰርቨር ስህተት ተፈጥሯል!');
-                });
+                .catch(function() { showToast('ሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             window.deleteUser = function(id) {
@@ -888,74 +789,64 @@
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('ተጠቃሚው ተሰርዟል!');
-                        fetchAdminUsersList();
-                    } else {
-                        showToast(result.data.error || 'መሰረዝ አልተቻለም!');
-                    }
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    showToast(data.message || data.error);
+                    fetchAdminUsersList();
                 })
-                .catch(function() {
-                    showToast('የሰርቨር ስህተት ተፈጥሯል!');
-                });
+                .catch(function() { showToast('ሰርቨር ስህተት ተፈጥሯል!'); });
             };
 
             window.submitChangePassword = function() {
-                var targetUname = document.getElementById('targetUsername').value.trim();
-                var newPwd = document.getElementById('newPwdInput').value.trim();
+                var targetUsername = document.getElementById('targetUsername').value.trim();
+                var newPassword = document.getElementById('newPwdInput').value;
 
-                if (!newPwd) {
-                    showToast('እባክዎ አዲሱን የይለፍ ቃል ያስገቡ!');
+                if (!newPassword || newPassword.length < 6) {
+                    showToast('አዲሱ የይለፍ ቃል ቢያንስ 6 ሆሄያት ሊኖሩት ይገባል!');
                     return;
                 }
 
-                var endpoint = API + '/change-password';
-                var payload = { newPassword: newPwd };
-
-                if (targetUname) {
-                    endpoint = API + '/admin/reset-password';
-                    payload.username = targetUname;
+                if (targetUsername) {
+                    fetch(API + '/admin/reset-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ username: targetUsername, newPassword: newPassword })
+                    })
+                    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                    .then(function(result) {
+                        showToast(result.data.message || result.data.error);
+                        if(result.ok) document.getElementById('newPwdInput').value = '';
+                    });
+                } else {
+                    var oldPassword = prompt('እባክዎ የድሮውን የይለፍ ቃል ያስገቡ:');
+                    if (!oldPassword) return;
+                    fetch(API + '/change-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                        body: JSON.stringify({ oldPassword: oldPassword, newPassword: newPassword })
+                    })
+                    .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
+                    .then(function(result) {
+                        showToast(result.data.message || result.data.error);
+                        if(result.ok) document.getElementById('newPwdInput').value = '';
+                    });
                 }
-
-                fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify(payload)
-                })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!');
-                        document.getElementById('targetUsername').value = '';
-                        document.getElementById('newPwdInput').value = '';
-                    } else {
-                        showToast(result.data.error || result.data.message || 'መቀየር አልተቻለም!');
-                    }
-                })
-                .catch(function() {
-                    showToast('የሰርቨር ስህተት ተፈጥሯል!');
-                });
             };
 
             window.handleReportSubmit = function(e) {
                 e.preventDefault();
-                var payload = {
-                    zone: document.getElementById('zone').value,
-                    poly: document.getElementById('poly').value,
-                    techName: document.getElementById('techName').value,
-                    coordinator: document.getElementById('coordinator').value,
-                    phone: document.getElementById('phone').value,
+                var reportData = {
+                    zone: document.getElementById('zone').value.trim(),
+                    poly: document.getElementById('poly').value.trim(),
+                    techName: document.getElementById('techName').value.trim(),
+                    coordinator: document.getElementById('coordinator').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
                     sector: document.getElementById('sector').value,
-                    valueChain: document.getElementById('valueChain').value,
+                    valueChain: document.getElementById('valueChain').value.trim(),
                     techType: document.getElementById('techType').value,
                     year: document.getElementById('year').value,
                     transferQty: Number(document.getElementById('transferQty').value),
-                    transferSector: document.getElementById('transferSector').value,
+                    transferSector: document.getElementById('transferSector').value.trim(),
                     resource: Number(document.getElementById('resource').value),
                     b_ent: Number(document.getElementById('b_ent').value),
                     b_mobile: Number(document.getElementById('b_mobile').value),
@@ -966,70 +857,56 @@
 
                 fetch(API + '/report', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': 'Bearer ' + token
-                    },
-                    body: JSON.stringify(payload)
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify(reportData)
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
                     if (result.ok) {
                         showToast('ሪፖርቱ በተሳካ ሁኔታ ተመዝግቧል!');
-                        document.getElementById('reportForm').reset();
-                        if (userRole === 'user') {
-                            document.getElementById('zone').value = currentUser;
-                        }
                         loadReports();
                     } else {
                         showToast(result.data.error || 'ሪፖርት መመዝገብ አልተቻለም!');
                     }
                 })
-                .catch(function() {
-                    showToast('የሰርቨር ስህተት ተፈጥሯል!');
-                });
+                .catch(function() { showToast('ሰርቨር ጋር መገናኘት አልተቻለም!'); });
             };
 
             function loadReports() {
-                fetch(API + '/report', {
-                    headers: { 'Authorization': 'Bearer ' + token }
-                })
+                fetch(API + '/report', { headers: { 'Authorization': 'Bearer ' + token } })
                 .then(function(res) { return res.json(); })
                 .then(function(reports) {
                     var tbody = document.getElementById('reportTableBody');
                     tbody.innerHTML = '';
                     if (!reports || reports.length === 0) {
-                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b;">ምንም ሪፖርት አልተመዘገበም</td></tr>';
+                        tbody.innerHTML = '<tr><td colspan="19" style="text-align:center; color:#64748b; padding:20px;">ምንም የተመዘገበ ሪፖርት የለም</td></tr>';
                         return;
                     }
                     reports.forEach(function(r) {
                         var tr = document.createElement('tr');
-                        tr.innerHTML = 
-                            '<td>' + escapeHtml(r.zone || '') + '</td>' +
-                            '<td>' + escapeHtml(r.poly || '') + '</td>' +
-                            '<td>' + escapeHtml(r.techName || '') + '</td>' +
-                            '<td>' + escapeHtml(r.coordinator || '') + '</td>' +
-                            '<td>' + escapeHtml(r.phone || '') + '</td>' +
-                            '<td>' + escapeHtml(r.sector || '') + '</td>' +
-                            '<td>' + escapeHtml(r.valueChain || '') + '</td>' +
-                            '<td>' + escapeHtml(r.techType || '') + '</td>' +
-                            '<td>' + escapeHtml(r.year || '') + '</td>' +
-                            '<td>' + (r.transferQty || 0) + '</td>' +
-                            '<td>' + escapeHtml(r.transferSector || '') + '</td>' +
-                            '<td>' + (r.resource || 0) + '</td>' +
-                            '<td>' + (r.b_ent || 0) + '</td>' +
-                            '<td>' + (r.b_mobile || 0) + '</td>' +
-                            '<td>' + (r.b_male || 0) + '</td>' +
-                            '<td>' + (r.b_female || 0) + '</td>' +
-                            '<td>' + (r.diagnosis || 0) + '</td>' +
-                            '<td>' + escapeHtml(r.createdBy || '') + '</td>' +
-                            '<td>' + ((userRole === 'superadmin' || userRole === 'admin') ? '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')">ሰርዝ</button>' : '-') + '</td>';
+                        tr.innerHTML = '<td>' + (r.zone || '') + '</td>' +
+                                       '<td>' + (r.poly || '') + '</td>' +
+                                       '<td>' + (r.techName || '') + '</td>' +
+                                       '<td>' + (r.coordinator || '') + '</td>' +
+                                       '<td>' + (r.phone || '') + '</td>' +
+                                       '<td>' + (r.sector || '') + '</td>' +
+                                       '<td>' + (r.valueChain || '') + '</td>' +
+                                       '<td>' + (r.techType || '') + '</td>' +
+                                       '<td>' + (r.year || '') + '</td>' +
+                                       '<td>' + (r.transferQty || 0) + '</td>' +
+                                       '<td>' + (r.transferSector || '') + '</td>' +
+                                       '<td>' + (r.resource || 0) + '</td>' +
+                                       '<td>' + (r.b_ent || 0) + '</td>' +
+                                       '<td>' + (r.b_mobile || 0) + '</td>' +
+                                       '<td>' + (r.b_male || 0) + '</td>' +
+                                       '<td>' + (r.b_female || 0) + '</td>' +
+                                       '<td>' + (r.diagnosis || 0) + '</td>' +
+                                       '<td>' + (r.createdBy || '') + '</td>' +
+                                       '<td>' + ((userRole === 'superadmin' || userRole === 'admin') ? '<button class="action-del" onclick="deleteReport(\'' + r._id + '\')">ሰርዝ</button>' : '-') + '</td>';
                         tbody.appendChild(tr);
                     });
                 })
-                .catch(function(err) {
-                    console.error('Reports load error', err);
-                });
+                .catch(function(err) { console.error('Reports load error', err); });
             }
 
             window.deleteReport = function(id) {
@@ -1038,31 +915,19 @@
                     method: 'DELETE',
                     headers: { 'Authorization': 'Bearer ' + token }
                 })
-                .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
-                .then(function(result) {
-                    if (result.ok) {
-                        showToast('ሪፖርቱ ተሰርዟል!');
-                        loadReports();
-                    } else {
-                        showToast(result.data.error || 'መሰረዝ አልተቻለም!');
-                    }
+                .then(function(res) { return res.json(); })
+                .then(function(data) {
+                    showToast(data.message || data.error);
+                    loadReports();
                 })
-                .catch(function() {
-                    showToast('የሰርቨር ስህተት ተፈጥሯል!');
-                });
+                .catch(function() { showToast('ሰርቨር ስህተት ተፈጠረ!'); });
             };
 
             window.exportTableToExcel = function() {
                 var table = document.getElementById('reportTable');
-                if (!table) {
-                    showToast('ኤክስፖርት የሚደረግ ሰንጠረዥ አልተገኘም!');
-                    return;
-                }
-                var workbook = XLSX.utils.table_to_book(table, { sheet: "የቴክኖሎጂ ሽግግር ሪፖርት" });
-                XLSX.writeFile(workbook, 'Tech_Transfer_Report.xlsx');
-                showToast('ፋይሉ ወደ ኤክሰል (Excel) በሰላም ወርዷል!');
+                var wb = XLSX.utils.table_to_book(table, { sheet: "የቴክኖሎጂ ሽግግር ሪፖርት" });
+                XLSX.writeFile(wb, "Tech_Transfer_Report.xlsx");
             };
-
         })();
     </script>
 </body>
