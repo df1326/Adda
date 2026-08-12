@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="am">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>የቴክኖሎጂ ሽግግር እና ልየታ አስተዳደር ስርዓት</title>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Nyala&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- SheetJS for Excel Export -->
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    
+    <style>
+        :root {
+            --brand-blue: #1b365d;     
+            --accent-color: #00b4d8;    
+            --bg-color: #f0f4f8;       
+            --card-bg: #ffffff;        
+            --text-main: #0f172a;      
+            --text-muted: #475569;     
+            --border-color: #cbd5e1;   
+            --danger-red: #ef4444;     
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', 'Nyala', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Login Overlay */
+        #loginOverlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(27, 54, 93, 0.92), rgba(15, 23, 42, 0.95));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            backdrop-filter: blur(8px);
+            padding: 15px;
+        }
+
+        .login-card {
+            background: var(--card-bg);
+            padding: 30px 20px;
+            border-radius: 16px;
+            width: 100%;
+            max-width: 440px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
+            text-align: center;
+            border-top: 6px solid var(--accent-color);
+            position: relative;
+        }
+
+        .login-card h2 {
+            color: var(--brand-blue);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 600;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+            text-align: left;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-main);
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 0.9rem;
+            outline: none;
+            background-color: #f8fafc;
+        }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+            background-color: #ffffff;
+            box-shadow: 0 0 0 3px rgba(0, 180, 216, 0.15);
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 12px;
+            background: var(--brand-blue);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .btn-primary:hover { background: #0f2347; }
+
+        /* Dashboard Layout with Sidebar */
+        #dashboardWrapper {
+            display: none;
+            flex-direction: row;
+            flex: 1;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        aside {
+            width: 260px;
+            background: var(--brand-blue);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            border-right: 4px solid var(--accent-color);
+        }
+
+        .sidebar-header {
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-menu {
+            list-style: none;
+            padding: 15px 0;
+            flex: 1;
+        }
+
+        .sidebar-menu li {
+            padding: 12px 20px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: background 0.2s;
+        }
+
+        .sidebar-menu li:hover, .sidebar-menu li.active {
+            background: rgba(0, 180, 216, 0.2);
+            border-left: 4px solid var(--accent-color);
+        }
+
+        .main-content-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            background: var(--bg-color);
+        }
+
+        header {
+            background: white;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        main {
+            padding: 20px;
+            max-width: 1600px;
+            width: 100%;
+            margin: 0 auto;
+        }
+
+        .section-view { display: none; }
+        .section-view.active { display: block; }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+        }
+
+        .card h3 {
+            font-size: 1.1rem;
+            margin-bottom: 15px;
+            color: var(--brand-blue);
+            border-bottom: 2px solid var(--accent-color);
+            padding-bottom: 8px;
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 15px;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);
+            border: 1px solid var(--border-color);
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.85rem;
+            min-width: 1100px;
+        }
+
+        th, td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #e2e8f0;
+            white-space: nowrap;
+        }
+
+        th {
+            background: #f8fafc;
+            color: var(--brand-blue);
+            font-weight: 600;
+            border-bottom: 2px solid var(--accent-color);
+        }
+
+        .action-btn { background: #7e22ce; color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+        .action-del { background: var(--danger-red); color: white; border: none; padding: 5px 8px; border-radius: 4px; cursor: pointer; font-size: 0.7rem; }
+
+        #toast {
+            visibility: hidden;
+            min-width: 240px;
+            background-color: var(--brand-blue);
+            color: #ffffff;
+            text-align: center;
+            border-radius: 8px;
+            padding: 12px;
+            position: fixed;
+            z-index: 2000;
+            left: 50%;
+            bottom: 20px;
+            transform: translateX(-50%);
+            font-size: 0.9rem;
+            border-left: 5px solid var(--accent-color);
+            box-shadow: 0 10px 15px rgba(0,0,0,0.2);
+        }
+        #toast.show { visibility: visible; animation: fadein 0.4s, fadeout 0.4s 2.6s; }
+        @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 20px; opacity: 1; } }
+        @keyframes fadeout { from { bottom: 20px; opacity: 1; } to { bottom: 0; opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <!-- Login Modal -->
+    <div id="loginOverlay">
+        <div class="login-card">
+            <h2>እንኳን ደህና መጡ!<br>የቴክኖሎጂ ልየታ እና ሽግግር ስርዓት</h2>
+            <form onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label>ሚና (Role):</label>
+                    <select id="loginRole" class="form-control">
+                        <option value="user">ዞን / ከተማ ተጠቃሚ</option>
+                        <option value="admin">Admin / Super Admin</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>የተጠቃሚ ስም / ዞን:</label>
+                    <input type="text" id="loginUsername" class="form-control" required placeholder="ስም ያስገቡ">
+                </div>
+                <div class="form-group">
+                    <label>የይለፍ ቃል:</label>
+                    <input type="password" id="loginPassword" class="form-control" required placeholder="ፓስዋርድ ያስገቡ">
+                </div>
+                <button type="submit" class="btn-primary">ግባ (Login)</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard Wrapper -->
+    <div id="dashboardWrapper">
+        <!-- Sidebar Navigation -->
+        <aside>
+            <div class="sidebar-header">
+                <h3>የአብክመ ሙያ ማሰልጠኛ</h3>
+            </div>
+            <ul class="sidebar-menu">
+                <li class="active" onclick="switchSection('transferSection', this)"><i class="fa-solid fa-chart-line"></i> የቴክኖሎጂ ሽግግር ክትትል</li>
+                <li onclick="switchSection('identificationSection', this)"><i class="fa-solid fa-file-lines"></i> የቴክኖሎጂ ልየታ (2019 ዓ.ም)[cite: 1]</li>
+            </ul>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="main-content-area">
+            <header>
+                <h1 id="pageTitle" style="font-size: 1.1rem; color: var(--brand-blue);">የቴክኖሎጂ ሽግግር ክትትል</h1>
+                <div style="display: flex; align-items: center; gap: 15px;">
+                    <span id="currentUserDisplay" style="font-weight: 500; font-size: 0.9rem;"></span>
+                    <button onclick="handleLogout()" style="background: var(--danger-red); color: white; border: none; padding: 6px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem;">ውጣ</button>
+                </div>
+            </header>
+
+            <main>
+                <!-- 1. Tech Transfer Section -->
+                <div id="transferSection" class="section-view active">
+                    <div class="card">
+                        <h3>የቴክኖሎጂ ሽግግር ፕሮፋይል መሙያ</h3>
+                        <form id="transferForm" onsubmit="handleTransferSubmit(event)">
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                                <div class="form-group"><label>ዞን/ከተማ አስተዳደር:</label><input type="text" id="t_zone" class="form-control" required></div>
+                                <div class="form-group"><label>ፖሊ/ኮሌጅ ስም:</label><input type="text" id="t_poly" class="form-control" required></div>
+                                <div class="form-group"><label>የቴክኖሎጂ ስም:</label><input type="text" id="t_techName" class="form-control" required></div>
+                                <div class="form-group"><label>አስተባባሪ ስም:</label><input type="text" id="t_coordinator" class="form-control"></div>
+                                <div class="form-group"><label>ስልክ ቁጥር:</label><input type="text" id="t_phone" class="form-control"></div>
+                                <div class="form-group"><label>ዘርፍ:</label>
+                                    <select id="t_sector" class="form-control">
+                                        <option value="ግብርና">ግብርና</option>
+                                        <option value="ኢንዱስትሪ">ኢንዱስትሪ</option>
+                                        <option value="ማኒፋክቸሪንግ">ማኒፋክቸሪንግ</option>
+                                        <option value="ኮንስትራክሽን">ኮንስትራክሽን</option>
+                                        <option value="አገልግሎት">አገልግሎት</option>
+                                    </select>
+                                </div>
+                                <div class="form-group"><label>የተሸጋገረበት ዓመት:</label><input type="number" id="t_year" class="form-control" value="2019"></div>
+                                <div class="form-group"><label>የተፈራ የሀብት መጠን (ብር):</label><input type="number" id="t_resource" class="form-control" value="0"></div>
+                            </div>
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 10px 20px; margin-top: 15px;">ሽግግር መዝግብ</button>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3>የተመዘገቡ የሽግግር ሪፖርቶች</h3>
+                            <button class="btn-primary" style="width: auto; padding: 8px 14px; margin:0; background: #16a34a;" onclick="exportTableToExcel('transferTable', 'Tech_Transfer.xlsx')">ወደ Excel 📥 አውርድ</button>
+                        </div>
+                        <table id="transferTable">
+                            <thead>
+                                <tr>
+                                    <th>ዞን/ከተማ</th>
+                                    <th>ፖሊ/ኮሌጅ</th>
+                                    <th>የቴክኖሎጂ ስም</th>
+                                    <th>አስተባባሪ</th>
+                                    <th>ስልክ</th>
+                                    <th>ዘርፍ</th>
+                                    <th>ዓመት</th>
+                                    <th>የሀብት መጠን (ብር)</th>
+                                    <th>እርምጃ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="transferTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- 2. Technology Identification 2019 E.C. Section -->
+                <div id="identificationSection" class="section-view">
+                    <div class="card">
+                        <h3>የቴክኖሎጂ ልየታ 2019 ዓ.ም - ቅጽ</h3>[cite: 1]
+                        <form id="idForm" onsubmit="handleIdSubmit(event)">
+                            <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px;">
+                                <div class="form-group"><label>ዞን/ ከተማ አስተዳደር መምሪያ:</label><input type="text" id="i_zone" class="form-control" required>[cite: 1]</div>
+                                <div class="form-group"><label>ዓመታዊ የቴክኖሎጂ ዕቅድ:</label><input type="text" id="i_plan" class="form-control" required>[cite: 1]</div>
+                                <div class="form-group"><label>የፓሊ ብዛት:</label><input type="number" id="i_polyCount" class="form-control" value="0">[cite: 1]</div>
+                                <div class="form-group"><label>የኮሌጅ ብዛት:</label><input type="number" id="i_collegeCount" class="form-control" value="0">[cite: 1]</div>
+                                <div class="form-group"><label>ቴክኖሎጂዉ የተሰራበት (ፖሊ/ኮሌጅ) ስም:</label><input type="text" id="i_polyName" class="form-control" required>[cite: 1]</div>
+                                <div class="form-group"><label>የቴክኖሎጂዉ ስም:</label><input type="text" id="i_techName" class="form-control" required>[cite: 1]</div>
+                                <div class="form-group"><label>ቴክኖሎጂው የሚፈታው ችግር:</label><input type="text" id="i_problem" class="form-control" required>[cite: 1]</div>
+                                <div class="form-group"><label>የኢንኩቤሽን ማዕከሉ አስተባባሪ:</label><input type="text" id="i_coordinator" class="form-control">[cite: 1]</div>
+                                <div class="form-group"><label>ስልክ ቁጥር:</label><input type="text" id="i_phone" class="form-control">[cite: 1]</div>
+                                <div class="form-group"><label>ዘርፍ:</label><input type="text" id="i_sector" class="form-control">[cite: 1]</div>
+                                <div class="form-group"><label>እሴት ሰንሰለት ትንተና ሰነድ:</label>
+                                    <select id="i_valueChainDoc" class="form-control">
+                                        <option value="አለ">አለ</option>
+                                        <option value="የለም">የለም</option>
+                                    </select>[cite: 1]
+                                </div>
+                                <div class="form-group"><label>የቴክኖሎጂው ዓይነት:</label>
+                                    <select id="i_techType" class="form-control">
+                                        <option value="ማምረቻ">ማምረቻ</option>
+                                        <option value="ምርት">ምርት</option>
+                                    </select>[cite: 1]
+                                </div>
+                            </div>
+                            <button type="submit" class="btn-primary" style="width: auto; padding: 10px 20px; margin-top: 15px;">ልየታ መዝግብ</button>
+                        </form>
+                    </div>
+
+                    <div class="table-container">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3>የተመዘገቡ የቴክኖሎጂ ልየታ መረጃዎች (2019 ዓ.ም)</h3>[cite: 1]
+                            <button class="btn-primary" style="width: auto; padding: 8px 14px; margin:0; background: #16a34a;" onclick="exportTableToExcel('idTable', 'Tech_Identification_2019.xlsx')">ወደ Excel 📥 አውርድ</button>
+                        </div>
+                        <table id="idTable">
+                            <thead>
+                                <tr>
+                                    <th>ተ.ቁ</th>[cite: 1]
+                                    <th>ዞን/ ከተማ መምሪያ</th>[cite: 1]
+                                    <th>ዓመታዊ ዕቅድ</th>[cite: 1]
+                                    <th>ፓሊ ብዛት</th>[cite: 1]
+                                    <th>ኮሌጅ ብዛት</th>[cite: 1]
+                                    <th>ፖሊ/ኮሌጅ ስም</th>[cite: 1]
+                                    <th>የቴክኖሎጂ ስም</th>[cite: 1]
+                                    <th>የሚፈታው ችግር</th>[cite: 1]
+                                    <th>አስተባባሪ</th>[cite: 1]
+                                    <th>ስልክ</th>[cite: 1]
+                                    <th>ዘርፍ</th>[cite: 1]
+                                    <th>እሴት ሰንሰለት ሰነድ</th>[cite: 1]
+                                    <th>የቴክኖሎጂ ዓይነት</th>[cite: 1]
+                                    <th>እርምጃ</th>
+                                </tr>
+                            </thead>
+                            <tbody id="idTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast">ማሳሰቢያ</div>
+
+    <script>
+        let transferData = [];
+        let idData = [];
+
+        function showToast(msg) {
+            let toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.className = 'show';
+            setTimeout(() => { toast.className = ''; }, 3000);
+        }
+
+        function handleLogin(e) {
+            e.preventDefault();
+            let username = document.getElementById('loginUsername').value;
+            document.getElementById('currentUserDisplay').innerText = username;
+            document.getElementById('loginOverlay').style.display = 'none';
+            document.getElementById('dashboardWrapper').style.display = 'flex';
+            showToast('በተሳካ ሁኔታ ገብተዋል!');
+        }
+
+        function handleLogout() {
+            document.getElementById('loginOverlay').style.display = 'flex';
+            document.getElementById('dashboardWrapper').style.display = 'none';
+            showToast('ወጥተዋል!');
+        }
+
+        function switchSection(sectionId, el) {
+            document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.sidebar-menu li').forEach(l => l.classList.remove('active'));
+            document.getElementById(sectionId).classList.add('active');
+            el.classList.add('active');
+            document.getElementById('pageTitle').innerText = el.innerText.trim();
+        }
+
+        function handleTransferSubmit(e) {
+            e.preventDefault();
+            let item = {
+                zone: document.getElementById('t_zone').value,
+                poly: document.getElementById('t_poly').value,
+                techName: document.getElementById('t_techName').value,
+                coordinator: document.getElementById('t_coordinator').value,
+                phone: document.getElementById('t_phone').value,
+                sector: document.getElementById('t_sector').value,
+                year: document.getElementById('t_year').value,
+                resource: document.getElementById('t_resource').value
+            };
+            transferData.push(item);
+            renderTransferTable();
+            document.getElementById('transferForm').reset();
+            showToast('የሽግግር ሪፖርት ተመዝግቧል!');
+        }
+
+        function renderTransferTable() {
+            let tbody = document.getElementById('transferTableBody');
+            tbody.innerHTML = '';
+            transferData.forEach((d, index) => {
+                tbody.innerHTML += `<tr>
+                    <td>${d.zone}</td><td>${d.poly}</td><td>${d.techName}</td><td>${d.coordinator}</td>
+                    <td>${d.phone}</td><td>${d.sector}</td><td>${d.year}</td><td>${d.resource}</td>
+                    <td><button class="action-del" onclick="deleteTransfer(${index})">ሰርዝ</button></td>
+                </tr>`;
+            });
+        }
+
+        function deleteTransfer(index) {
+            transferData.splice(index, 1);
+            renderTransferTable();
+            showToast('ተሰርዟል!');
+        }
+
+        function handleIdSubmit(e) {
+            e.preventDefault();
+            let item = {
+                zone: document.getElementById('i_zone').value,[cite: 1]
+                plan: document.getElementById('i_plan').value,[cite: 1]
+                polyCount: document.getElementById('i_polyCount').value,[cite: 1]
+                collegeCount: document.getElementById('i_collegeCount').value,[cite: 1]
+                polyName: document.getElementById('i_polyName').value,[cite: 1]
+                techName: document.getElementById('i_techName').value,[cite: 1]
+                problem: document.getElementById('i_problem').value,[cite: 1]
+                coordinator: document.getElementById('i_coordinator').value,[cite: 1]
+                phone: document.getElementById('i_phone').value,[cite: 1]
+                sector: document.getElementById('i_sector').value,[cite: 1]
+                valueChainDoc: document.getElementById('i_valueChainDoc').value,[cite: 1]
+                techType: document.getElementById('i_techType').value[cite: 1]
+            };
+            idData.push(item);
+            renderIdTable();
+            document.getElementById('idForm').reset();
+            showToast('የቴክኖሎጂ ልየታ መረጃ ተመዝግቧል!');[cite: 1]
+        }
+
+        function renderIdTable() {
+            let tbody = document.getElementById('idTableBody');
+            tbody.innerHTML = '';
+            idData.forEach((d, index) => {
+                tbody.innerHTML += `<tr>
+                    <td>${index + 1}</td>[cite: 1]
+                    <td>${d.zone}</td>[cite: 1]
+                    <td>${d.plan}</td>[cite: 1]
+                    <td>${d.polyCount}</td>[cite: 1]
+                    <td>${d.collegeCount}</td>[cite: 1]
+                    <td>${d.polyName}</td>[cite: 1]
+                    <td>${d.techName}</td>[cite: 1]
+                    <td>${d.problem}</td>[cite: 1]
+                    <td>${d.coordinator}</td>[cite: 1]
+                    <td>${d.phone}</td>[cite: 1]
+                    <td>${d.sector}</td>[cite: 1]
+                    <td>${d.valueChainDoc}</td>[cite: 1]
+                    <td>${d.techType}</td>[cite: 1]
+                    <td><button class="action-del" onclick="deleteId(${index})">ሰርዝ</button></td>
+                </tr>`;
+            });
+        }
+
+        function deleteId(index) {
+            idData.splice(index, 1);
+            renderIdTable();
+            showToast('ተሰርዟል!');
+        }
+
+        function exportTableToExcel(tableId, filename) {
+            let table = document.getElementById(tableId);
+            let wb = XLSX.utils.table_to_book(table, { sheet: "Sheet1" });
+            XLSX.writeFile(wb, filename);
+            showToast('ፋይሉ ወደ ኤክሴል ወርዷል!');
+        }
+    </script>
+</body>
+</html>
