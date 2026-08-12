@@ -281,10 +281,17 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 8. Reports API
+// 8. Reports API (የዞን ተጠቃሚዎች የራሳቸውን ብቻ እንዲያዩ እና እንዲመዘግቡ የተስተካከለ)
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
-        const newReport = await Report.create({ ...req.body, createdBy: req.user.username });
+        let reportData = req.body;
+        
+        // የዞን/ከተማ ተጠቃሚ ከሆነ ዞኑ ከራሱ ስም ውጪ ሌላ እንዳይጽፍ መቆጣጠር
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+            reportData.zone = req.user.username;
+        }
+
+        const newReport = await Report.create({ ...reportData, createdBy: req.user.username });
         res.json({ message: 'ሪፖርቱ ተመዝግቧል!', id: newReport._id });
     } catch (err) {
         res.status(500).json({ error: 'ሪፖርት መመዝገብ አልተቻለም!' });
@@ -293,7 +300,15 @@ app.post('/api/report', authenticateToken, async (req, res) => {
 
 app.get('/api/report', authenticateToken, async (req, res) => {
     try {
-        const reports = await Report.find().sort({ created_at: -1 });
+        let query = {};
+        
+        // ተጠቃሚው አድሚን ወይም ሱፐር አድሚን ካልሆነ (ማለትም የዞን ተጠቃሚ ከሆነ)
+        // በዳታቤዝ ውስጥ ከእሱ ስም/ዞን ጋር የሚዛመዱትን ሪፖርቶች ብቻ እናጣራለን
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+            query.zone = req.user.username;
+        }
+
+        const reports = await Report.find(query).sort({ created_at: -1 });
         res.json(reports);
     } catch (err) {
         res.status(500).json({ error: 'ሪፖርቶችን ማምጣት አልተቻለም!' });
@@ -327,7 +342,7 @@ app.get('*', (req, res) => {
 // 11. አጠቃላይ የስህተት መቆጣጠሪያ (Global Error Handler) - የሲስተሙን ውስጣዊ አወቃቀር ከጠላፊዎች መደበቅ
 app.use((err, req, res, next) => {
     console.error('❌ Internal Server Error:', err.stack);
-    res.status(500).json({ success: false, error: ' በሰርቨር ላይ ያልተጠበቀ ስህተት አጋጥሟል!' });
+    res.status(500).json({ success: false, error: 'በሰርቨር ላይ ያልተጠበቀ ስህተት አጋጥሟል!' });
 });
 
 // Start Express Server
