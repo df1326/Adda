@@ -66,7 +66,6 @@
             position: relative;
         }
 
-        /* Support Notice Styling */
         .support-notice {
             position: absolute;
             top: 10px;
@@ -191,7 +190,6 @@
             gap: 20px;
         }
 
-        /* Admin & Control Panels Grid */
         .admin-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -227,12 +225,12 @@
         }
         #userListCard h3 { color: #a16207; border-bottom-color: #fde047; }
 
-        #superAdminPassCard {
+        #passwordManagerCard {
             background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
             border-top: 5px solid #a855f7;
             border-color: #e9d5ff;
         }
-        #superAdminPassCard h3 { color: #7e22ce; border-bottom-color: #e9d5ff; }
+        #passwordManagerCard h3 { color: #7e22ce; border-bottom-color: #e9d5ff; }
 
         #reportFormCard {
             background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
@@ -241,7 +239,6 @@
         }
         #reportFormCard h3 { color: var(--brand-blue); border-bottom-color: #bfdbfe; }
 
-        /* Reports Table Section */
         .table-container {
             background: var(--card-bg);
             border-radius: 12px;
@@ -249,7 +246,7 @@
             box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05);
             border: 1px solid var(--border-color);
             border-top: 5px solid var(--brand-blue);
-            overflow-x: auto; /* ስክሪኑ ሲያጥር በጎን እንዲንሸራተት */
+            overflow-x: auto;
         }
 
         .table-header {
@@ -266,7 +263,7 @@
             border-collapse: collapse;
             text-align: left;
             font-size: 0.85rem;
-            min-width: 900px; /* በሞባይል ሰንጠረዡ ሳይበላሽ በጎን እንዲሸብለል */
+            min-width: 900px;
         }
 
         th, td {
@@ -284,6 +281,17 @@
 
         tr:hover { background-color: #f8fafc; }
 
+        .action-btn {
+            background: #7e22ce;
+            color: white;
+            border: none;
+            padding: 5px 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.7rem;
+            margin-right: 4px;
+        }
+
         .action-del {
             background: var(--danger-red);
             color: white;
@@ -294,7 +302,6 @@
             font-size: 0.7rem;
         }
 
-        /* Toast Notification */
         #toast {
             visibility: hidden;
             min-width: 240px;
@@ -321,7 +328,6 @@
         @keyframes fadein { from { bottom: 0; opacity: 0; } to { bottom: 20px; opacity: 1; } }
         @keyframes fadeout { from { bottom: 20px; opacity: 1; } to { bottom: 0; opacity: 0; } }
 
-        /* ለተንቀሳቃሽ ስልኮች ተጨማሪ ማስተካከያ */
         @media (max-width: 768px) {
             main { padding: 10px; }
             .login-card { padding: 25px 15px; }
@@ -416,12 +422,12 @@
                 <div class="card" id="createUserCard">
                     <h3>አዲስ ተጠቃሚ መፍጠር</h3>
                     <div class="form-group">
-                        <label>የተጠቃሚ ስም:</label>
-                        <input type="text" id="newUserName" class="form-control" style="background:#ffffff;">
+                        <label>የተጠቃሚ ስም / ዞን:</label>
+                        <input type="text" id="newUserName" class="form-control" style="background:#ffffff;" placeholder="ስም ያስገቡ">
                     </div>
                     <div class="form-group">
                         <label>የይለፍ ቃል:</label>
-                        <input type="password" id="newUserPassword" class="form-control" style="background:#ffffff;">
+                        <input type="password" id="newUserPassword" class="form-control" style="background:#ffffff;" placeholder="ፓስዋርድ">
                     </div>
                     <div class="form-group">
                         <label>ደረጃ (Role):</label>
@@ -433,26 +439,30 @@
                     <button class="btn-primary" onclick="createUser()">ተጠቃሚ ፍጠር</button>
                 </div>
 
-                <!-- 2. የተጠቃሚዎች ዝርዝር እና አስተዳደር -->
+                <!-- 2. የተጠቃሚዎች ዝርዝር እና የፓስዋርድ አስተዳደር -->
                 <div class="card" id="userListCard">
-                    <h3>የተጠቃሚዎች ዝርዝር</h3>
-                    <ul id="userListUI" style="list-style:none; max-height:180px; overflow-y:auto; padding-right: 5px;">
+                    <h3>የተጠቃሚዎች ዝርዝር እና አስተዳደር</h3>
+                    <ul id="userListUI" style="list-style:none; max-height:220px; overflow-y:auto; padding-right: 5px;">
                         <!-- Dynamically populated -->
                     </ul>
                 </div>
 
-                <!-- 3. የይለፍ ቃል መቀየሪያ -->
-                <div class="card" id="superAdminPassCard">
-                    <h3>የይለፍ ቃል መቀየሪያ</h3>
+                <!-- 3. የይለፍ ቃል መቀየሪያ ማዕከል (ለራሱ ወይም ለሌላ አድሚን/ተጠቃሚ) -->
+                <div class="card" id="passwordManagerCard">
+                    <h3>የይለፍ ቃል አስተዳደር እና መቀየሪያ</h3>
                     <div class="form-group">
-                        <label>የተጠቃሚ ስም (ባዶ ከተው የራስዎን):</label>
-                        <input type="text" id="targetUsername" class="form-control" placeholder="የተጠቃሚ ስም" style="background:#ffffff;">
+                        <label>የታለመለት ተጠቃሚ ስም (ለሌላ ከሆነ):</label>
+                        <input type="text" id="targetUsername" class="form-control" placeholder="ባዶ ከተው የራስዎን ይቀይራሉ" style="background:#ffffff;">
+                    </div>
+                    <div class="form-group" id="oldPwdGroup">
+                        <label>የድሮ የይለፍ ቃል (የራስዎን ሲቀይሩ ግዴታ ነው):</label>
+                        <input type="password" id="oldPwdInput" class="form-control" placeholder="የድሮ ፓስዋርድ" style="background:#ffffff;">
                     </div>
                     <div class="form-group">
                         <label>አዲስ የይለፍ ቃል:</label>
-                        <input type="password" id="newPwdInput" class="form-control" style="background:#ffffff;">
+                        <input type="password" id="newPwdInput" class="form-control" placeholder="ቢያንስ 6 ሆሄያት" style="background:#ffffff;">
                     </div>
-                    <button class="btn-primary" onclick="submitChangePassword()" style="background:#7e22ce;">ቀይር</button>
+                    <button class="btn-primary" onclick="submitUniversalPasswordChange()" style="background:#7e22ce;">የይለፍ ቃል ቀይር / ሪሴት አድርግ</button>
                 </div>
             </div>
 
@@ -694,12 +704,12 @@
             function setupRoleViews() {
                 var adminPanel = document.getElementById('adminPanel');
                 var reportFormCard = document.getElementById('reportFormCard');
-                var superAdminPassCard = document.getElementById('superAdminPassCard');
+                var passwordManagerCard = document.getElementById('passwordManagerCard');
                 var createUserCard = document.getElementById('createUserCard');
 
                 if (userRole === 'superadmin' || userRole === 'admin') {
                     adminPanel.style.display = 'grid';
-                    superAdminPassCard.style.display = 'block';
+                    passwordManagerCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
                     createUserCard.style.display = userRole === 'superadmin' ? 'block' : 'none';
                     setReportFormEditable(userRole === 'superadmin');
@@ -711,7 +721,7 @@
                     var zoneInput = document.getElementById('zone');
                     if(zoneInput) {
                         zoneInput.value = currentUser;
-                        zoneInput.readOnly = true; // የዞን ተጠቃሚ የዞኑን ስም መቀየር እንዳይችል
+                        zoneInput.readOnly = true;
                     }
                 }
             }
@@ -748,11 +758,23 @@
                     li.style.alignItems = 'center';
                     li.style.padding = '6px 0';
                     li.style.borderBottom = '1px solid #fef08a';
-                    li.innerHTML = '<span style="font-size:0.85rem;"><b>' + u.username + '</b> (' + u.role + ')</span>' +
-                                   (userRole === 'superadmin' && u.username !== 'superadmin' ? '<button class="action-del" onclick="deleteUser(\'' + u.id + '\')">ሰርዝ</button>' : '');
+                    
+                    var actionsHtml = '<div style="display:flex; gap:4px;">' +
+                                      '<button class="action-btn" onclick="fillTargetUser(\'' + u.username + '\')">ቀይር</button>' +
+                                      (userRole === 'superadmin' && u.username !== 'superadmin' ? '<button class="action-del" onclick="deleteUser(\'' + u.id + '\')">ሰርዝ</button>' : '') +
+                                      '</div>';
+
+                    li.innerHTML = '<span style="font-size:0.82rem;"><b>' + u.username + '</b> (' + u.role + ')</span>' + actionsHtml;
                     userListUI.appendChild(li);
                 });
             }
+
+            window.fillTargetUser = function(username) {
+                document.getElementById('targetUsername').value = username;
+                document.getElementById('oldPwdGroup').style.display = 'none'; // ከተጠቃሚዎች ዝርዝር ውስጥ ሲመረጥ የድሮ ፓስዋርድ አያስፈልግም
+                document.getElementById('newPwdInput').focus();
+                showToast(username + ' ተመርጧል፤ አዲስ ፓስዋርድ ያስገቡ።');
+            };
 
             window.createUser = function() {
                 var username = document.getElementById('newUserName').value.trim();
@@ -797,7 +819,7 @@
                 .catch(function() { showToast('ሰርቨር ስህተት ተፈጥሯል!'); });
             };
 
-            window.submitChangePassword = function() {
+            window.submitUniversalPasswordChange = function() {
                 var targetUsername = document.getElementById('targetUsername').value.trim();
                 var newPassword = document.getElementById('newPwdInput').value;
 
@@ -806,6 +828,7 @@
                     return;
                 }
 
+                // ሌላ ተጠቃሚን ለመቀየር የታለመ ከሆነ ወይም ሱፐር አድሚን የሌላውን ፓስዋርድ ሲቀይር
                 if (targetUsername) {
                     fetch(API + '/admin/reset-password', {
                         method: 'POST',
@@ -815,11 +838,19 @@
                     .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                     .then(function(result) {
                         showToast(result.data.message || result.data.error);
-                        if(result.ok) document.getElementById('newPwdInput').value = '';
+                        if(result.ok) {
+                            document.getElementById('newPwdInput').value = '';
+                            document.getElementById('targetUsername').value = '';
+                            document.getElementById('oldPwdGroup').style.display = 'block';
+                        }
                     });
                 } else {
-                    var oldPassword = prompt('እባክዎ የድሮውን የይለፍ ቃል ያስገቡ:');
-                    if (!oldPassword) return;
+                    // የራሱን ፓስዋርድ ሲቀይር (የድሮው ፓስዋርድ ግዴታ ያስፈልጋል)
+                    var oldPassword = document.getElementById('oldPwdInput').value;
+                    if (!oldPassword) {
+                        showToast('እባክዎ የድሮውን የይለፍ ቃል ያስገቡ!');
+                        return;
+                    }
                     fetch(API + '/change-password', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
@@ -828,7 +859,10 @@
                     .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                     .then(function(result) {
                         showToast(result.data.message || result.data.error);
-                        if(result.ok) document.getElementById('newPwdInput').value = '';
+                        if(result.ok) {
+                            document.getElementById('oldPwdInput').value = '';
+                            document.getElementById('newPwdInput').value = '';
+                        }
                     });
                 }
             };
