@@ -62,6 +62,25 @@
             box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35);
             text-align: center;
             border-top: 6px solid var(--accent-color);
+            position: relative;
+        }
+
+        /* Support Notice Styling */
+        .support-notice {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: #e0f2fe;
+            color: #0369a1;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-align: left;
+            border: 1px solid #bae6fd;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            max-width: 60%;
+            line-height: 1.2;
         }
 
         .login-card h2 {
@@ -219,7 +238,7 @@
             border-bottom-color: #fde047;
         }
 
-        /* 3. የይለፍ ቃል መቀየሪያ ካርድ */
+        /* 3. የይለፍ ቃል መቀየሪያ ካርድ (ለ Super Admin እና Admin) */
         #superAdminPassCard {
             background: linear-gradient(135deg, #faf5ff 0%, #f3e8ff 100%);
             border-top: 5px solid #a855f7;
@@ -292,6 +311,17 @@
             font-size: 0.75rem;
         }
 
+        .action-edit {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.75rem;
+            margin-right: 4px;
+        }
+
         /* Toast Notification */
         #toast {
             visibility: hidden;
@@ -333,11 +363,15 @@
     <!-- Login Modal -->
     <div id="loginOverlay">
         <div class="login-card">
-            <div style="margin-bottom: 15px;">
-                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 200px; width: 200px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
+            <!-- Support Notice added on top left -->
+            <div class="support-notice">
+                ለማንኛውም ችግር ሲገጥማችሁ Addisu Tsigie 0918267143 ደውሉ
             </div>
-            <h2>እንኳን ደህና መጡ!
-                የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ </h2>
+
+            <div style="margin-top: 25px; margin-bottom: 15px;">
+                <img src="https://i.postimg.cc/6Qkn1L6R/photo-2026-07-10-11-32-05.jpg" alt="የአብክመ ሎጎ" style="height: 180px; width: 180px; object-fit: contain; border-radius: 50%; box-shadow: 0 4px 8px rgba(0,0,0,0.15); border: 3px solid var(--accent-color); background: #ffffff; padding: 2px;">
+            </div>
+            <h2>እንኳን ደህና መጡ!<br>የቴክኖሎጂ ሽግግር ሪፖርት ማድረጊያ ገጽ</h2>
             <form onsubmit="handleLogin(event)">
                 <div class="form-group">
                     <label for="loginRole">ሚና (Role):</label>
@@ -437,18 +471,18 @@
                     </ul>
                 </div>
 
-                <!-- 3. የይለፍ ቃል መቀየሪያ (ለ Super Admin ብቻ የሚታይ) -->
-                <div class="card" id="superAdminPassCard" style="display:none;">
-                    <h3>የይለፍ ቃል መቀየሪያ</h3>
+                <!-- 3. የይለፍ ቃል መቀየሪያ (ለ Admin እና Super Admin) -->
+                <div class="card" id="superAdminPassCard">
+                    <h3>የተጠቃሚ ወይም የራስ የይለፍ ቃል መቀየሪያ</h3>
                     <div class="form-group">
-                        <label>የድሮ የይለፍ ቃል:</label>
-                        <input type="password" id="oldSuperPwd" class="form-control" style="background:#ffffff;">
+                        <label>የተጠቃሚ ስም (ለሌላ ዞን/አድሚን ሲቀየር):</label>
+                        <input type="text" id="targetUsername" class="form-control" placeholder="ባዶ ከተው የራስዎን ይቀይራል" style="background:#ffffff;">
                     </div>
                     <div class="form-group">
                         <label>አዲስ የይለፍ ቃል:</label>
-                        <input type="password" id="newSuperPwd" class="form-control" style="background:#ffffff;">
+                        <input type="password" id="newPwdInput" class="form-control" style="background:#ffffff;">
                     </div>
-                    <button class="btn-primary" onclick="submitChangePassword()" style="background:#7e22ce;">ቀይር</button>
+                    <button class="btn-primary" onclick="submitChangePassword()" style="background:#7e22ce;">የይለፍ ቃል ቀይር</button>
                 </div>
             </div>
 
@@ -548,7 +582,7 @@
                 <table id="reportTable">
                     <thead>
                         <tr>
-                         <th>ዞን/ከተማ መምሪያ</th>
+                            <th>ዞን/ከተማ መምሪያ</th>
                             <th>ፖሊ/ኮሌጅ</th>
                             <th>የቴክኖሎጂው ስም</th>
                             <th>አስተባባሪ</th>
@@ -559,8 +593,8 @@
                             <th>ዓመት</th>
                             <th>የተሸጋገረ በብዛት</th>
                             <th>የተሸጋገረበት ዘርፍ</th>
-                            <th>የየተፈራ ሀብት (ብር)</th>
-                            <th>ተጠቃሚ ኢንተርፕራይዝ </th>
+                            <th>የተፈራ ሀብት (ብር)</th>
+                            <th>ተጠቃሚ ኢንተርፕራይዝ</th>
                             <th>ተጠቃሚ አንቀሳቃሽ</th>
                             <th>ወንድ</th>
                             <th>ሴት</th>
@@ -700,19 +734,18 @@
                 var superAdminPassCard = document.getElementById('superAdminPassCard');
                 var createUserCard = document.getElementById('createUserCard');
 
-                if (userRole === 'superadmin') {
+                if (userRole === 'superadmin' || userRole === 'admin') {
                     adminPanel.style.display = 'grid';
-                    createUserCard.style.display = 'block';
-                    superAdminPassCard.style.display = 'block'; // አድሚን እንዳይቀይር፣ ለሱፐር አድሚን ብቻ ይታያል
+                    superAdminPassCard.style.display = 'block';
                     reportFormCard.style.display = 'block';
-                    setReportFormEditable(true);
-                    fetchAdminUsersList();
-                } else if (userRole === 'admin') {
-                    adminPanel.style.display = 'grid';
-                    createUserCard.style.display = 'none';
-                    superAdminPassCard.style.display = 'none'; // አድሚን የይለፍ ቃል እንዳይቀይር ተደብቋል
-                    reportFormCard.style.display = 'block';
-                    setReportFormEditable(false);
+                    
+                    if (userRole === 'superadmin') {
+                        createUserCard.style.display = 'block';
+                        setReportFormEditable(true);
+                    } else {
+                        createUserCard.style.display = 'none';
+                        setReportFormEditable(false);
+                    }
                     fetchAdminUsersList();
                 } else {
                     adminPanel.style.display = 'none';
@@ -750,6 +783,7 @@
             }
 
             function escapeHtml(text) {
+                if (!text) return '';
                 var map = {
                     '&': '&amp;',
                     '<': '&lt;',
@@ -757,7 +791,7 @@
                     '"': '&quot;',
                     "'": '&#039;'
                 };
-                return text.replace(/[&<>"']/g, function(m) { return map[m]; });
+                return String(text).replace(/[&<>"']/g, function(m) { return map[m]; });
             }
 
             function loadAdminUsersList(users) {
@@ -785,6 +819,19 @@
                     var btnDiv = document.createElement('div');
                     btnDiv.style.display = 'flex';
                     btnDiv.style.gap = '6px';
+
+                    // ዞኖችን ወይም ተጠቃሚዎችን በቀጥታ ከዝርዝሩ ላይ ለመቀየር ቁልፍ
+                    var pwdBtn = document.createElement('button');
+                    pwdBtn.innerHTML = 'ይለፍ ቃል ቀይር';
+                    pwdBtn.className = 'action-edit';
+                    pwdBtn.onclick = (function(uname) {
+                        return function() {
+                            document.getElementById('targetUsername').value = uname;
+                            document.getElementById('newPwdInput').focus();
+                            window.scrollTo({ top: 0, behavior: 'smooth' });
+                        };
+                    })(u.username);
+                    btnDiv.appendChild(pwdBtn);
 
                     if (userRole === 'superadmin') {
                         var delBtn = document.createElement('button');
@@ -856,30 +903,38 @@
             };
 
             window.submitChangePassword = function() {
-                var oldPwd = document.getElementById('oldSuperPwd').value.trim();
-                var newPwd = document.getElementById('newSuperPwd').value.trim();
+                var targetUname = document.getElementById('targetUsername').value.trim();
+                var newPwd = document.getElementById('newPwdInput').value.trim();
 
-                if (!oldPwd || !newPwd) {
-                    showToast('እባክዎ የድሮውን እና አዲሱን የይለፍ ቃል ያስገቡ!');
+                if (!newPwd) {
+                    showToast('እባክዎ አዲሱን የይለፍ ቃል ያስገቡ!');
                     return;
                 }
 
-                fetch(API + '/change-password', {
+                var endpoint = API + '/change-password';
+                var payload = { newPassword: newPwd };
+
+                if (targetUname) {
+                    endpoint = API + '/admin/reset-password';
+                    payload.username = targetUname;
+                }
+
+                fetch(endpoint, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                         'Authorization': 'Bearer ' + token
                     },
-                    body: JSON.stringify({ oldPassword: oldPwd, newPassword: newPwd })
+                    body: JSON.stringify(payload)
                 })
                 .then(function(res) { return res.json().then(function(d) { return { ok: res.ok, data: d }; }); })
                 .then(function(result) {
                     if (result.ok) {
-                        showToast('የይለፍ ቃልዎ ተቀይሯል!');
-                        document.getElementById('oldSuperPwd').value = '';
-                        document.getElementById('newSuperPwd').value = '';
+                        showToast('የይለፍ ቃል በተሳካ ሁኔታ ተቀይሯል!');
+                        document.getElementById('targetUsername').value = '';
+                        document.getElementById('newPwdInput').value = '';
                     } else {
-                        showToast(result.data.error || 'መቀየር አልተቻለም!');
+                        showToast(result.data.error || result.data.message || 'መቀየር አልተቻለም!');
                     }
                 })
                 .catch(function() {
@@ -997,7 +1052,6 @@
                 });
             };
 
-            // Excel Export Function using SheetJS
             window.exportTableToExcel = function() {
                 var table = document.getElementById('reportTable');
                 if (!table) {
