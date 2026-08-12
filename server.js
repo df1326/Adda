@@ -173,12 +173,12 @@ app.post('/api/login', [
     }
 });
 
-// 5. Change Password (ተጠቃሚዎች የራሳቸውን ፓስዋርድ እንዳይቀይሩ ሙሉ በሙሉ ተዘግቷል - Superadmin ብቻ ነው የሚቀይረው)
+// 5. Change Password (ተጠቃሚዎች የራሳቸውን ፓስዋርድ እንዳይቀይሩ ሙሉ በሙሉ ተዘግቷል)
 app.post('/api/change-password', authenticateToken, (req, res) => {
     return res.status(403).json({ error: 'ይህንን ተግባር ማከናወን የሚችለው ሱፐር አድሚን (Super Admin) ብቻ ነው!' });
 });
 
-// 6. Admin / Superadmin Reset Password (አሁን አድሚን ተብዬው ተሰርዞ Superadmin ብቻ እንዲሆን ተገድቧል)
+// 6. Superadmin Reset Password
 app.post('/api/admin/reset-password', authenticateToken, async (req, res) => {
     if (req.user.role !== 'superadmin') {
         return res.status(403).json({ error: 'የተጠቃሚዎችን የይለፍ ቃል መቀየር የሚችለው ሱፐር አድሚን (Super Admin) ብቻ ነው!' });
@@ -256,7 +256,7 @@ app.delete('/api/users/:id', authenticateToken, async (req, res) => {
     }
 });
 
-// 8. Reports API
+// 8. Reports API (መመዝገብ፣ ማንበብ፣ ማስተካከል እና መሰረዝ)
 app.post('/api/report', authenticateToken, async (req, res) => {
     try {
         let reportData = req.body;
@@ -287,12 +287,54 @@ app.get('/api/report', authenticateToken, async (req, res) => {
     }
 });
 
-app.delete('/api/report/:id', authenticateToken, async (req, res) => {
-    if (req.user.role !== 'superadmin' && req.user.role !== 'admin') {
-        return res.status(403).json({ error: 'ሪፖርት የማጥፋት መብት የለዎትም!' });
-    }
+// ሪፖርት ማስተካከል (Edit / Update Report) - ተጠቃሚዎች የራሳቸውን፣ አድሚኖች ማንኛውንም ማስተካከል ይችላሉ
+app.put('/api/report/:id', authenticateToken, async (req, res) => {
     try {
-        await Report.findByIdAndDelete(req.params.id);
+        const reportId = req.params.id;
+        const existingReport = await Report.findById(reportId);
+
+        if (!existingReport) {
+            return res.status(404).json({ error: 'የጠየቁት ሪፖርት አልተገኘም!' });
+        }
+
+        // ተጠቃሚው አድሚን ወይም ሱፐር አድሚን ካልሆነ የራሱ መሆኑን ማረጋገጥ
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+            if (existingReport.createdBy !== req.user.username && existingReport.zone !== req.user.username) {
+                return res.status(403).json({ error: 'ይህንን ሪፖርት ማስተካከል የሚችሉት እርስዎ ያስገቡት ከሆነ ብቻ ነው!' });
+            }
+        }
+
+        let updateData = req.body;
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+            updateData.zone = req.user.username;
+            updateData.createdBy = req.user.username;
+        }
+
+        const updatedReport = await Report.findByIdAndUpdate(reportId, updateData, { new: true });
+        res.json({ message: 'ሪፖርቱ በተሳካ ሁኔታ ተሻሽሏል!', report: updatedReport });
+    } catch (err) {
+        res.status(500).json({ error: 'ሪፖርቱን ማስተካከል አልተቻለም!' });
+    }
+});
+
+// ሪፖርት መሰረዝ (Delete Report) - ተጠቃሚዎች የራሳቸውን፣ አድሚኖች ማንኛውንም መሰረዝ ይችላሉ
+app.delete('/api/report/:id', authenticateToken, async (req, res) => {
+    try {
+        const reportId = req.params.id;
+        const existingReport = await Report.findById(reportId);
+
+        if (!existingReport) {
+            return res.status(404).json({ error: 'የጠየቁት ሪፖርት አልተገኘም!' });
+        }
+
+        // ተጠቃሚው አድሚን ወይም ሱፐር አድሚን ካልሆነ የራሱ መሆኑን ማረጋገጥ
+        if (req.user.role !== 'admin' && req.user.role !== 'superadmin') {
+            if (existingReport.createdBy !== req.user.username && existingReport.zone !== req.user.username) {
+                return res.status(403).json({ error: 'ይህንን ሪፖርት መሰረዝ የሚችሉት እርስዎ ያስገቡት ከሆነ ብቻ ነው!' });
+            }
+        }
+
+        await Report.findByIdAndDelete(reportId);
         res.json({ message: 'ሪፖርቱ በተሳካ ሁኔታ ተሰርዟል!' });
     } catch (err) {
         res.status(500).json({ error: 'ሪፖርቱን መሰረዝ አልተቻለም!' });
